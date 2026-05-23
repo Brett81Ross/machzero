@@ -5,12 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Resale IQ</title>
     <style>
-        :root { --primary: #0070f3; --bg: #000; --text: #fff; --secondary: #333; }
-        body { font-family: sans-serif; text-align: center; background: var(--bg); color: var(--text); padding: 20px; }
+        body { font-family: sans-serif; text-align: center; background: #000; color: #fff; padding: 20px; }
         .container { max-width: 500px; margin: 0 auto; }
         .logo { max-width: 150px; margin-bottom: 20px; }
-        .custom-btn { display: block; width: 80%; margin: 10px auto; padding: 15px; background: var(--secondary); color: white; border-radius: 10px; border: none; cursor: pointer; font-size: 16px; }
-        .btn-primary { background: var(--primary); }
+        .custom-btn { display: block; width: 80%; margin: 10px auto; padding: 15px; background: #333; color: white; border-radius: 10px; border: none; cursor: pointer; font-size: 16px; }
+        .btn-primary { background: #0070f3; }
         #imagePreview { max-width: 100%; margin-top: 20px; border-radius: 10px; display: none; }
         #result { margin-top: 20px; padding: 15px; background: #222; border-radius: 10px; display: none; text-align: left; }
     </style>
@@ -19,52 +18,65 @@
     <div class="container">
         <img src="logo1.png" alt="Resale IQ Logo" class="logo">
         <h1>Resale IQ</h1>
+        
         <button class="custom-btn btn-primary" onclick="document.getElementById('cameraInput').click()">📷 Take Photo</button>
-        <input type="file" id="cameraInput" accept="image/*" capture="environment" style="display: none;">
+        <input type="file" id="cameraInput" accept="image/*" style="display: none;">
+
         <img id="imagePreview">
         <button id="analyzeBtn" class="custom-btn btn-primary" style="display:none;" onclick="analyzeImage()">🔍 Analyze Item</button>
-        <div id="result">Waiting for AI...</div>
+        <div id="result"></div>
     </div>
+
     <script>
         let resizedBase64 = "";
 
-        async function handleImage(event) {
+        document.getElementById('cameraInput').addEventListener('change', function(event) {
             const file = event.target.files[0];
             const reader = new FileReader();
-            reader.onload = async function(e) {
+            reader.onload = function(e) {
                 const img = new Image();
                 img.onload = function() {
                     const canvas = document.createElement('canvas');
-                    const MAX_WIDTH = 800; // Resize to max 800px width
-                    const scale = MAX_WIDTH / img.width;
-                    canvas.width = MAX_WIDTH;
-                    canvas.height = img.height * scale;
+                    canvas.width = 800;
+                    canvas.height = (800 / img.width) * img.height;
                     const ctx = canvas.getContext('2d');
                     ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                    
                     resizedBase64 = canvas.toDataURL('image/jpeg', 0.7).split(',')[1];
-                    document.getElementById('imagePreview').src = canvas.toDataURL('image/jpeg', 0.7);
-                    document.getElementById('imagePreview').style.display = 'inline-block';
+                    
+                    const preview = document.getElementById('imagePreview');
+                    preview.src = canvas.toDataURL('image/jpeg', 0.7);
+                    preview.style.display = 'inline-block';
                     document.getElementById('analyzeBtn').style.display = 'block';
+                    console.log("Image processed and ready.");
                 };
                 img.src = e.target.result;
-            }
+            };
             reader.readAsDataURL(file);
-        }
+        });
 
         async function analyzeImage() {
             const resultDiv = document.getElementById('result');
             resultDiv.style.display = 'block';
-            resultDiv.innerText = "Analyzing (Resizing image first)...";
+            resultDiv.innerText = "Analyzing...";
             
-            const response = await fetch('/api/analyze', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ image: resizedBase64 })
-            });
-            const data = await response.json();
-            resultDiv.innerText = data.candidates[0].content.parts[0].text;
+            try {
+                const response = await fetch('/api/analyze', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ image: resizedBase64 })
+                });
+                
+                const data = await response.json();
+                if (data.candidates && data.candidates[0].content.parts[0].text) {
+                    resultDiv.innerText = data.candidates[0].content.parts[0].text;
+                } else {
+                    resultDiv.innerText = "Error: " + JSON.stringify(data);
+                }
+            } catch (err) {
+                resultDiv.innerText = "Fetch Error: " + err.message;
+            }
         }
-        document.getElementById('cameraInput').addEventListener('change', handleImage);
     </script>
 </body>
 </html>
