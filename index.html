@@ -2,80 +2,69 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0">
     <title>Resale IQ</title>
+    <meta name="apple-mobile-web-app-capable" content="yes">
     <style>
-        body { font-family: sans-serif; text-align: center; background: #000; color: #fff; padding: 20px; }
-        .container { max-width: 500px; margin: 0 auto; }
-        .logo { max-width: 150px; margin-bottom: 20px; }
-        .custom-btn { display: block; width: 80%; margin: 10px auto; padding: 15px; background: #333; color: white; border-radius: 10px; border: none; cursor: pointer; font-size: 16px; }
-        .btn-primary { background: #0070f3; }
-        #imagePreview { max-width: 100%; margin-top: 20px; border-radius: 10px; display: none; }
-        #result { margin-top: 20px; padding: 15px; background: #222; border-radius: 10px; display: none; text-align: left; }
+        :root { --accent: #0070f3; --bg: #050505; --card: rgba(255, 255, 255, 0.08); }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background: var(--bg); color: #fff; margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; min-height: 100vh; }
+        .container { width: 100%; max-width: 450px; }
+        .header { margin: 40px 0; text-align: center; }
+        .card { background: var(--card); backdrop-filter: blur(15px); border-radius: 24px; padding: 20px; border: 1px solid rgba(255, 255, 255, 0.1); margin-bottom: 20px; }
+        #imagePreview { width: 100%; border-radius: 16px; display: none; margin-bottom: 20px; }
+        .action-bar { position: fixed; bottom: 30px; width: 90%; max-width: 400px; }
+        .btn { width: 100%; padding: 18px; border-radius: 16px; border: none; font-weight: 600; font-size: 16px; cursor: pointer; transition: 0.3s; }
+        .btn-main { background: var(--accent); color: white; margin-bottom: 10px; }
+        #result { color: #ccc; line-height: 1.6; font-size: 15px; }
     </style>
 </head>
 <body>
     <div class="container">
-        <img src="logo1.png" alt="Resale IQ Logo" class="logo">
-        <h1>Resale IQ</h1>
-        
-        <button class="custom-btn btn-primary" onclick="document.getElementById('cameraInput').click()">📷 Take Photo</button>
-        <input type="file" id="cameraInput" accept="image/*" style="display: none;">
+        <div class="header"><h1>Resale IQ</h1></div>
+        <div class="card">
+            <img id="imagePreview">
+            <div id="result">Select an item to begin valuation.</div>
+        </div>
+    </div>
 
-        <img id="imagePreview">
-        <button id="analyzeBtn" class="custom-btn btn-primary" style="display:none;" onclick="analyzeImage()">🔍 Analyze Item</button>
-        <div id="result"></div>
+    <div class="action-bar">
+        <input type="file" id="cameraInput" accept="image/*" style="display: none;">
+        <button class="btn btn-main" onclick="document.getElementById('cameraInput').click()">📷 Scan Item</button>
+        <button id="analyzeBtn" class="btn" style="display:none; background: #333; color: white;" onclick="analyzeImage()">🔍 Get Value</button>
     </div>
 
     <script>
         let resizedBase64 = "";
-
-        document.getElementById('cameraInput').addEventListener('change', function(event) {
-            const file = event.target.files[0];
+        document.getElementById('cameraInput').addEventListener('change', function(e) {
             const reader = new FileReader();
-            reader.onload = function(e) {
+            reader.onload = function(event) {
                 const img = new Image();
                 img.onload = function() {
                     const canvas = document.createElement('canvas');
                     canvas.width = 800;
                     canvas.height = (800 / img.width) * img.height;
-                    const ctx = canvas.getContext('2d');
-                    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-                    
+                    canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
                     resizedBase64 = canvas.toDataURL('image/jpeg', 0.7).split(',')[1];
-                    
-                    const preview = document.getElementById('imagePreview');
-                    preview.src = canvas.toDataURL('image/jpeg', 0.7);
-                    preview.style.display = 'inline-block';
+                    document.getElementById('imagePreview').src = canvas.toDataURL();
+                    document.getElementById('imagePreview').style.display = 'block';
                     document.getElementById('analyzeBtn').style.display = 'block';
-                    console.log("Image processed and ready.");
+                    document.getElementById('result').innerText = "Item loaded. Ready to analyze.";
                 };
-                img.src = e.target.result;
+                img.src = event.target.result;
             };
-            reader.readAsDataURL(file);
+            reader.readAsDataURL(e.target.files[0]);
         });
 
         async function analyzeImage() {
-            const resultDiv = document.getElementById('result');
-            resultDiv.style.display = 'block';
-            resultDiv.innerText = "Analyzing...";
-            
-            try {
-                const response = await fetch('/api/analyze', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ image: resizedBase64 })
-                });
-                
-                const data = await response.json();
-                if (data.candidates && data.candidates[0].content.parts[0].text) {
-                    resultDiv.innerText = data.candidates[0].content.parts[0].text;
-                } else {
-                    resultDiv.innerText = "Error: " + JSON.stringify(data);
-                }
-            } catch (err) {
-                resultDiv.innerText = "Fetch Error: " + err.message;
-            }
+            const res = document.getElementById('result');
+            res.innerText = "Analyzing market value...";
+            const response = await fetch('/api/analyze', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ image: resizedBase64 })
+            });
+            const data = await response.json();
+            res.innerText = data.candidates[0].content.parts[0].text;
         }
     </script>
 </body>
