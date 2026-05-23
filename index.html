@@ -18,7 +18,7 @@
 <body>
 
     <div class="container">
-        <img src="logo1.png" alt="Resale IQ Logo" class="logo">
+        <img src="Logo.png" alt="Resale IQ Logo" class="logo">
         <h1>Resale IQ</h1>
         
         <button class="custom-btn btn-primary" onclick="document.getElementById('cameraInput').click()">📷 Take Photo</button>
@@ -50,14 +50,15 @@
         }
 
         async function analyzeImage() {
+            // REPLACE THIS KEY WITH YOUR ACTUAL API KEY
             const apiKey = "AIzaSyCeMbnNVBkz936lHVWMkLVRgdKLDIoiDj4"; 
             const resultDiv = document.getElementById('result');
             resultDiv.style.display = 'block';
-            resultDiv.innerText = "Analyzing...";
+            resultDiv.innerText = "Analyzing with Gemini 3.5...";
 
             try {
-                // Using the standard production endpoint for the flash model
-                const url = `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
+                // Pointing to the new Gemini 3.5 Flash model
+                const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent?key=${apiKey}`;
                 
                 const response = await fetch(url, {
                     method: 'POST',
