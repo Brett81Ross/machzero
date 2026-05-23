@@ -9,18 +9,23 @@
         :root { --accent: #0070f3; --bg: #050505; --card: rgba(255, 255, 255, 0.08); }
         body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background: var(--bg); color: #fff; margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; min-height: 100vh; }
         .container { width: 100%; max-width: 450px; }
-        .header { margin: 40px 0; text-align: center; }
-        .card { background: var(--card); backdrop-filter: blur(15px); border-radius: 24px; padding: 20px; border: 1px solid rgba(255, 255, 255, 0.1); margin-bottom: 20px; }
+        .header { margin: 30px 0; text-align: center; }
+        .logo { max-width: 120px; margin-bottom: 10px; }
+        .card { background: var(--card); backdrop-filter: blur(15px); border-radius: 24px; padding: 20px; border: 1px solid rgba(255, 255, 255, 0.1); margin-bottom: 100px; }
         #imagePreview { width: 100%; border-radius: 16px; display: none; margin-bottom: 20px; }
-        .action-bar { position: fixed; bottom: 30px; width: 90%; max-width: 400px; }
-        .btn { width: 100%; padding: 18px; border-radius: 16px; border: none; font-weight: 600; font-size: 16px; cursor: pointer; transition: 0.3s; }
-        .btn-main { background: var(--accent); color: white; margin-bottom: 10px; }
+        .action-bar { position: fixed; bottom: 30px; width: 90%; max-width: 400px; display: flex; gap: 10px; flex-direction: column; }
+        .btn { padding: 18px; border-radius: 16px; border: none; font-weight: 600; font-size: 16px; cursor: pointer; transition: 0.3s; }
+        .btn-main { background: var(--accent); color: white; }
+        .btn-secondary { background: #333; color: white; }
         #result { color: #ccc; line-height: 1.6; font-size: 15px; }
     </style>
 </head>
 <body>
     <div class="container">
-        <div class="header"><h1>Resale IQ</h1></div>
+        <div class="header">
+            <img src="logo1.png" alt="Resale IQ Logo" class="logo">
+            <h1>Resale IQ</h1>
+        </div>
         <div class="card">
             <img id="imagePreview">
             <div id="result">Select an item to begin valuation.</div>
@@ -28,14 +33,19 @@
     </div>
 
     <div class="action-bar">
-        <input type="file" id="cameraInput" accept="image/*" style="display: none;">
-        <button class="btn btn-main" onclick="document.getElementById('cameraInput').click()">📷 Scan Item</button>
-        <button id="analyzeBtn" class="btn" style="display:none; background: #333; color: white;" onclick="analyzeImage()">🔍 Get Value</button>
+        <input type="file" id="cameraInput" accept="image/*" capture="environment" style="display: none;">
+        <input type="file" id="galleryInput" accept="image/*" style="display: none;">
+        
+        <button class="btn btn-main" onclick="document.getElementById('cameraInput').click()">📷 Take Photo</button>
+        <button class="btn btn-secondary" onclick="document.getElementById('galleryInput').click()">📂 Choose from Gallery</button>
+        <button id="analyzeBtn" class="btn btn-main" style="display:none; background: #28a745;" onclick="analyzeImage()">🔍 Get Value</button>
     </div>
 
     <script>
         let resizedBase64 = "";
-        document.getElementById('cameraInput').addEventListener('change', function(e) {
+        
+        // Unified function to handle images from both inputs
+        function processImage(file) {
             const reader = new FileReader();
             reader.onload = function(event) {
                 const img = new Image();
@@ -52,8 +62,11 @@
                 };
                 img.src = event.target.result;
             };
-            reader.readAsDataURL(e.target.files[0]);
-        });
+            reader.readAsDataURL(file);
+        }
+
+        document.getElementById('cameraInput').addEventListener('change', e => processImage(e.target.files[0]));
+        document.getElementById('galleryInput').addEventListener('change', e => processImage(e.target.files[0]));
 
         async function analyzeImage() {
             const res = document.getElementById('result');
@@ -64,7 +77,11 @@
                 body: JSON.stringify({ image: resizedBase64 })
             });
             const data = await response.json();
-            res.innerText = data.candidates[0].content.parts[0].text;
+            if (data.candidates && data.candidates[0].content.parts[0].text) {
+                res.innerText = data.candidates[0].content.parts[0].text;
+            } else {
+                res.innerText = "Error processing image.";
+            }
         }
     </script>
 </body>
