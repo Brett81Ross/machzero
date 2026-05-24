@@ -1,16 +1,12 @@
 export default async function handler(req, res) {
-    if (req.method !== 'POST') return res.status(405).end();
-    
+    if (req.method !== 'POST') return res.status(405).json({ error: "Method not allowed" });
+
     try {
         const { imageBase64 } = req.body;
-        
-        // 1. Verify API Key exists
-        if (!process.env.GEMINI_API_KEY) {
-            throw new Error("Missing GEMINI_API_KEY environment variable");
-        }
+        const API_KEY = process.env.GEMINI_API_KEY;
 
-        // 2. Make request
-        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${process.env.GEMINI_API_KEY}`, {
+        // CORRECT URL for Gemini 3.5 Flash
+        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent?key=${API_KEY}`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
@@ -23,17 +19,14 @@ export default async function handler(req, res) {
             })
         });
 
-        // 3. Get response
         const data = await response.json();
-        
-        // 4. If Google returned an error, send it back as the error message
+
         if (!response.ok) {
-            throw new Error(data.error?.message || "Google API returned an error");
+            return res.status(500).json({ error: data.error?.message || "Gemini 3.5 API Error" });
         }
 
         res.status(200).json(data);
     } catch (error) {
-        // This will now show the REAL error on your phone screen
-        res.status(500).json({ error: error.message });
+        res.status(500).json({ error: "System Error: " + error.message });
     }
 }
