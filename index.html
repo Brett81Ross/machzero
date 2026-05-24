@@ -7,24 +7,31 @@
     <style>
         body { background: #050505; color: white; font-family: sans-serif; padding: 20px; text-align: center; }
         .card { background: #111; padding: 20px; border-radius: 20px; border: 1px solid #333; margin: 20px 0; }
-        .btn { width: 100%; padding: 15px; margin: 10px 0; background: #222; color: white; border: 1px solid #444; border-radius: 10px; cursor: pointer; }
-        .analyze { background: #0070f3 !important; font-weight: bold; }
+        #authBtn { width: 100%; padding: 15px; background: #0070f3; color: white; border: none; border-radius: 12px; font-weight: bold; cursor: pointer; }
+        #memberArea { display: none; text-align: left; }
+        .btn { width: 100%; padding: 15px; background: #222; color: white; border: 1px solid #444; border-radius: 10px; margin-top: 10px; cursor: pointer; }
+        #preview { width: 100%; max-width: 300px; margin: 20px 0; display: none; border-radius: 10px; }
+        #result { margin-top: 20px; padding: 15px; background: #1a1a1a; border-radius: 10px; }
     </style>
 </head>
 <body>
+
+    <img src="logo1.png" style="width: 80px;">
     <h1>Resale IQ</h1>
+    
     <div class="card">
-        <p id="statusMsg">Connecting...</p>
+        <p id="statusMsg">Loading...</p>
+        <button id="authBtn" style="display:none;">Sign In with Google</button>
         
-        <div id="controls" style="display:none;">
-            <label>1. Take Photo:</label>
-            <input type="file" id="cameraInput" accept="image/*" capture="environment" class="btn">
+        <div id="memberArea">
+            <input type="file" id="fileInput" accept="image/*" capture="environment" style="display:none;">
+            <button class="btn" onclick="document.getElementById('fileInput').click()">📷 Take Photo / Upload</button>
             
-            <label>2. Choose File:</label>
-            <input type="file" id="fileInput" accept="image/*" class="btn">
+            <img id="preview">
             
-            <button id="analyzeBtn" class="btn analyze">Analyze Item</button>
-            <button id="logoutBtn" class="btn" style="background:#444;">Sign Out</button>
+            <button id="analyzeBtn" class="btn" style="background:#0070f3; display:none;">Analyze Item</button>
+            <div id="result"></div>
+            <button id="logoutBtn" class="btn" style="border:none; margin-top:20px;">Sign Out</button>
         </div>
     </div>
 
@@ -33,32 +40,4 @@
         import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
         const app = initializeApp({
-            apiKey: "AIzaSyCHw58VHbvQxji437vYTxgakBHdRYiFVa0",
-            authDomain: "resale-iq.firebaseapp.com",
-            projectId: "resale-iq",
-            storageBucket: "resale-iq.firebasestorage.app",
-            messagingSenderId: "496480241751",
-            appId: "1:496480241751:web:148d1da5cd3e322edcbb12"
-        });
-
-        const auth = getAuth(app);
-        const provider = new GoogleAuthProvider();
-
-        onAuthStateChanged(auth, (user) => {
-            if (user) {
-                document.getElementById('statusMsg').innerText = "Logged in as " + user.displayName;
-                document.getElementById('controls').style.display = 'block';
-            } else {
-                document.getElementById('statusMsg').innerHTML = '<button class="btn" id="loginBtn">Sign In with Google</button>';
-                document.getElementById('loginBtn').onclick = () => signInWithPopup(auth, provider);
-            }
-        });
-
-        document.getElementById('analyzeBtn').onclick = () => {
-            alert("Analyze button is working! Now we just need to connect the AI.");
-        };
-
-        document.getElementById('logoutBtn').onclick = () => signOut(auth);
-    </script>
-</body>
-</html>
+            apiKey: "AIzaSyCHw58VHb
