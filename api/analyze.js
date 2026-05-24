@@ -4,8 +4,8 @@ export default async function handler(req, res) {
     try {
         const { imageBase64 } = req.body;
         
-        // We use the 'flash' model as it is the most lightweight and fastest
-        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${process.env.GEMINI_API_KEY}`, {
+        // This is the correct identifier for the new Gemini 3.5 Flash
+        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent?key=${process.env.GEMINI_API_KEY}`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
@@ -19,7 +19,11 @@ export default async function handler(req, res) {
         });
 
         const data = await response.json();
-        if (!response.ok) return res.status(500).json({ error: data.error?.message || "Gemini Error" });
+        
+        // If the API returns an error, we catch it and send it to your phone
+        if (!response.ok) {
+            return res.status(500).json({ error: data.error?.message || "Model connection error" });
+        }
         
         res.status(200).json(data);
     } catch (error) {
