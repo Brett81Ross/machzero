@@ -1,99 +1,41 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Resale IQ</title>
-    <style>
-        body { background: #050505; color: white; font-family: sans-serif; padding: 20px; text-align: center; }
-        .card { background: #111; padding: 20px; border-radius: 20px; border: 1px solid #333; margin: 20px 0; }
-        #authBtn { width: 100%; padding: 15px; background: #0070f3; color: white; border: none; border-radius: 12px; font-weight: bold; cursor: pointer; }
-        #memberArea { display: none; text-align: left; }
-        .btn { width: 100%; padding: 15px; background: #222; color: white; border: 1px solid #444; border-radius: 10px; margin-top: 10px; cursor: pointer; }
-        #result { margin-top: 20px; padding: 15px; background: #1a1a1a; border-radius: 10px; white-space: pre-wrap; }
-    </style>
 </head>
 <body>
-
     <img src="logo1.png" style="width: 80px;">
     <h1>Resale IQ</h1>
-    
-    <div class="card">
-        <p id="statusMsg">Checking system...</p>
-        <button id="authBtn" style="display:none;">Sign In with Google</button>
-        
-        <div id="memberArea">
-            <h3>Your Dashboard</h3>
-            <p>Welcome, <span id="userName"></span>!</p>
-            
-            <input type="file" id="fileInput" accept="image/*" style="display:none;">
-            <button class="btn" onclick="document.getElementById('fileInput').click()">📷 Take Photo / Upload</button>
-            <button id="analyzeBtn" class="btn" style="background:#0070f3;">Analyze Item</button>
-            
-            <div id="result"></div>
-            
-            <button id="logoutBtn" class="btn" style="background:#444;">Sign Out</button>
-        </div>
+    <div id="app">
+        <input type="file" id="fileInput" accept="image/*">
+        <button id="analyzeBtn">Analyze Item</button>
+        <div id="result"></div>
     </div>
 
     <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-
-        const app = initializeApp({
-            apiKey: "AIzaSyCHw58VHbvQxji437vYTxgakBHdRYiFVa0",
-            authDomain: "resale-iq.firebaseapp.com",
-            projectId: "resale-iq",
-            storageBucket: "resale-iq.firebasestorage.app",
-            messagingSenderId: "496480241751",
-            appId: "1:496480241751:web:148d1da5cd3e322edcbb12"
-        });
-
-        const auth = getAuth(app);
-        const provider = new GoogleAuthProvider();
-
-        onAuthStateChanged(auth, (user) => {
-            const status = document.getElementById('statusMsg');
-            const authBtn = document.getElementById('authBtn');
-            const memberArea = document.getElementById('memberArea');
-            
-            if (user) {
-                status.style.display = 'none';
-                authBtn.style.display = 'none';
-                memberArea.style.display = 'block';
-                document.getElementById('userName').innerText = user.displayName;
-            } else {
-                status.innerText = "System ready.";
-                authBtn.style.display = 'block';
-                memberArea.style.display = 'none';
-                authBtn.onclick = () => signInWithPopup(auth, provider);
-            }
-        });
-
         document.getElementById('analyzeBtn').onclick = async () => {
-            const fileInput = document.getElementById('fileInput');
-            if (!fileInput.files[0]) return alert("Please select a photo first!");
-            
+            const file = document.getElementById('fileInput').files[0];
+            if (!file) return alert("Select a photo!");
             document.getElementById('result').innerText = "Analyzing...";
-            
+
             const reader = new FileReader();
-            reader.readAsDataURL(fileInput.files[0]);
+            reader.readAsDataURL(file);
             reader.onloadend = async () => {
+                const base64 = reader.result.split(',')[1];
                 try {
-                    const response = await fetch('/api/analyze', {
+                    const res = await fetch('/api/analyze', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ imageBase64: reader.result.split(',')[1] })
+                        body: JSON.stringify({ imageBase64: base64 })
                     });
-                    const data = await response.json();
+                    const data = await res.json();
                     document.getElementById('result').innerText = data.candidates[0].content.parts[0].text;
                 } catch (e) {
-                    document.getElementById('result').innerText = "Error: Could not reach backend.";
+                    document.getElementById('result').innerText = "Error: Backend unreachable.";
                 }
             };
         };
-
-        document.getElementById('logoutBtn').onclick = () => signOut(auth);
     </script>
 </body>
 </html>
