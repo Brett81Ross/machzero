@@ -64,7 +64,7 @@
         analyzeBtn.addEventListener('click', async () => {
             if (!selectedFile) return alert("Select a photo first!");
 
-            status.innerText = "Analyzing: Evaluating item and market data...";
+            status.innerText = "Analyzing: Generating listing...";
             analyzeBtn.disabled = true;
 
             const reader = new FileReader();
@@ -90,7 +90,7 @@
                             result.innerText = data.candidates[0].content.parts[0].text;
                             result.style.display = 'block';
                             copyBtn.style.display = 'block';
-                            status.innerText = "Analysis Complete!";
+                            status.innerText = "Done! Copy below.";
                         } else {
                             status.innerText = "Error: AI response empty.";
                         }
@@ -105,7 +105,7 @@
 
         copyBtn.addEventListener('click', () => {
             navigator.clipboard.writeText(result.innerText);
-            alert("Copied to clipboard!");
+            alert("Listing copied!");
         });
     </script>
 </body>
