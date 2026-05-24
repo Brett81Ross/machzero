@@ -7,33 +7,23 @@
     <style>
         body { background: #050505; color: white; font-family: sans-serif; padding: 20px; text-align: center; }
         .card { background: #111; padding: 20px; border-radius: 20px; border: 1px solid #333; margin: 20px 0; }
-        #authBtn { width: 100%; padding: 15px; background: #0070f3; color: white; border: none; border-radius: 12px; font-weight: bold; cursor: pointer; }
-        #memberArea { display: none; }
-        #preview { width: 100%; max-width: 300px; margin: 20px 0; display: none; border-radius: 10px; }
-        .btn { width: 100%; padding: 15px; background: #222; color: white; border: 1px solid #444; border-radius: 10px; margin-top: 10px; cursor: pointer; }
+        .btn { width: 100%; padding: 15px; background: #0070f3; color: white; border: none; border-radius: 12px; font-weight: bold; cursor: pointer; margin-top: 10px; }
     </style>
 </head>
 <body>
-    <img src="logo1.png" style="width: 80px;">
     <h1>Resale IQ</h1>
-    
     <div class="card">
-        <p id="statusMsg">Loading...</p>
-        <button id="authBtn" style="display:none;">Sign In with Google</button>
-        
-        <div id="memberArea">
+        <p id="statusMsg">Connecting to system...</p>
+        <div id="authArea" style="display:none;">
+            <button class="btn" id="loginBtn">Sign In with Google</button>
+        </div>
+        <div id="memberArea" style="display:none;">
             <input type="file" id="cameraInput" accept="image/*" capture="environment" style="display:none;">
             <input type="file" id="fileInput" accept="image/*" style="display:none;">
-            
             <button class="btn" onclick="document.getElementById('cameraInput').click()">📷 Take New Photo</button>
             <button class="btn" onclick="document.getElementById('fileInput').click()">📂 Choose Existing File</button>
-            
-            <img id="preview">
-            
-            <button id="analyzeBtn" class="btn" style="background:#0070f3; display:none;">Analyze Item</button>
-            <div id="result" style="margin-top:20px; font-weight:bold;"></div>
-            
-            <button id="logoutBtn" class="btn" style="border:none; margin-top:30px;">Sign Out</button>
+            <br><br>
+            <button class="btn" style="background:#444;" id="logoutBtn">Sign Out</button>
         </div>
     </div>
 
@@ -52,18 +42,29 @@
 
         const auth = getAuth(app);
         const provider = new GoogleAuthProvider();
-        const cameraInput = document.getElementById('cameraInput');
-        const fileInput = document.getElementById('fileInput');
-        const preview = document.getElementById('preview');
-        const analyzeBtn = document.getElementById('analyzeBtn');
+
+        // Fallback: If it takes too long, just show the button anyway
+        setTimeout(() => {
+            if(document.getElementById('statusMsg').innerText === "Connecting to system...") {
+                document.getElementById('statusMsg').innerText = "System ready (Manual mode).";
+                document.getElementById('authArea').style.display = 'block';
+            }
+        }, 3000);
 
         onAuthStateChanged(auth, (user) => {
             if (user) {
                 document.getElementById('statusMsg').innerText = `Welcome, ${user.displayName}`;
-                document.getElementById('authBtn').style.display = 'none';
+                document.getElementById('authArea').style.display = 'none';
                 document.getElementById('memberArea').style.display = 'block';
             } else {
-                document.getElementById('statusMsg').innerText = "System ready.";
-                document.getElementById('authBtn').style.display = 'block';
+                document.getElementById('statusMsg').innerText = "Ready to Sign In.";
+                document.getElementById('authArea').style.display = 'block';
                 document.getElementById('memberArea').style.display = 'none';
-                document.getElementById('authBtn').onclick = () => signInWithPopup(auth,
+                document.getElementById('loginBtn').onclick = () => signInWithPopup(auth, provider);
+            }
+        });
+
+        document.getElementById('logoutBtn').onclick = () => signOut(auth);
+    </script>
+</body>
+</html>
