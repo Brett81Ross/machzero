@@ -8,10 +8,9 @@
         body { background: #050505; color: white; font-family: sans-serif; padding: 20px; text-align: center; }
         .card { background: #111; padding: 20px; border-radius: 20px; border: 1px solid #333; margin: 20px auto; max-width: 400px; }
         .btn { width: 100%; padding: 15px; background: #222; color: white; border: 1px solid #444; border-radius: 10px; margin-top: 10px; cursor: pointer; font-size: 16px; display: block; }
-        .analyze-btn { background: #0070f3 !important; font-weight: bold; margin-top: 20px; }
-        .copy-btn { background: #28a745 !important; margin-top: 10px; display: none; }
+        .analyze-btn { background: #0070f3 !important; font-weight: bold; margin-top: 20px; display: block; }
         #preview { width: 100%; border-radius: 10px; margin-top: 15px; display: none; }
-        #status { margin-top: 15px; font-size: 14px; color: #888; }
+        #status { margin-top: 15px; font-size: 14px; color: #aaa; }
         #result { margin-top: 20px; padding: 15px; background: #1a1a1a; border-radius: 10px; text-align: left; white-space: pre-wrap; color: #ddd; display: none; }
     </style>
 </head>
@@ -25,62 +24,68 @@
         <button id="analyzeBtn" class="btn analyze-btn">Analyze Item</button>
         <div id="status"></div>
         <div id="result"></div>
-        <button id="copyBtn" class="btn copy-btn">📋 Copy Listing Text</button>
     </div>
 
     <script>
         const mediaInput = document.getElementById('mediaInput');
-        const preview = document.getElementById('preview');
         const analyzeBtn = document.getElementById('analyzeBtn');
-        const copyBtn = document.getElementById('copyBtn');
         const status = document.getElementById('status');
         const result = document.getElementById('result');
+        const preview = document.getElementById('preview');
 
-        mediaInput.onchange = (e) => {
-            if (e.target.files[0]) {
+        mediaInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
                 preview.src = URL.createObjectURL(e.target.files[0]);
                 preview.style.display = 'block';
-                status.innerText = "Ready to analyze.";
+                status.innerText = "File loaded. Clicking 'Analyze'...";
             }
-        };
+        });
 
         analyzeBtn.onclick = async () => {
             const file = mediaInput.files[0];
-            if (!file) return alert("Select a photo!");
+            if (!file) {
+                status.innerText = "Error: Please pick a photo first.";
+                return;
+            }
 
-            status.innerText = "Analyzing: Resizing & Processing...";
-            analyzeBtn.disabled = true;
-
-            const img = new Image();
-            img.src = URL.createObjectURL(file);
-            img.onload = async () => {
+            status.innerText = "Processing...";
+            
+            try {
+                // Resize logic
                 const canvas = document.createElement('canvas');
+                const ctx = canvas.getContext('2d');
+                const img = new Image();
+                img.src = URL.createObjectURL(file);
+                
+                await img.decode();
+                
                 const scale = 800 / img.width;
-                canvas.width = 800; canvas.height = img.height * scale;
-                canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
+                canvas.width = 800;
+                canvas.height = img.height * scale;
+                ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
                 const base64 = canvas.toDataURL('image/jpeg', 0.7).split(',')[1];
 
-                try {
-                    const res = await fetch('/api/analyze', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ imageBase64: base64 })
-                    });
-                    const data = await res.json();
-                    if (data.candidates) {
-                        result.innerText = data.candidates[0].content.parts[0].text;
-                        result.style.display = 'block';
-                        copyBtn.style.display = 'block';
-                        status.innerText = "Done!";
-                    }
-                } catch (e) { status.innerText = "Error!"; }
-                finally { analyzeBtn.disabled = false; }
-            };
-        };
+                status.innerText = "Sending to Gemini 3.5...";
+                
+                const res = await fetch('/api/analyze', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ imageBase64: base64 })
+                });
 
-        copyBtn.onclick = () => {
-            navigator.clipboard.writeText(result.innerText);
-            alert("Copied!");
+                const data = await res.json();
+                
+                if (data.candidates && data.candidates[0].content) {
+                    result.innerText = data.candidates[0].content.parts[0].text;
+                    result.style.display = 'block';
+                    status.innerText = "Analysis Complete.";
+                } else {
+                    status.innerText = "Error: " + JSON.stringify(data);
+                }
+            } catch (err) {
+                status.innerText = "Fatal Error: " + err.message;
+                console.error(err);
+            }
         };
     </script>
 </body>
