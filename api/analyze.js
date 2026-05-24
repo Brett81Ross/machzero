@@ -3,7 +3,6 @@ export default async function handler(req, res) {
     
     try {
         const { imageBase64 } = req.body;
-        // Use the correct model ID for the new 3.5 series
         const MODEL = "gemini-3.5-flash"; 
         
         const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent?key=${process.env.GEMINI_API_KEY}`, {
@@ -11,7 +10,19 @@ export default async function handler(req, res) {
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
                 contents: [{ parts: [
-                    { text: "Analyze this item for resale: title, condition, and estimated value." },
+                    { text: `Analyze the item in the image and provide a professional, high-converting Facebook Marketplace listing in this exact format. Give me only the formatted text:
+
+TITLE: [Catchy Title - 60 chars max]
+
+PRICE: $[Suggested Price]
+
+DESCRIPTION:
+[Detailed, persuasive description of the item, features, and condition]
+
+CONDITION: [New/Used - Good/Fair/etc]
+
+---
+Copy and paste the above exactly as is.` },
                     { inline_data: { mime_type: "image/jpeg", data: imageBase64 } }
                 ]}]
             })
