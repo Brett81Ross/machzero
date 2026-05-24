@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Resale IQ</title>
-    <link class="apple-touch-icon" href="logo1.png">
+    <link rel="apple-touch-icon" href="logo1.png">
     <style>
         body { background: #050505; color: white; font-family: sans-serif; padding: 20px; text-align: center; }
         .card { background: #111; padding: 20px; border-radius: 20px; border: 1px solid #333; margin: 20px 0; }
@@ -53,10 +53,10 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        import { getAuth, signInWithRedirect, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
         import { getFirestore, doc, getDoc, setDoc, updateDoc, increment } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-        // Your verified Firebase connection details
+        // Verified Firebase connection configuration
         const firebaseConfig = {
             apiKey: "AIzaSyCHw58VHbvQxji437vYTxgakBHdRYiFVa0",
             authDomain: "resale-iq.firebaseapp.com",
@@ -101,123 +101,5 @@
                 if (userDoc.exists()) {
                     currentScans = userDoc.data().scanCount || 0;
                 } else {
-                    // Create base account sheet if it's their very first login
-                    await setDoc(userDocRef, { email: user.email, scanCount: 0, premium: false });
-                }
-
-                authStatus.innerHTML = `Signed in as: <b>${user.displayName}</b> <span class="badge">${currentScans}/3 Free Scans Used</span>`;
-            } else {
-                currentUser = null;
-                appInterface.style.display = 'none';
-                resultDiv.innerHTML = "";
-                authStatus.innerHTML = "Please log in to claim your 3 free monthly scans.";
-                authBtn.style.display = 'inline-block';
-                authBtn.innerText = "Sign In with Google";
-                authBtn.className = "btn-main";
-                authBtn.onclick = () => signInWithPopup(auth, provider).catch(err => alert("Login Error: " + err.message));
-            }
-        });
-
-        // Photo processing engine
-        function processImage(e) {
-            const file = e.target.files[0];
-            if (!file) return;
-
-            const reader = new FileReader();
-            reader.onload = function(event) {
-                const img = new Image();
-                img.onload = function() {
-                    const canvas = document.createElement('canvas');
-                    const MAX_WIDTH = 800; 
-                    const scale = MAX_WIDTH / img.width;
-                    canvas.width = MAX_WIDTH;
-                    canvas.height = img.height * scale;
-
-                    const ctx = canvas.getContext('2d');
-                    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-
-                    const dataUrl = canvas.toDataURL('image/jpeg', 0.7);
-                    base64 = dataUrl.split(',')[1];
-
-                    document.getElementById('preview').src = dataUrl;
-                    document.getElementById('preview').style.display = 'block';
-                    document.getElementById('analyzeBtn').style.display = 'block';
-                    resultDiv.innerText = ""; 
-                };
-                img.src = event.target.result;
-            };
-            reader.readAsDataURL(file);
-        }
-
-        document.getElementById('cameraInput').onchange = processImage;
-        document.getElementById('galleryInput').onchange = processImage;
-
-        // Secure Analyze Function with Database Gatekeeping
-        window.analyze = async function() {
-            if (!currentUser) return alert("Please log in first!");
-
-            btn.disabled = true;
-            resultDiv.innerText = "Checking account status...";
-
-            try {
-                const userDocRef = doc(db, "users", currentUser.uid);
-                const userDoc = await getDoc(userDocRef);
-                
-                let scanCount = 0;
-                let isPremium = false;
-
-                if (userDoc.exists()) {
-                    scanCount = userDoc.data().scanCount || 0;
-                    isPremium = userDoc.data().premium || false;
-                }
-
-                // If they hit their limit and aren't paid up, throw the paywall
-                if (scanCount >= 3 && !isPremium) {
-                    resultDiv.innerHTML = `
-                        <div class="card" style="border-color: #0070f3; background: #111;">
-                            <h3 style="color: #0070f3; margin-top:0;">🔒 Monthly Limit Reached</h3>
-                            <p>You have used your 3 free monthly scans. Upgrade to premium for unlimited item evaluations, historical logs, and priority response times!</p>
-                            <button class="btn-success" onclick="alert('Stripe Integration Coming Next!')">🚀 Go Premium - $9.99/mo</button>
-                        </div>
-                    `;
-                    return;
-                }
-
-                resultDiv.innerText = "Analyzing... please wait.";
-
-                // Fire query off to your Vercel backend route
-                const res = await fetch('/api/analyze', {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({ image: base64 })
-                });
-
-                if (!res.ok) throw new Error(`Server connection failed (Code: ${res.status}).`);
-                const data = await res.json();
-                if (data.error) throw new Error(data.error);
-
-                // Log and save user scan use inside the database counter
-                await updateDoc(userDocRef, { scanCount: increment(1) });
-                
-                // Live update the badge counter visually
-                const updatedCount = scanCount + 1;
-                authStatus.innerHTML = `Signed in as: <b>${currentUser.displayName}</b> <span class="badge">${updatedCount}/3 Free Scans Used</span>`;
-
-                let text = data.candidates[0].content.parts[0].text;
-                resultDiv.innerHTML = text.replace(/###\s/g, '').replace(/\n/g, '<br>');
-                resultDiv.innerHTML += '<br><button class="btn-secondary" id="copyBtn" style="margin-top:15px;">📋 Copy Listing</button>';
-                
-                document.getElementById('copyBtn').onclick = () => {
-                    const cleanText = resultDiv.innerText.replace("📋 Copy Listing", "");
-                    navigator.clipboard.writeText(cleanText).then(() => alert("Copied to clipboard!"));
-                };
-
-            } catch (error) {
-                resultDiv.innerHTML = `<b>Error:</b> ${error.message}`;
-            } finally {
-                btn.disabled = false;
-            }
-        }
-    </script>
-</body>
-</html>
+                    // Create base account entry if it's their first login
+                    await setDoc(userDocRef, { email: user.email, scanCount: 0,
