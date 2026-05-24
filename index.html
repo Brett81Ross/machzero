@@ -28,8 +28,8 @@
     <div class="card">
         <img id="preview" class="preview">
         
-        <input type="file" id="cameraInput" accept="image/*" capture="environment" style="display:none">
-        <input type="file" id="galleryInput" accept="image/*" style="display:none">
+        <input type="file" id="cameraInput" accept="image/*" capture="environment" style="display:none;">
+        <input type="file" id="galleryInput" accept="image/*" style="display:none;">
         
         <div class="button-row">
             <button class="btn-main" onclick="document.getElementById('cameraInput').click()">📷 Take Photo</button>
@@ -37,7 +37,6 @@
         </div>
         
         <button id="analyzeBtn" class="btn-success" style="display:none;" onclick="analyze()">🔍 Get Value</button>
-        <button id="copyBtn" class="btn-secondary" style="display:none;" onclick="copyListing()">📋 Copy Listing</button>
     </div>
     
     <div id="result"></div>
@@ -45,48 +44,45 @@
     <script>
         let base64 = "";
 
-        // The rock-solid file handler that worked previously
-        function processPhoto(event) {
-            const file = event.target.files[0];
+        // The original, working photo processor
+        function processImage(e) {
+            const file = e.target.files[0];
             if (!file) return;
 
-            // Reset the input so you can pick the same file again if needed
-            event.target.value = '';
-
             const reader = new FileReader();
-            reader.onload = function(e) {
+            reader.onload = function(event) {
                 const img = new Image();
                 img.onload = function() {
-                    // Shrink the image so Vercel doesn't crash on upload
+                    // Shrink it for Vercel
                     const canvas = document.createElement('canvas');
                     const MAX_WIDTH = 800; 
-                    const scaleSize = MAX_WIDTH / img.width;
+                    const scale = MAX_WIDTH / img.width;
                     canvas.width = MAX_WIDTH;
-                    canvas.height = img.height * scaleSize;
+                    canvas.height = img.height * scale;
 
                     const ctx = canvas.getContext('2d');
                     ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
 
+                    // Convert to string for the AI
                     const dataUrl = canvas.toDataURL('image/jpeg', 0.7);
                     base64 = dataUrl.split(',')[1];
 
-                    // Show the photo and the Analyze button
+                    // Instantly show preview and the analyze button
                     document.getElementById('preview').src = dataUrl;
                     document.getElementById('preview').style.display = 'block';
                     document.getElementById('analyzeBtn').style.display = 'block';
-                    document.getElementById('copyBtn').style.display = 'none';
                     document.getElementById('result').innerText = ""; 
                 };
-                img.src = e.target.result;
+                img.src = event.target.result;
             };
             reader.readAsDataURL(file);
         }
 
-        // Attach the listener exactly like the working test version
-        document.getElementById('cameraInput').addEventListener('change', processPhoto);
-        document.getElementById('galleryInput').addEventListener('change', processPhoto);
+        // Attach listeners directly
+        document.getElementById('cameraInput').onchange = processImage;
+        document.getElementById('galleryInput').onchange = processImage;
 
-        // The Analyze Function
+        // The Analyze connection
         async function analyze() {
             const resultDiv = document.getElementById('result');
             const btn = document.getElementById('analyzeBtn');
@@ -102,7 +98,7 @@
                 });
 
                 if (!res.ok) {
-                    throw new Error(`Server connection failed (Code: ${res.status}). Check your backend API file.`);
+                    throw new Error(`Server connection failed (Code: ${res.status}).`);
                 }
 
                 const data = await res.json();
@@ -113,7 +109,9 @@
 
                 let text = data.candidates[0].content.parts[0].text;
                 resultDiv.innerHTML = text.replace(/###\s/g, '').replace(/\n/g, '<br>');
-                document.getElementById('copyBtn').style.display = 'block';
+                
+                // Add the copy button to the bottom of the results
+                resultDiv.innerHTML += '<br><button class="btn-secondary" onclick="copyListing()" style="margin-top:15px;">📋 Copy Listing</button>';
                 
             } catch (error) {
                 resultDiv.innerHTML = `<b>Error:</b> ${error.message}`;
@@ -123,7 +121,7 @@
         }
 
         function copyListing() {
-            const text = document.getElementById('result').innerText;
+            const text = document.getElementById('result').innerText.replace("📋 Copy Listing", "");
             navigator.clipboard.writeText(text).then(() => alert("Copied to clipboard!"));
         }
     </script>
