@@ -8,17 +8,24 @@
         body { background: #050505; color: white; font-family: sans-serif; padding: 20px; text-align: center; }
         .card { background: #111; padding: 20px; border-radius: 20px; border: 1px solid #333; margin: 20px 0; }
         #authBtn { width: 100%; padding: 15px; background: #0070f3; color: white; border: none; border-radius: 12px; font-weight: bold; cursor: pointer; }
+        #memberArea { display: none; text-align: left; }
+        input { width: 100%; padding: 10px; margin: 10px 0; border-radius: 5px; border: 1px solid #444; background: #222; color: white; }
     </style>
 </head>
 <body>
     <img src="logo1.png" style="width: 80px;">
     <h1>Resale IQ</h1>
+    
     <div class="card">
-        <p id="statusMsg">Loading system...</p>
+        <p id="statusMsg">Loading...</p>
         <button id="authBtn" style="display:none;">Sign In with Google</button>
-        <div id="memberArea" style="display:none;">
-            <h3>Your Dashboard</h3>
-            <button id="logoutBtn">Sign Out</button>
+        
+        <div id="memberArea">
+            <h3>Item Tracker</h3>
+            <input type="text" id="itemInput" placeholder="Enter item name...">
+            <button id="saveBtn" style="background:#0070f3; color:white; border:none; padding:10px; width:100%;">Save Item</button>
+            <ul id="itemList" style="margin-top:20px;"></ul>
+            <button id="logoutBtn" style="background:#444; border:none; padding:10px; color:white; border-radius:5px; margin-top:20px;">Sign Out</button>
         </div>
     </div>
 
@@ -26,40 +33,42 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
-        try {
-            const app = initializeApp({
-                apiKey: "AIzaSyCHw58VHbvQxji437vYTxgakBHdRYiFVa0",
-                authDomain: "resale-iq.firebaseapp.com",
-                projectId: "resale-iq",
-                storageBucket: "resale-iq.firebasestorage.app",
-                messagingSenderId: "496480241751",
-                appId: "1:496480241751:web:148d1da5cd3e322edcbb12"
-            });
+        const app = initializeApp({
+            apiKey: "AIzaSyCHw58VHbvQxji437vYTxgakBHdRYiFVa0",
+            authDomain: "resale-iq.firebaseapp.com",
+            projectId: "resale-iq",
+            storageBucket: "resale-iq.firebasestorage.app",
+            messagingSenderId: "496480241751",
+            appId: "1:496480241751:web:148d1da5cd3e322edcbb12"
+        });
 
-            const auth = getAuth(app);
-            const provider = new GoogleAuthProvider();
+        const auth = getAuth(app);
+        const provider = new GoogleAuthProvider();
 
-            onAuthStateChanged(auth, (user) => {
-                const status = document.getElementById('statusMsg');
-                const btn = document.getElementById('authBtn');
-                const memberArea = document.getElementById('memberArea');
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                document.getElementById('statusMsg').innerHTML = `Welcome, <b>${user.displayName}</b>!`;
+                document.getElementById('authBtn').style.display = 'none';
+                document.getElementById('memberArea').style.display = 'block';
+            } else {
+                document.getElementById('statusMsg').innerText = "System ready.";
+                document.getElementById('authBtn').style.display = 'block';
+                document.getElementById('memberArea').style.display = 'none';
+                document.getElementById('authBtn').onclick = () => signInWithPopup(auth, provider);
+            }
+        });
 
-                if (user) {
-                    status.innerHTML = `Welcome, <b>${user.displayName}</b>!`;
-                    btn.style.display = 'none';
-                    memberArea.style.display = 'block';
-                } else {
-                    status.innerText = "System ready.";
-                    btn.style.display = 'block';
-                    memberArea.style.display = 'none';
-                    btn.onclick = () => signInWithPopup(auth, provider);
-                }
-            });
+        document.getElementById('saveBtn').onclick = () => {
+            const item = document.getElementById('itemInput').value;
+            if(item) {
+                const li = document.createElement('li');
+                li.textContent = item;
+                document.getElementById('itemList').appendChild(li);
+                document.getElementById('itemInput').value = '';
+            }
+        };
 
-            document.getElementById('logoutBtn').onclick = () => signOut(auth);
-        } catch (e) {
-            document.getElementById('statusMsg').innerText = "Critical Error: " + e.message;
-        }
+        document.getElementById('logoutBtn').onclick = () => signOut(auth);
     </script>
 </body>
 </html>
