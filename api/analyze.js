@@ -1,46 +1,45 @@
-export default async function handler(req, res) {
-  if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
+async function analyzeImage() {
+    const btn = document.getElementById('analyzeBtn');
+    const res = document.getElementById('result');
+    
+    // Step 1: Tell the user exactly what is happening
+    btn.disabled = true;
+    res.innerHTML = `
+        <div style="text-align: left; opacity: 0.8;">
+            <p><strong>Step 1:</strong> Scanning image features...</p>
+            <p><strong>Step 2:</strong> Identifying brand and model...</p>
+            <p><strong>Step 3:</strong> Searching live market data...</p>
+            <p><strong>Step 4:</strong> Generating your listing description...</p>
+        </div>
+    `;
 
-  const { image } = req.body;
-  const apiKey = process.env.GEMINI_API_KEY;
+    try {
+        const response = await fetch('/api/analyze', { 
+            method: 'POST', 
+            headers: {'Content-Type': 'application/json'}, 
+            body: JSON.stringify({ image: resizedBase64 })
+        });
+        const data = await response.json();
+        
+        if (!data.candidates) throw new Error("AI analysis failed.");
 
-  if (!apiKey) return res.status(500).json({ error: "Server Configuration Error: API Key missing." });
-  if (!image) return res.status(400).json({ error: 'No image data received.' });
-
-  const prompt = `Act as a resale expert. Analyze this image. Return the output in this format:
-### 📦 Item Identification
-[Name/Model]
-### 💰 Estimated Market Value
-[Price range USD]
-### 🔗 Live Market Comparisons
-[Provide 3-5 links to similar listings]
-### 📝 Professional Resale Description
-[SEO-friendly description]
-### 💡 Pro-Tips for Selling
-- [3 tips]
-### 📋 Listing Data
-Title: [Title]
-Price: [Price]
-Description: [Description for copy/paste]`;
-
-  try {
-    // Corrected to gemini-3.5-flash
-    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent?key=${apiKey}`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        contents: [{ parts: [{ text: prompt }, { inline_data: { mime_type: "image/jpeg", data: image } }] }]
-      })
-    });
-
-    const data = await response.json();
-
-    if (!response.ok) {
-        throw new Error(data.error?.message || "Gemini API request failed.");
+        let text = data.candidates[0].content.parts[0].text;
+        
+        // Clean and format the output
+        text = text.replace(/###\s/g, '').replace(/📦 Item Identification/g, '<h3>📦 Item Identification</h3>')
+                   .replace(/💰 Estimated Market Value/g, '<h3>💰 Estimated Market Value</h3>')
+                   .replace(/🔗 Live Market Comparisons/g, '<div class="links-box"><h3>🔗 Live Market Comparisons</h3>')
+                   .replace(/📝 Professional Resale Description/g, '</div><div class="desc-box"><h3>📝 Professional Resale Description</h3>')
+                   .replace(/💡 Pro-Tips for Selling/g, '</div><div class="tips-box"><h3>💡 Pro-Tips for Selling</h3>')
+                   .replace(/📋 Listing Data/g, '</div><div class="listing-data-box"><h3>📋 Listing Data</h3>') + '</div>';
+        
+        res.innerHTML = text.replace(/\n/g, '<br>');
+        document.getElementById('copyBtn').style.display = 'block';
+        
+    } catch (err) {
+        res.innerHTML = "<b>Error:</b> " + err.message + "<br>Please try taking a clearer photo.";
+    } finally {
+        btn.innerText = "🔍 Get Value"; 
+        btn.disabled = false;
     }
-
-    return res.status(200).json(data);
-  } catch (error) {
-    return res.status(500).json({ error: error.message });
-  }
 }
