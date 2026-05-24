@@ -11,7 +11,7 @@
         .analyze-btn { background: #0070f3; font-weight: bold; }
         #preview { width: 100%; border-radius: 10px; margin: 10px 0; display: none; }
         #result { background: #1a1a1a; padding: 15px; border-radius: 10px; margin-top: 20px; text-align: left; display: none; white-space: pre-wrap; font-size: 14px; }
-        #status { margin-top: 10px; font-size: 14px; color: #ff4444; }
+        #status { margin-top: 10px; color: #ffcc00; }
     </style>
 </head>
 <body>
@@ -26,57 +26,57 @@
     </div>
 
     <script>
-        const fileInput = document.getElementById('fileInput');
-        const preview = document.getElementById('preview');
-        const analyzeBtn = document.getElementById('analyzeBtn');
-        const status = document.getElementById('status');
-        const result = document.getElementById('result');
+        const fileInput = document.getElementById('fileInput'),
+              preview = document.getElementById('preview'),
+              analyzeBtn = document.getElementById('analyzeBtn'),
+              status = document.getElementById('status'),
+              result = document.getElementById('result');
 
         fileInput.onchange = (e) => {
-            const file = e.target.files[0];
-            preview.src = URL.createObjectURL(file);
+            preview.src = URL.createObjectURL(e.target.files[0]);
             preview.style.display = 'block';
             status.innerText = "";
         };
 
         analyzeBtn.onclick = async () => {
-            if (!preview.src.startsWith('blob:')) return alert("Select photo first!");
-            
-            status.innerText = "Analyzing...";
+            if (!preview.src.startsWith('blob:')) return alert("Pick a photo first!");
+            status.innerText = "Analyzing... (Please wait)";
             analyzeBtn.disabled = true;
-            result.style.display = 'none';
-
-            // Resize image to prevent 413 Payload Too Large error
-            const img = new Image();
-            img.src = preview.src;
-            await img.decode();
-            const canvas = document.createElement('canvas');
-            const MAX_WIDTH = 800;
-            canvas.width = MAX_WIDTH;
-            canvas.height = img.height * (MAX_WIDTH / img.width);
-            canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
-            const base64 = canvas.toDataURL('image/jpeg', 0.6).split(',')[1];
 
             try {
+                // Resize image
+                const img = new Image();
+                img.src = preview.src;
+                await img.decode();
+                const canvas = document.createElement('canvas');
+                canvas.width = 800;
+                canvas.height = img.height * (800 / img.width);
+                canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
+                const base64 = canvas.toDataURL('image/jpeg', 0.6).split(',')[1];
+
+                // Fetch with manual timeout logic
+                const controller = new AbortController();
+                const timeout = setTimeout(() => controller.abort(), 20000);
+
                 const res = await fetch('/api/analyze', {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({ imageBase64: base64 })
+                    body: JSON.stringify({ imageBase64: base64 }),
+                    signal: controller.signal
                 });
                 
+                clearTimeout(timeout);
                 const data = await res.json();
                 
                 if (res.ok && data.candidates) {
                     result.innerText = data.candidates[0].content.parts[0].text;
                     result.style.display = 'block';
-                    status.innerText = "Done!";
+                    status.innerText = "Analysis Complete!";
                 } else {
-                    // Display actual error message from server
-                    const errMsg = data.error || "Failed to analyze";
-                    status.innerText = "Error: " + errMsg;
+                    status.innerText = "Error: " + (data.error || "Unknown response");
                 }
             } catch (e) {
-                status.innerText = "Connection Error: " + e.message;
+                status.innerText = e.name === 'AbortError' ? "Error: Connection Timed Out" : "Error: " + e.message;
             } finally {
                 analyzeBtn.disabled = false;
             }
