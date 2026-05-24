@@ -22,11 +22,17 @@
         <button id="authBtn" style="display:none;">Sign In with Google</button>
         
         <div id="memberArea">
-            <input type="file" id="fileInput" accept="image/*" style="display:none;">
-            <button class="btn" onclick="document.getElementById('fileInput').click()">📷 Take Photo / Upload</button>
+            <input type="file" id="fileInput" accept="image/*" capture="environment" style="display:none;">
+            
+            <button class="btn" onclick="document.getElementById('fileInput').click()">
+                📷 Take Photo / Upload
+            </button>
+            
             <img id="preview">
+            
             <button id="analyzeBtn" class="btn" style="background:#0070f3; display:none;">Analyze Item</button>
-            <div id="result"></div>
+            <div id="result" style="margin-top:20px; font-weight:bold;"></div>
+            
             <button id="logoutBtn" class="btn" style="border:none; margin-top:30px;">Sign Out</button>
         </div>
     </div>
