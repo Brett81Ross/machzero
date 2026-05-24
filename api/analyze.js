@@ -1,34 +1,27 @@
 export default async function handler(req, res) {
-    if (req.method !== 'POST') return res.status(405).end();
+    const { imageBase64, user_id } = req.body;
 
-    try {
-        const { imageBase64 } = req.body;
-        const MODEL = "gemini-3.5-flash"; 
-        const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent?key=${process.env.GEMINI_API_KEY}`;
+    // 1. Check scan count in Supabase
+    const { data: userRecord } = await supabase
+        .from('user_scans')
+        .select('count')
+        .eq('user_id', user_id)
+        .single();
 
-        const response = await fetch(API_URL, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-                contents: [{
-                    parts: [
-                        { text: "Analyze the item in the image. Output ONLY the text exactly as it should appear in a marketplace listing. Format: TITLE, PRICE, DESCRIPTION, CONDITION, WHERE TO SELL." },
-                        { inline_data: { mime_type: "image/jpeg", data: imageBase64 } }
-                    ]
-                }]
-            })
-        });
+    const currentCount = userRecord ? userRecord.count : 0;
 
-        const data = await response.json();
-
-        if (data.candidates && data.candidates[0].content.parts[0].text) {
-            res.status(200).json(data);
-        } else {
-            // This is the line that will tell you what's wrong in the logs
-            console.error("API Error Log:", JSON.stringify(data));
-            res.status(500).json({ error: "No data returned" });
-        }
-    } catch (err) {
-        res.status(500).json({ error: err.message });
+    // 2. The 7-scan limit
+    if (currentCount >= 7) {
+        return res.status(403).json({ error: "Free scans used up for this month." });
     }
+
+    // 3. ... [Perform Gemini Analysis Here] ...
+
+    // 4. If successful, increment count
+    await supabase
+        .from('user_scans')
+        .update({ count: currentCount + 1 })
+        .eq('user_id', user_id);
+
+    return res.status(200).json(geminiResult);
 }
