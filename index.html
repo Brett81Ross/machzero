@@ -5,45 +5,64 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0">
     <title>Resale IQ</title>
     <link rel="apple-touch-icon" href="logo1.png">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-title" content="Resale IQ">
-
+    
     <style>
-        :root { --accent: #0070f3; --bg: #050505; --card: rgba(255, 255, 255, 0.08); }
-        body { font-family: -apple-system, system-ui, sans-serif; background: var(--bg); color: #fff; margin: 0; padding: 20px; }
-        .container { width: 100%; max-width: 500px; margin: 0 auto; padding-bottom: 250px; }
-        .header { text-align: center; margin: 20px 0; }
-        .logo { max-width: 140px; }
-        .card { background: var(--card); padding: 20px; border-radius: 20px; border: 1px solid #333; }
-        #result { margin-top: 20px; word-wrap: break-word; }
-        .btn { width: 100%; max-width: 400px; padding: 15px; border-radius: 14px; border: none; font-weight: 700; font-size: 16px; cursor: pointer; margin-bottom: 10px; display: block; }
+        :root { --accent: #0070f3; --bg: #050505; --card: #111; }
+        body { font-family: -apple-system, sans-serif; background: var(--bg); color: #fff; margin: 0; padding: 20px; }
+        .container { max-width: 500px; margin: 0 auto; text-align: center; }
+        
+        /* Header Section */
+        .logo { width: 80px; margin-bottom: 10px; }
+        h1 { font-size: 32px; margin: 0; }
+        p { color: #888; margin-bottom: 30px; }
+        
+        /* Main Upload Card */
+        .upload-card { 
+            background: var(--card); border: 2px dashed #333; padding: 40px 20px; 
+            border-radius: 24px; margin-bottom: 20px; 
+        }
+        
+        /* Action Buttons Grid */
+        .button-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 20px; }
+        .btn { padding: 20px; border-radius: 16px; border: none; font-weight: 600; cursor: pointer; }
         .btn-main { background: var(--accent); color: white; }
-        .btn-secondary { background: #444; color: white; }
+        .btn-secondary { background: #222; color: white; border: 1px solid #444; }
+        
+        /* Analysis Results Styling */
+        #result { margin-top: 20px; text-align: left; }
         .file-input { display: none; }
-        .links-box, .desc-box, .tips-box, .listing-data-box { background: rgba(255,255,255,0.05); padding: 10px; border-radius: 12px; margin-bottom: 10px; }
+        .info-footer { color: #555; font-size: 14px; margin-top: 20px; }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="header"><img src="logo1.png" class="logo"><h1>Resale IQ</h1></div>
-        <div class="card">
-            <img id="imagePreview" style="width:100%; display:none; border-radius:12px;">
-            <div id="result">Waiting for input...</div>
-        </div>
-    </div>
 
-    <div style="position: fixed; bottom: 0; left: 0; right: 0; padding: 20px; background: #000; border-top: 1px solid #333;">
+    <div class="container">
+        <div class="header">
+            <img src="logo1.png" class="logo">
+            <h1>Snap it. Sell it.</h1>
+            <p>Take or upload a photo — AI does the rest.</p>
+        </div>
+
+        <div class="upload-card">
+            <img id="imagePreview" style="width:100%; display:none; border-radius:12px; margin-bottom:15px;">
+            <div id="result">
+                <div class="button-grid">
+                    <button class="btn btn-main" onclick="document.getElementById('cameraInput').click()">📷 Take Photo</button>
+                    <button class="btn btn-secondary" onclick="document.getElementById('galleryInput').click()">📂 Choose File</button>
+                </div>
+            </div>
+            <p class="info-footer">✨ AI will identify the item and analyze everything automatically</p>
+        </div>
+
         <input type="file" id="cameraInput" class="file-input" accept="image/*" capture="environment">
         <input type="file" id="galleryInput" class="file-input" accept="image/*">
-        <button class="btn btn-main" onclick="document.getElementById('cameraInput').click()">📷 Take Photo</button>
-        <button class="btn btn-secondary" onclick="document.getElementById('galleryInput').click()">📂 Choose Photo</button>
-        <button id="analyzeBtn" class="btn btn-main" style="display:none; background:#28a745;" onclick="analyzeImage()">🔍 Get Value</button>
-        <button id="copyBtn" class="btn btn-secondary" style="display:none;" onclick="copyListing()">📋 Copy Listing</button>
+        
+        <button id="analyzeBtn" class="btn btn-main" style="width:100%; display:none; margin-bottom:10px;" onclick="analyzeImage()">🔍 Get Value</button>
+        <button id="copyBtn" class="btn btn-secondary" style="width:100%; display:none;" onclick="copyListing()">📋 Copy Listing</button>
     </div>
 
     <script>
         let resizedBase64 = "";
-        const resultDiv = document.getElementById('result');
 
         function handleFile(file) {
             const reader = new FileReader();
@@ -51,13 +70,12 @@
                 const img = new Image();
                 img.onload = () => {
                     const canvas = document.createElement('canvas');
-                    canvas.width = 600; canvas.height = (600 / img.width) * img.height;
+                    canvas.width = 800; canvas.height = (800 / img.width) * img.height;
                     canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
-                    resizedBase64 = canvas.toDataURL('image/jpeg', 0.6).split(',')[1];
+                    resizedBase64 = canvas.toDataURL('image/jpeg', 0.7).split(',')[1];
                     document.getElementById('imagePreview').src = canvas.toDataURL();
                     document.getElementById('imagePreview').style.display = 'block';
                     document.getElementById('analyzeBtn').style.display = 'block';
-                    resultDiv.innerText = "Photo loaded. Ready to analyze.";
                 };
                 img.src = e.target.result;
             };
@@ -68,30 +86,29 @@
         document.getElementById('galleryInput').onchange = (e) => e.target.files[0] && handleFile(e.target.files[0]);
 
         async function analyzeImage() {
-            resultDiv.innerHTML = "Analyzing, please wait...";
+            const btn = document.getElementById('analyzeBtn');
+            const res = document.getElementById('result');
+            btn.disabled = true;
+            res.innerHTML = "<p><i>Step 1: Analyzing image features...<br>Step 2: Checking market values...</i></p>";
+
             try {
                 const response = await fetch('/api/analyze', { 
-                    method: 'POST', 
-                    headers: {'Content-Type': 'application/json'}, 
+                    method: 'POST', headers: {'Content-Type': 'application/json'}, 
                     body: JSON.stringify({ image: resizedBase64 })
                 });
                 const data = await response.json();
-                
-                if (!data.candidates) throw new Error("No response from AI");
-
                 let text = data.candidates[0].content.parts[0].text;
+                
+                // Formatting
                 text = text.replace(/###\s/g, '').replace(/📦 Item Identification/g, '<h3>📦 Item Identification</h3>')
                            .replace(/💰 Estimated Market Value/g, '<h3>💰 Estimated Market Value</h3>')
                            .replace(/🔗 Live Market Comparisons/g, '<div class="links-box"><h3>🔗 Live Market Comparisons</h3>')
                            .replace(/📝 Professional Resale Description/g, '</div><div class="desc-box"><h3>📝 Professional Resale Description</h3>')
-                           .replace(/💡 Pro-Tips for Selling/g, '</div><div class="tips-box"><h3>💡 Pro-Tips for Selling</h3>')
-                           .replace(/📋 Listing Data/g, '</div><div class="listing-data-box"><h3>📋 Listing Data</h3>') + '</div>';
+                           .replace(/📋 Listing Data/g, '</div><div class="listing-data-box" style="border: 1px solid #444; padding:10px; border-radius:10px;"><h3>📋 Listing Data</h3>') + '</div>';
                 
-                resultDiv.innerHTML = text.replace(/\n/g, '<br>');
+                res.innerHTML = text.replace(/\n/g, '<br>');
                 document.getElementById('copyBtn').style.display = 'block';
-            } catch (err) {
-                resultDiv.innerHTML = "<b>Error:</b> " + err.message;
-            }
+            } catch (err) { res.innerHTML = "Error analyzing. Please try again."; }
         }
 
         function copyListing() {
