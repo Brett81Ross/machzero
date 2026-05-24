@@ -26,53 +26,41 @@
 
     <script>
         document.getElementById('analyzeBtn').addEventListener('click', async () => {
-            const fileInput = document.getElementById('fileInput');
-            const file = fileInput.files[0];
+            const file = document.getElementById('fileInput').files[0];
+            if (!file) return alert("Select a photo first!");
+            document.getElementById('result').innerText = "Processing...";
             
-            if (!file) {
-                alert("Please select a photo first!");
-                return;
-            }
-            
-            document.getElementById('result').innerText = "Processing image...";
-            
-            try {
-                const reader = new FileReader();
-                reader.readAsDataURL(file);
-                
-                reader.onload = (e) => {
-                    const img = new Image();
-                    img.src = e.target.result;
-                    img.onload = async () => {
-                        const canvas = document.createElement('canvas');
-                        const scale = 800 / img.width;
-                        canvas.width = 800;
-                        canvas.height = img.height * scale;
-                        const ctx = canvas.getContext('2d');
-                        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-                        
-                        const base64 = canvas.toDataURL('image/jpeg', 0.7).split(',')[1];
-                        
-                        document.getElementById('result').innerText = "Sending to AI...";
-                        
-                        const response = await fetch(window.location.origin + '/api/analyze', {
+            const reader = new FileReader();
+            reader.readAsDataURL(file);
+            reader.onload = (e) => {
+                const img = new Image();
+                img.src = e.target.result;
+                img.onload = async () => {
+                    const canvas = document.createElement('canvas');
+                    const MAX_WIDTH = 800;
+                    const scale = MAX_WIDTH / img.width;
+                    canvas.width = MAX_WIDTH;
+                    canvas.height = img.height * scale;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                    
+                    const base64 = canvas.toDataURL('image/jpeg', 0.7).split(',')[1];
+                    
+                    try {
+                        const response = await fetch('/api/analyze', {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
                             body: JSON.stringify({ imageBase64: base64 })
                         });
-                        
                         const data = await response.json();
-                        if (data.candidates && data.candidates[0].content.parts[0].text) {
-                            document.getElementById('result').innerText = data.candidates[0].content.parts[0].text;
-                        } else {
-                            document.getElementById('result').innerText = "AI Error: " + JSON.stringify(data);
-                        }
-                    };
+                        document.getElementById('result').innerText = data.candidates 
+                            ? data.candidates[0].content.parts[0].text 
+                            : "Error: AI didn't return data.";
+                    } catch (err) {
+                        document.getElementById('result').innerText = "Error: Backend unreachable.";
+                    }
                 };
-            } catch (err) {
-                alert("App Error: " + err.message);
-                document.getElementById('result').innerText = "Error: " + err.message;
-            }
+            };
         });
     </script>
 </body>
