@@ -8,8 +8,9 @@
         body { background: #050505; color: white; font-family: sans-serif; padding: 20px; text-align: center; }
         .card { background: #111; padding: 20px; border-radius: 20px; border: 1px solid #333; margin: 20px 0; }
         #authBtn { width: 100%; padding: 15px; background: #0070f3; color: white; border: none; border-radius: 12px; font-weight: bold; cursor: pointer; }
-        #memberArea { display: none; }
+        #memberArea { display: none; text-align: left; }
         .btn { width: 100%; padding: 15px; background: #222; color: white; border: 1px solid #444; border-radius: 10px; margin-top: 10px; cursor: pointer; }
+        #result { margin-top: 20px; padding: 15px; background: #1a1a1a; border-radius: 10px; white-space: pre-wrap; }
     </style>
 </head>
 <body>
@@ -24,6 +25,13 @@
         <div id="memberArea">
             <h3>Your Dashboard</h3>
             <p>Welcome, <span id="userName"></span>!</p>
+            
+            <input type="file" id="fileInput" accept="image/*" style="display:none;">
+            <button class="btn" onclick="document.getElementById('fileInput').click()">📷 Take Photo / Upload</button>
+            <button id="analyzeBtn" class="btn" style="background:#0070f3;">Analyze Item</button>
+            
+            <div id="result"></div>
+            
             <button id="logoutBtn" class="btn" style="background:#444;">Sign Out</button>
         </div>
     </div>
@@ -61,6 +69,29 @@
                 authBtn.onclick = () => signInWithPopup(auth, provider);
             }
         });
+
+        document.getElementById('analyzeBtn').onclick = async () => {
+            const fileInput = document.getElementById('fileInput');
+            if (!fileInput.files[0]) return alert("Please select a photo first!");
+            
+            document.getElementById('result').innerText = "Analyzing...";
+            
+            const reader = new FileReader();
+            reader.readAsDataURL(fileInput.files[0]);
+            reader.onloadend = async () => {
+                try {
+                    const response = await fetch('/api/analyze', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ imageBase64: reader.result.split(',')[1] })
+                    });
+                    const data = await response.json();
+                    document.getElementById('result').innerText = data.candidates[0].content.parts[0].text;
+                } catch (e) {
+                    document.getElementById('result').innerText = "Error: Could not reach backend.";
+                }
+            };
+        };
 
         document.getElementById('logoutBtn').onclick = () => signOut(auth);
     </script>
