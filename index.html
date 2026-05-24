@@ -5,57 +5,40 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0">
     <title>Resale IQ</title>
     <link rel="apple-touch-icon" href="logo1.png">
-    
     <style>
         :root { --accent: #0070f3; --bg: #050505; --card: #111; }
         body { font-family: -apple-system, sans-serif; background: var(--bg); color: #fff; margin: 0; padding: 20px; }
         .container { max-width: 500px; margin: 0 auto; text-align: center; }
-        
-        /* Header Section */
         .logo { width: 80px; margin-bottom: 10px; }
         h1 { font-size: 32px; margin: 0; }
         p { color: #888; margin-bottom: 30px; }
-        
-        /* Main Upload Card */
-        .upload-card { 
-            background: var(--card); border: 2px dashed #333; padding: 40px 20px; 
-            border-radius: 24px; margin-bottom: 20px; 
-        }
-        
-        /* Action Buttons Grid */
+        .upload-card { background: var(--card); border: 2px dashed #333; padding: 40px 20px; border-radius: 24px; margin-bottom: 20px; }
         .button-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 20px; }
         .btn { padding: 20px; border-radius: 16px; border: none; font-weight: 600; cursor: pointer; }
         .btn-main { background: var(--accent); color: white; }
         .btn-secondary { background: #222; color: white; border: 1px solid #444; }
-        
-        /* Analysis Results Styling */
+        .hidden { display: none; }
         #result { margin-top: 20px; text-align: left; }
-        .file-input { display: none; }
-        .info-footer { color: #555; font-size: 14px; margin-top: 20px; }
     </style>
 </head>
 <body>
 
     <div class="container">
-        <div class="header">
-            <img src="logo1.png" class="logo">
-            <h1>Snap it. Sell it.</h1>
-            <p>Take or upload a photo — AI does the rest.</p>
-        </div>
+        <img src="logo1.png" class="logo">
+        <h1>Snap it. Sell it.</h1>
+        <p>Take or upload a photo — AI does the rest.</p>
 
         <div class="upload-card">
             <img id="imagePreview" style="width:100%; display:none; border-radius:12px; margin-bottom:15px;">
-            <div id="result">
-                <div class="button-grid">
-                    <button class="btn btn-main" onclick="document.getElementById('cameraInput').click()">📷 Take Photo</button>
-                    <button class="btn btn-secondary" onclick="document.getElementById('galleryInput').click()">📂 Choose File</button>
-                </div>
+            <div id="ui-buttons" class="button-grid">
+                <button class="btn btn-main" onclick="document.getElementById('cameraInput').click()">📷 Take Photo</button>
+                <button class="btn btn-secondary" onclick="document.getElementById('galleryInput').click()">📂 Choose File</button>
             </div>
-            <p class="info-footer">✨ AI will identify the item and analyze everything automatically</p>
+            <div id="result"></div>
         </div>
 
-        <input type="file" id="cameraInput" class="file-input" accept="image/*" capture="environment">
-        <input type="file" id="galleryInput" class="file-input" accept="image/*">
+        <input type="file" id="cameraInput" class="hidden" accept="image/*" capture="environment">
+        <input type="file" id="galleryInput" class="hidden" accept="image/*">
         
         <button id="analyzeBtn" class="btn btn-main" style="width:100%; display:none; margin-bottom:10px;" onclick="analyzeImage()">🔍 Get Value</button>
         <button id="copyBtn" class="btn btn-secondary" style="width:100%; display:none;" onclick="copyListing()">📋 Copy Listing</button>
@@ -89,7 +72,7 @@
             const btn = document.getElementById('analyzeBtn');
             const res = document.getElementById('result');
             btn.disabled = true;
-            res.innerHTML = "<p><i>Step 1: Analyzing image features...<br>Step 2: Checking market values...</i></p>";
+            res.innerHTML = "<p>Analyzing... please wait.</p>";
 
             try {
                 const response = await fetch('/api/analyze', { 
@@ -97,24 +80,15 @@
                     body: JSON.stringify({ image: resizedBase64 })
                 });
                 const data = await response.json();
+                if (data.error) throw new Error(data.error);
+                
                 let text = data.candidates[0].content.parts[0].text;
-                
-                // Formatting
-                text = text.replace(/###\s/g, '').replace(/📦 Item Identification/g, '<h3>📦 Item Identification</h3>')
-                           .replace(/💰 Estimated Market Value/g, '<h3>💰 Estimated Market Value</h3>')
-                           .replace(/🔗 Live Market Comparisons/g, '<div class="links-box"><h3>🔗 Live Market Comparisons</h3>')
-                           .replace(/📝 Professional Resale Description/g, '</div><div class="desc-box"><h3>📝 Professional Resale Description</h3>')
-                           .replace(/📋 Listing Data/g, '</div><div class="listing-data-box" style="border: 1px solid #444; padding:10px; border-radius:10px;"><h3>📋 Listing Data</h3>') + '</div>';
-                
                 res.innerHTML = text.replace(/\n/g, '<br>');
                 document.getElementById('copyBtn').style.display = 'block';
-            } catch (err) { res.innerHTML = "Error analyzing. Please try again."; }
+            } catch (err) { res.innerHTML = "Error analyzing. Please check your API key in Vercel settings."; }
+            finally { btn.disabled = false; }
         }
 
         function copyListing() {
-            const el = document.querySelector('.listing-data-box');
-            if (el) navigator.clipboard.writeText(el.innerText).then(() => alert("Copied!"));
-        }
-    </script>
-</body>
-</html>
+            const el = document.getElementById('result');
+            navigator.clipboard
