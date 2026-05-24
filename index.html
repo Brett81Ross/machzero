@@ -22,11 +22,11 @@
         <button id="authBtn" style="display:none;">Sign In with Google</button>
         
         <div id="memberArea">
-            <input type="file" id="fileInput" accept="image/*" capture="environment" style="display:none;">
+            <input type="file" id="cameraInput" accept="image/*" capture="environment" style="display:none;">
+            <input type="file" id="fileInput" accept="image/*" style="display:none;">
             
-            <button class="btn" onclick="document.getElementById('fileInput').click()">
-                📷 Take Photo / Upload
-            </button>
+            <button class="btn" onclick="document.getElementById('cameraInput').click()">📷 Take New Photo</button>
+            <button class="btn" onclick="document.getElementById('fileInput').click()">📂 Choose Existing File</button>
             
             <img id="preview">
             
@@ -52,6 +52,7 @@
 
         const auth = getAuth(app);
         const provider = new GoogleAuthProvider();
+        const cameraInput = document.getElementById('cameraInput');
         const fileInput = document.getElementById('fileInput');
         const preview = document.getElementById('preview');
         const analyzeBtn = document.getElementById('analyzeBtn');
@@ -65,24 +66,4 @@
                 document.getElementById('statusMsg').innerText = "System ready.";
                 document.getElementById('authBtn').style.display = 'block';
                 document.getElementById('memberArea').style.display = 'none';
-                document.getElementById('authBtn').onclick = () => signInWithPopup(auth, provider);
-            }
-        });
-
-        fileInput.onchange = (e) => {
-            const file = e.target.files[0];
-            if (file) {
-                preview.src = URL.createObjectURL(file);
-                preview.style.display = 'block';
-                analyzeBtn.style.display = 'block';
-            }
-        };
-
-        analyzeBtn.onclick = () => {
-            document.getElementById('result').innerText = "Analyzing... (Feature coming next!)";
-        };
-
-        document.getElementById('logoutBtn').onclick = () => signOut(auth);
-    </script>
-</body>
-</html>
+                document.getElementById('authBtn').onclick = () => signInWithPopup(auth,
