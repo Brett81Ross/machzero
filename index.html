@@ -13,23 +13,19 @@
     </style>
 </head>
 <body>
-
     <img src="logo1.png" style="width: 80px;">
     <h1>Resale IQ</h1>
-    
     <div class="card">
         <input type="file" id="fileInput" accept="image/*" style="display:none;">
         <button class="btn" onclick="document.getElementById('fileInput').click()">📷 Take Photo / Upload</button>
         <button id="analyzeBtn" class="btn analyze-btn">Analyze Item</button>
         <div id="result">Ready</div>
     </div>
-
     <script>
         document.getElementById('analyzeBtn').addEventListener('click', async () => {
             const file = document.getElementById('fileInput').files[0];
             if (!file) return alert("Select a photo first!");
             document.getElementById('result').innerText = "Processing...";
-            
             const reader = new FileReader();
             reader.readAsDataURL(file);
             reader.onload = (e) => {
@@ -37,25 +33,21 @@
                 img.src = e.target.result;
                 img.onload = async () => {
                     const canvas = document.createElement('canvas');
-                    const MAX_WIDTH = 800;
-                    const scale = MAX_WIDTH / img.width;
-                    canvas.width = MAX_WIDTH;
-                    canvas.height = img.height * scale;
-                    const ctx = canvas.getContext('2d');
-                    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-                    
+                    canvas.width = 800; canvas.height = img.height * (800 / img.width);
+                    canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
                     const base64 = canvas.toDataURL('image/jpeg', 0.7).split(',')[1];
-                    
                     try {
-                        const response = await fetch('/api/analyze', {
+                        const response = await fetch(window.location.origin + '/api/analyze', {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
                             body: JSON.stringify({ imageBase64: base64 })
                         });
                         const data = await response.json();
-                        document.getElementById('result').innerText = data.candidates 
-                            ? data.candidates[0].content.parts[0].text 
-                            : "Error: AI didn't return data.";
+                        if (data.candidates && data.candidates[0].content) {
+                            document.getElementById('result').innerText = data.candidates[0].content.parts[0].text;
+                        } else {
+                            document.getElementById('result').innerText = "Raw AI Response: " + JSON.stringify(data);
+                        }
                     } catch (err) {
                         document.getElementById('result').innerText = "Error: Backend unreachable.";
                     }
