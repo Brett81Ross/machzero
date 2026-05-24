@@ -8,7 +8,7 @@
         body { background: #050505; color: white; font-family: sans-serif; padding: 20px; text-align: center; }
         .card { background: #111; padding: 20px; border-radius: 20px; border: 1px solid #333; margin: 20px auto; max-width: 400px; }
         .btn { width: 100%; padding: 15px; background: #222; color: white; border: 1px solid #444; border-radius: 10px; margin-top: 10px; cursor: pointer; font-size: 16px; display: block; }
-        .analyze-btn { background: #0070f3 !important; font-weight: bold; margin-top: 20px; display: block; }
+        .analyze-btn { background: #0070f3 !important; font-weight: bold; margin-top: 20px; }
         .copy-btn { background: #28a745 !important; margin-top: 10px; display: none; }
         #preview { width: 100%; border-radius: 10px; margin-top: 15px; display: none; }
         #status { margin-top: 15px; font-size: 14px; color: #888; }
@@ -16,97 +16,72 @@
     </style>
 </head>
 <body>
-
     <img src="logo1.png" style="width: 80px;">
     <h1>Resale IQ</h1>
-    
     <div class="card">
-        <input type="file" id="cameraInput" accept="image/*" capture="environment" style="display:none;">
-        <input type="file" id="fileInput" accept="image/*" style="display:none;">
-        
-        <button class="btn" onclick="document.getElementById('cameraInput').click()">📷 Take Photo</button>
-        <button class="btn" onclick="document.getElementById('fileInput').click()">📁 Choose File</button>
-        
+        <input type="file" id="mediaInput" accept="image/*" style="display:none;">
+        <button class="btn" onclick="document.getElementById('mediaInput').click()">📷 Take/Choose Photo</button>
         <img id="preview">
         <button id="analyzeBtn" class="btn analyze-btn">Analyze Item</button>
-        
         <div id="status"></div>
         <div id="result"></div>
         <button id="copyBtn" class="btn copy-btn">📋 Copy Listing Text</button>
     </div>
 
     <script>
-        const cameraInput = document.getElementById('cameraInput');
-        const fileInput = document.getElementById('fileInput');
+        const mediaInput = document.getElementById('mediaInput');
         const preview = document.getElementById('preview');
         const analyzeBtn = document.getElementById('analyzeBtn');
         const copyBtn = document.getElementById('copyBtn');
         const status = document.getElementById('status');
         const result = document.getElementById('result');
 
-        let selectedFile = null;
-
-        const handleImage = (e) => {
-            const file = e.target.files[0];
-            if (file) {
-                selectedFile = file;
-                preview.src = URL.createObjectURL(file);
+        mediaInput.onchange = (e) => {
+            if (e.target.files[0]) {
+                preview.src = URL.createObjectURL(e.target.files[0]);
                 preview.style.display = 'block';
-                status.innerText = "Image loaded. Tap 'Analyze Item'.";
-                result.style.display = 'none';
-                copyBtn.style.display = 'none';
+                status.innerText = "Ready to analyze.";
             }
         };
 
-        cameraInput.addEventListener('change', handleImage);
-        fileInput.addEventListener('change', handleImage);
+        analyzeBtn.onclick = async () => {
+            const file = mediaInput.files[0];
+            if (!file) return alert("Select a photo!");
 
-        analyzeBtn.addEventListener('click', async () => {
-            if (!selectedFile) return alert("Select a photo first!");
-
-            status.innerText = "Analyzing: Generating listing...";
+            status.innerText = "Analyzing: Resizing & Processing...";
             analyzeBtn.disabled = true;
 
-            const reader = new FileReader();
-            reader.readAsDataURL(selectedFile);
-            reader.onload = (e) => {
-                const img = new Image();
-                img.src = e.target.result;
-                img.onload = async () => {
-                    const canvas = document.createElement('canvas');
-                    canvas.width = 800; canvas.height = img.height * (800 / img.width);
-                    canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
-                    const base64 = canvas.toDataURL('image/jpeg', 0.7).split(',')[1];
-                    
-                    try {
-                        const response = await fetch('/api/analyze', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ imageBase64: base64 })
-                        });
-                        
-                        const data = await response.json();
-                        if (data.candidates && data.candidates[0].content) {
-                            result.innerText = data.candidates[0].content.parts[0].text;
-                            result.style.display = 'block';
-                            copyBtn.style.display = 'block';
-                            status.innerText = "Done! Copy below.";
-                        } else {
-                            status.innerText = "Error: AI response empty.";
-                        }
-                    } catch (err) {
-                        status.innerText = "Error: Backend unreachable.";
-                    } finally {
-                        analyzeBtn.disabled = false;
-                    }
-                };
-            };
-        });
+            const img = new Image();
+            img.src = URL.createObjectURL(file);
+            img.onload = async () => {
+                const canvas = document.createElement('canvas');
+                const scale = 800 / img.width;
+                canvas.width = 800; canvas.height = img.height * scale;
+                canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
+                const base64 = canvas.toDataURL('image/jpeg', 0.7).split(',')[1];
 
-        copyBtn.addEventListener('click', () => {
+                try {
+                    const res = await fetch('/api/analyze', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ imageBase64: base64 })
+                    });
+                    const data = await res.json();
+                    if (data.candidates) {
+                        result.innerText = data.candidates[0].content.parts[0].text;
+                        result.style.display = 'block';
+                        copyBtn.style.display = 'block';
+                        status.innerText = "Done!";
+                    }
+                } catch (e) { status.innerText = "Error!"; }
+                finally { analyzeBtn.disabled = false; }
+            };
+        };
+
+        copyBtn.onclick = () => {
             navigator.clipboard.writeText(result.innerText);
-            alert("Listing copied!");
-        });
+            alert("Copied!");
+        };
     </script>
 </body>
 </html>
