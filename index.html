@@ -7,87 +7,45 @@
     <style>
         body { background: #000; color: #fff; font-family: sans-serif; padding: 20px; display: flex; flex-direction: column; align-items: center; }
         .container { width: 100%; max-width: 400px; text-align: center; }
-        .logo { width: 80px; margin-bottom: 20px; }
         .btn { width: 100%; padding: 15px; margin: 10px 0; border-radius: 10px; border: none; background: #333; color: #fff; font-size: 16px; cursor: pointer; }
         .analyze-btn { background: #0070f3; font-weight: bold; }
         #preview { width: 100%; border-radius: 10px; margin: 10px 0; display: none; }
-        #result { background: #1a1a1a; padding: 15px; border-radius: 10px; margin-top: 20px; text-align: left; display: none; white-space: pre-wrap; font-size: 14px; }
-        #status { margin-top: 10px; color: #ffcc00; }
+        #result { background: #1a1a1a; padding: 15px; border-radius: 10px; margin-top: 20px; text-align: left; white-space: pre-wrap; font-size: 14px; }
     </style>
 </head>
 <body>
     <div class="container">
-        <img src="logo1.png" class="logo" alt="Logo">
-        
         <input type="file" id="uploadInput" accept="image/*" style="display:none;">
         <button class="btn" onclick="document.getElementById('uploadInput').click()">📁 Upload File</button>
-        
         <input type="file" id="cameraInput" accept="image/*" capture="environment" style="display:none;">
         <button class="btn" onclick="document.getElementById('cameraInput').click()">📷 Take Photo</button>
-        
         <img id="preview">
         <button id="analyzeBtn" class="btn analyze-btn">Analyze Item</button>
         <div id="status"></div>
         <div id="result"></div>
     </div>
-
     <script>
-        const uploadInput = document.getElementById('uploadInput'),
-              cameraInput = document.getElementById('cameraInput'),
-              preview = document.getElementById('preview'),
-              analyzeBtn = document.getElementById('analyzeBtn'),
-              status = document.getElementById('status'),
-              result = document.getElementById('result');
+        const preview = document.getElementById('preview'), status = document.getElementById('status'), result = document.getElementById('result');
+        const handle = (e) => { const reader = new FileReader(); reader.onload = (ev) => { preview.src = ev.target.result; preview.style.display = 'block'; }; reader.readAsDataURL(e.target.files[0]); };
+        document.getElementById('uploadInput').onchange = handle;
+        document.getElementById('cameraInput').onchange = handle;
 
-        // Function to handle image selection
-        const handleFile = (file) => {
-            const reader = new FileReader();
-            reader.onload = (event) => {
-                preview.src = event.target.result;
-                preview.style.display = 'block';
-                status.innerText = "";
-            };
-            reader.readAsDataURL(file);
-        };
-
-        uploadInput.onchange = (e) => handleFile(e.target.files[0]);
-        cameraInput.onchange = (e) => handleFile(e.target.files[0]);
-
-        analyzeBtn.onclick = async () => {
-            if (!preview.src) return alert("Select or take a photo first!");
-            status.innerText = "Processing...";
-            analyzeBtn.disabled = true;
+        document.getElementById('analyzeBtn').onclick = async () => {
+            if (!preview.src) return alert("Select photo first!");
+            status.innerText = "Analyzing...";
+            const img = new Image(); img.src = preview.src; await img.decode();
+            const canvas = document.createElement('canvas');
+            canvas.width = 600; canvas.height = img.height * (600 / img.width);
+            canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
+            // Quality 0.3 is very small and fast
+            const base64 = canvas.toDataURL('image/jpeg', 0.3).split(',')[1];
 
             try {
-                const img = new Image();
-                img.src = preview.src;
-                await new Promise((resolve, reject) => { img.onload = resolve; img.onerror = reject; });
-
-                const canvas = document.createElement('canvas');
-                canvas.width = 800;
-                canvas.height = img.height * (800 / img.width);
-                canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
-                const base64 = canvas.toDataURL('image/jpeg', 0.6).split(',')[1];
-
-                const res = await fetch('/api/analyze', {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({ imageBase64: base64 })
-                });
-                
+                const res = await fetch('/api/analyze', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ imageBase64: base64 }) });
                 const data = await res.json();
-                if (res.ok && data.candidates) {
-                    result.innerText = data.candidates[0].content.parts[0].text;
-                    result.style.display = 'block';
-                    status.innerText = "Done!";
-                } else {
-                    status.innerText = "Error: " + (data.error || "Failed to analyze");
-                }
-            } catch (e) {
-                status.innerText = "Error: " + e.message;
-            } finally {
-                analyzeBtn.disabled = false;
-            }
+                if (res.ok) { result.innerText = data.candidates[0].content.parts[0].text; result.style.display = 'block'; status.innerText = "Done!"; }
+                else { status.innerText = "Error: " + data.error; }
+            } catch (e) { status.innerText = "Error: " + e.message; }
         };
     </script>
 </body>
