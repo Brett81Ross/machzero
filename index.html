@@ -8,9 +8,9 @@
         body { background: #050505; color: white; font-family: sans-serif; padding: 20px; text-align: center; }
         .card { background: #111; padding: 20px; border-radius: 20px; border: 1px solid #333; margin: 20px auto; max-width: 400px; }
         .btn { width: 100%; padding: 15px; background: #222; color: white; border: 1px solid #444; border-radius: 10px; margin-top: 10px; cursor: pointer; font-size: 16px; }
-        .analyze-btn { background: #0070f3 !important; font-weight: bold; }
+        .analyze-btn { background: #0070f3 !important; font-weight: bold; margin-top: 20px; }
         #preview { width: 100%; border-radius: 10px; margin-top: 15px; display: none; }
-        #status { margin-top: 15px; font-size: 14px; color: #888; font-style: italic; }
+        #status { margin-top: 15px; font-size: 14px; color: #888; }
         #result { margin-top: 20px; padding: 15px; background: #1a1a1a; border-radius: 10px; text-align: left; white-space: pre-wrap; color: #ddd; display: none; }
     </style>
 </head>
@@ -20,35 +20,78 @@
     <h1>Resale IQ</h1>
     
     <div class="card">
-        <input type="file" id="cameraInput" accept="image/*" capture="environment" style="display:none;">
-        <input type="file" id="fileInput" accept="image/*" style="display:none;">
+        <input type="file" id="mediaInput" accept="image/*" style="display:none;">
         
-        <button class="btn" onclick="document.getElementById('cameraInput').click()">📷 Take Photo</button>
-        <button class="btn" onclick="document.getElementById('fileInput').click()">📁 Choose File</button>
+        <button class="btn" onclick="document.getElementById('mediaInput').click()">📷 Take Photo / Choose File</button>
         
         <img id="preview">
+        
         <button id="analyzeBtn" class="btn analyze-btn" style="display:none;">Analyze Item</button>
+        
         <div id="status"></div>
         <div id="result"></div>
     </div>
 
     <script>
-        const cameraInput = document.getElementById('cameraInput');
-        const fileInput = document.getElementById('fileInput');
+        const mediaInput = document.getElementById('mediaInput');
         const preview = document.getElementById('preview');
         const analyzeBtn = document.getElementById('analyzeBtn');
         const status = document.getElementById('status');
         const result = document.getElementById('result');
 
-        // Handle image selection from either button
-        const handleImage = (e) => {
+        mediaInput.addEventListener('change', (e) => {
             const file = e.target.files[0];
             if (file) {
                 preview.src = URL.createObjectURL(file);
                 preview.style.display = 'block';
                 analyzeBtn.style.display = 'block';
-                status.innerText = "Ready to analyze.";
+                status.innerText = "Image selected. Ready to analyze.";
+                result.style.display = 'none';
             }
-        };
+        });
 
-        camera
+        analyzeBtn.addEventListener('click', async () => {
+            const file = mediaInput.files[0];
+            if (!file) return;
+
+            status.innerText = "Analyzing: Uploading & resizing...";
+            analyzeBtn.disabled = true;
+
+            const reader = new FileReader();
+            reader.readAsDataURL(file);
+            reader.onload = (e) => {
+                const img = new Image();
+                img.src = e.target.result;
+                img.onload = async () => {
+                    const canvas = document.createElement('canvas');
+                    const scale = 800 / img.width;
+                    canvas.width = 800; canvas.height = img.height * scale;
+                    canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
+                    const base64 = canvas.toDataURL('image/jpeg', 0.7).split(',')[1];
+                    
+                    status.innerText = "Analyzing: Fetching market data & value...";
+                    try {
+                        const response = await fetch('/api/analyze', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ imageBase64: base64 })
+                        });
+                        
+                        status.innerText = "Analyzing: Finalizing report...";
+                        const data = await response.json();
+                        
+                        if (data.candidates && data.candidates[0].content) {
+                            result.innerText = data.candidates[0].content.parts[0].text;
+                            result.style.display = 'block';
+                            status.innerText = "Analysis Complete!";
+                        } else {
+                            status.innerText = "Error: AI response empty.";
+                        }
+                    } catch (err) {
+                        status.innerText = "Error: Backend failed.";
+                    } finally {
+                        analyzeBtn.disabled = false;
+                    }
+                };
+            };
+        });
