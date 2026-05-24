@@ -8,8 +8,9 @@
         body { background: #050505; color: white; font-family: sans-serif; padding: 20px; text-align: center; }
         .card { background: #111; padding: 20px; border-radius: 20px; border: 1px solid #333; margin: 20px 0; }
         #authBtn { width: 100%; padding: 15px; background: #0070f3; color: white; border: none; border-radius: 12px; font-weight: bold; cursor: pointer; }
-        #memberArea { display: none; text-align: left; }
-        input { width: 100%; padding: 10px; margin: 10px 0; border-radius: 5px; border: 1px solid #444; background: #222; color: white; }
+        #memberArea { display: none; }
+        #preview { width: 100%; max-width: 300px; margin: 20px 0; display: none; border-radius: 10px; }
+        .btn { width: 100%; padding: 15px; background: #222; color: white; border: 1px solid #444; border-radius: 10px; margin-top: 10px; cursor: pointer; }
     </style>
 </head>
 <body>
@@ -21,11 +22,12 @@
         <button id="authBtn" style="display:none;">Sign In with Google</button>
         
         <div id="memberArea">
-            <h3>Item Tracker</h3>
-            <input type="text" id="itemInput" placeholder="Enter item name...">
-            <button id="saveBtn" style="background:#0070f3; color:white; border:none; padding:10px; width:100%;">Save Item</button>
-            <ul id="itemList" style="margin-top:20px;"></ul>
-            <button id="logoutBtn" style="background:#444; border:none; padding:10px; color:white; border-radius:5px; margin-top:20px;">Sign Out</button>
+            <input type="file" id="fileInput" accept="image/*" style="display:none;">
+            <button class="btn" onclick="document.getElementById('fileInput').click()">📷 Take Photo / Upload</button>
+            <img id="preview">
+            <button id="analyzeBtn" class="btn" style="background:#0070f3; display:none;">Analyze Item</button>
+            <div id="result"></div>
+            <button id="logoutBtn" class="btn" style="border:none; margin-top:30px;">Sign Out</button>
         </div>
     </div>
 
@@ -44,10 +46,13 @@
 
         const auth = getAuth(app);
         const provider = new GoogleAuthProvider();
+        const fileInput = document.getElementById('fileInput');
+        const preview = document.getElementById('preview');
+        const analyzeBtn = document.getElementById('analyzeBtn');
 
         onAuthStateChanged(auth, (user) => {
             if (user) {
-                document.getElementById('statusMsg').innerHTML = `Welcome, <b>${user.displayName}</b>!`;
+                document.getElementById('statusMsg').innerText = `Welcome, ${user.displayName}`;
                 document.getElementById('authBtn').style.display = 'none';
                 document.getElementById('memberArea').style.display = 'block';
             } else {
@@ -58,14 +63,17 @@
             }
         });
 
-        document.getElementById('saveBtn').onclick = () => {
-            const item = document.getElementById('itemInput').value;
-            if(item) {
-                const li = document.createElement('li');
-                li.textContent = item;
-                document.getElementById('itemList').appendChild(li);
-                document.getElementById('itemInput').value = '';
+        fileInput.onchange = (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                preview.src = URL.createObjectURL(file);
+                preview.style.display = 'block';
+                analyzeBtn.style.display = 'block';
             }
+        };
+
+        analyzeBtn.onclick = () => {
+            document.getElementById('result').innerText = "Analyzing... (Feature coming next!)";
         };
 
         document.getElementById('logoutBtn').onclick = () => signOut(auth);
