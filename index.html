@@ -7,44 +7,93 @@
     <style>
         body { background: #050505; color: white; font-family: sans-serif; padding: 20px; text-align: center; }
         .card { background: #111; padding: 20px; border-radius: 20px; border: 1px solid #333; margin: 20px 0; }
-        img { width: 100%; border-radius: 12px; display: none; margin-bottom: 10px; }
-        button { width: 100%; padding: 15px; margin: 10px 0; border-radius: 12px; border: none; font-weight: bold; cursor: pointer; }
+        img.preview { width: 100%; border-radius: 12px; display: none; margin-bottom: 10px; }
+        button { width: 100%; padding: 15px; margin: 10px 0; border-radius: 12px; border: none; font-weight: bold; cursor: pointer; font-size: 16px; }
         .btn-main { background: #0070f3; color: white; }
-        #result { margin-top: 20px; text-align: left; }
+        #result { margin-top: 20px; text-align: left; line-height: 1.5; font-size: 16px; }
     </style>
 </head>
 <body>
-    <h1>Resale IQ</h1>
+    <img src="logo1.png" style="width: 80px; margin-bottom: 10px;">
+    <h1 style="margin-top: 0;">Resale IQ</h1>
+    
     <div class="card">
-        <img id="preview">
+        <img id="preview" class="preview">
         <input type="file" id="file" accept="image/*" style="display:none">
         <button class="btn-main" onclick="document.getElementById('file').click()">Select Photo</button>
         <button id="analyzeBtn" class="btn-main" style="display:none; background:#28a745;" onclick="analyze()">Get Value</button>
     </div>
+    
     <div id="result"></div>
 
     <script>
         let base64 = "";
+
+        // This function selects the photo and shrinks it so Vercel doesn't crash
         document.getElementById('file').onchange = function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+
             const reader = new FileReader();
             reader.onload = function(event) {
-                document.getElementById('preview').src = event.target.result;
-                document.getElementById('preview').style.display = 'block';
-                base64 = event.target.result.split(',')[1];
-                document.getElementById('analyzeBtn').style.display = 'block';
+                const img = new Image();
+                img.onload = function() {
+                    // Create a canvas to resize the image
+                    const canvas = document.createElement('canvas');
+                    const MAX_WIDTH = 800; // Shrink to 800px wide
+                    const scaleSize = MAX_WIDTH / img.width;
+                    canvas.width = MAX_WIDTH;
+                    canvas.height = img.height * scaleSize;
+
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+                    // Compress to JPEG format
+                    const dataUrl = canvas.toDataURL('image/jpeg', 0.7);
+                    base64 = dataUrl.split(',')[1];
+
+                    // Show the image on screen
+                    document.getElementById('preview').src = dataUrl;
+                    document.getElementById('preview').style.display = 'block';
+                    document.getElementById('analyzeBtn').style.display = 'block';
+                    document.getElementById('result').innerText = ""; // Clear old results
+                };
+                img.src = event.target.result;
             };
-            reader.readAsDataURL(e.target.files[0]);
+            reader.readAsDataURL(file);
         };
 
+        // This function sends the shrunken photo to your AI
         async function analyze() {
-            document.getElementById('result').innerText = "Analyzing...";
-            const res = await fetch('/api/analyze', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ image: base64 })
-            });
-            const data = await res.json();
-            document.getElementById('result').innerHTML = data.candidates[0].content.parts[0].text.replace(/\n/g, '<br>');
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerText = "Analyzing... please wait.";
+            
+            try {
+                const res = await fetch('/api/analyze', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ image: base64 })
+                });
+
+                // If the server rejects the request (like a 404 or 500 error), catch it here
+                if (!res.ok) {
+                    throw new Error(`Server connection failed (Code: ${res.status}). Check your backend API file.`);
+                }
+
+                const data = await res.json();
+                
+                // If the AI itself sends back an error message
+                if (data.error) {
+                    throw new Error(data.error);
+                }
+
+                // Display the results
+                resultDiv.innerHTML = data.candidates[0].content.parts[0].text.replace(/\n/g, '<br>');
+                
+            } catch (error) {
+                // This stops it from hanging forever and shows you exactly what broke
+                resultDiv.innerHTML = `<b>Error:</b> ${error.message}`;
+            }
         }
     </script>
 </body>
