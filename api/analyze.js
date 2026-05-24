@@ -3,8 +3,9 @@ export default async function handler(req, res) {
     
     try {
         const { imageBase64 } = req.body;
-        // Updated to use the more powerful model
-        const MODEL = "gemini-1.5-pro"; 
+        // Using the most advanced current production model identifier
+        const MODEL = "gemini-1.5-pro-002"; 
+        
         const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent?key=${process.env.GEMINI_API_KEY}`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -19,6 +20,6 @@ export default async function handler(req, res) {
         const data = await response.json();
         res.status(200).json(data);
     } catch (error) {
-        res.status(500).json({ error: "Backend failed." });
+        res.status(500).json({ error: "Backend error: " + error.message });
     }
 }
