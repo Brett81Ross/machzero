@@ -20,8 +20,12 @@
     <h1>Resale IQ</h1>
     
     <div class="card">
+        <input type="file" id="cameraInput" accept="image/*" capture="environment" style="display:none;">
         <input type="file" id="fileInput" accept="image/*" style="display:none;">
-        <button class="btn" onclick="document.getElementById('fileInput').click()">📷 Take Photo / Upload</button>
+        
+        <button class="btn" onclick="document.getElementById('cameraInput').click()">📷 Take Photo</button>
+        <button class="btn" onclick="document.getElementById('fileInput').click()">📁 Choose File</button>
+        
         <img id="preview">
         <button id="analyzeBtn" class="btn analyze-btn" style="display:none;">Analyze Item</button>
         <div id="status"></div>
@@ -29,13 +33,15 @@
     </div>
 
     <script>
+        const cameraInput = document.getElementById('cameraInput');
         const fileInput = document.getElementById('fileInput');
         const preview = document.getElementById('preview');
         const analyzeBtn = document.getElementById('analyzeBtn');
         const status = document.getElementById('status');
         const result = document.getElementById('result');
 
-        fileInput.onchange = (e) => {
+        // Handle image selection from either button
+        const handleImage = (e) => {
             const file = e.target.files[0];
             if (file) {
                 preview.src = URL.createObjectURL(file);
@@ -45,43 +51,4 @@
             }
         };
 
-        analyzeBtn.onclick = async () => {
-            const file = fileInput.files[0];
-            const reader = new FileReader();
-            reader.readAsDataURL(file);
-            
-            reader.onload = (e) => {
-                const img = new Image();
-                img.src = e.target.result;
-                img.onload = async () => {
-                    const canvas = document.createElement('canvas');
-                    const scale = 800 / img.width;
-                    canvas.width = 800; canvas.height = img.height * scale;
-                    canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
-                    const base64 = canvas.toDataURL('image/jpeg', 0.7).split(',')[1];
-                    
-                    status.innerText = "Analyzing: Fetching market data...";
-                    try {
-                        const response = await fetch('/api/analyze', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ imageBase64: base64 })
-                        });
-                        
-                        status.innerText = "Analyzing: Evaluating condition & price...";
-                        const data = await response.json();
-                        
-                        if (data.candidates) {
-                            result.innerText = data.candidates[0].content.parts[0].text;
-                            result.style.display = 'block';
-                            status.innerText = "Analysis Complete!";
-                        }
-                    } catch (err) {
-                        status.innerText = "Error: Could not connect to engine.";
-                    }
-                };
-            };
-        };
-    </script>
-</body>
-</html>
+        camera
