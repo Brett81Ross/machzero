@@ -1,45 +1,61 @@
-async function analyzeImage() {
-    const btn = document.getElementById('analyzeBtn');
-    const res = document.getElementById('result');
-    
-    // Step 1: Tell the user exactly what is happening
-    btn.disabled = true;
-    res.innerHTML = `
-        <div style="text-align: left; opacity: 0.8;">
-            <p><strong>Step 1:</strong> Scanning image features...</p>
-            <p><strong>Step 2:</strong> Identifying brand and model...</p>
-            <p><strong>Step 3:</strong> Searching live market data...</p>
-            <p><strong>Step 4:</strong> Generating your listing description...</p>
-        </div>
-    `;
+export default async function handler(req, res) {
+    // 1. Only accept POST requests
+    if (req.method !== 'POST') {
+        return res.status(405).json({ error: 'Method not allowed' });
+    }
+
+    const { image } = req.body;
+
+    if (!image) {
+        return res.status(400).json({ error: 'No image provided' });
+    }
 
     try {
-        const response = await fetch('/api/analyze', { 
-            method: 'POST', 
-            headers: {'Content-Type': 'application/json'}, 
-            body: JSON.stringify({ image: resizedBase64 })
-        });
-        const data = await response.json();
+        // 2. Get your Gemini API key from Vercel's Environment Variables
+        const apiKey = process.env.GEMINI_API_KEY; 
         
-        if (!data.candidates) throw new Error("AI analysis failed.");
+        if (!apiKey) {
+            return res.status(500).json({ error: 'API key is missing in Vercel.' });
+        }
 
-        let text = data.candidates[0].content.parts[0].text;
-        
-        // Clean and format the output
-        text = text.replace(/###\s/g, '').replace(/📦 Item Identification/g, '<h3>📦 Item Identification</h3>')
-                   .replace(/💰 Estimated Market Value/g, '<h3>💰 Estimated Market Value</h3>')
-                   .replace(/🔗 Live Market Comparisons/g, '<div class="links-box"><h3>🔗 Live Market Comparisons</h3>')
-                   .replace(/📝 Professional Resale Description/g, '</div><div class="desc-box"><h3>📝 Professional Resale Description</h3>')
-                   .replace(/💡 Pro-Tips for Selling/g, '</div><div class="tips-box"><h3>💡 Pro-Tips for Selling</h3>')
-                   .replace(/📋 Listing Data/g, '</div><div class="listing-data-box"><h3>📋 Listing Data</h3>') + '</div>';
-        
-        res.innerHTML = text.replace(/\n/g, '<br>');
-        document.getElementById('copyBtn').style.display = 'block';
-        
-    } catch (err) {
-        res.innerHTML = "<b>Error:</b> " + err.message + "<br>Please try taking a clearer photo.";
-    } finally {
-        btn.innerText = "🔍 Get Value"; 
-        btn.disabled = false;
+        // 3. Talk to the Gemini AI
+        const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
+
+        const geminiResponse = await fetch(geminiUrl, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                contents: [
+                    {
+                        parts: [
+                            { text: "Analyze this item for resale. What is it, its condition, and its estimated market value?" },
+                            {
+                                inlineData: {
+                                    mimeType: "image/jpeg",
+                                    data: image
+                                }
+                            }
+                        ]
+                    }
+                ]
+            })
+        });
+
+        const data = await geminiResponse.json();
+
+        // 4. Handle AI errors
+        if (!geminiResponse.ok) {
+            console.error("Gemini API Error:", data);
+            return res.status(500).json({ error: 'Failed to communicate with Gemini AI.' });
+        }
+
+        // 5. Send the AI's answer back to your frontend
+        return res.status(200).json(data);
+
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ error: 'Server crashed while analyzing the image.' });
     }
 }
