@@ -7,20 +7,16 @@
     <style>
         body { background: #000; color: #fff; font-family: sans-serif; padding: 20px; display: flex; flex-direction: column; align-items: center; }
         .container { width: 100%; max-width: 400px; text-align: center; }
-        
         .logo { width: 250px; margin-bottom: 20px; }
-        
         .badge { background: #0070f3; padding: 4px 10px; border-radius: 5px; font-size: 12px; font-weight: bold; text-transform: uppercase; margin-bottom: 5px; display: inline-block; }
         .notice { color: #888; font-size: 13px; margin: 2px 0; }
         .pro-notice { font-weight: bold; color: #0070f3; }
-        
         .btn { width: 100%; padding: 15px; margin: 10px 0; border-radius: 10px; border: none; background: #333; color: #fff; font-size: 16px; cursor: pointer; }
         .secondary-btn { background: #444; font-size: 14px; padding: 10px; }
-        
-        #preview { width: 100%; border-radius: 10px; margin: 10px 0; display: none; }
+        #gallery { display: flex; flex-wrap: wrap; gap: 10px; margin: 15px 0; }
+        #gallery img { width: 80px; height: 80px; object-fit: cover; border-radius: 5px; }
         #result { background: #1a1a1a; padding: 15px; border-radius: 10px; margin-top: 20px; text-align: left; white-space: pre-wrap; font-size: 16px; line-height: 1.5; }
         #status { margin-top: 10px; color: #ffcc00; font-weight: bold; }
-        
         #historyContainer { display: none; margin-top: 20px; text-align: left; }
         .history-item { background: #222; padding: 12px; margin-top: 10px; border-radius: 8px; font-size: 14px; border-left: 4px solid #0070f3; }
     </style>
@@ -28,102 +24,61 @@
 <body>
     <div class="container">
         <img src="logo1.png" class="logo" alt="Logo">
-        
         <div><span class="badge">Beta Version</span></div>
         <p class="notice">Free to use for early testers</p>
         <p class="notice pro-notice">✨ Pro Mode Coming Soon</p>
         
-        <input type="file" id="uploadInput" accept="image/*" style="display:none;">
-        <button class="btn" onclick="document.getElementById('uploadInput').click()">📁 Upload File</button>
-        
-        <input type="file" id="cameraInput" accept="image/*" capture="environment" style="display:none;">
-        <button class="btn" onclick="document.getElementById('cameraInput').click()">📷 Take Photo</button>
+        <input type="file" id="fileInput" accept="image/*" multiple style="display:none;">
+        <button class="btn" onclick="document.getElementById('fileInput').click()">📁 Select Photos</button>
         
         <button class="btn secondary-btn" onclick="toggleHistory()">🕒 View Recent History</button>
         
-        <img id="preview">
+        <div id="gallery"></div>
         <div id="status"></div>
         <div id="result"></div>
         <div id="historyContainer"></div>
-        
-        <script defer src="/_vercel/insights/script.js"></script>
     </div>
 
     <script>
-        const preview = document.getElementById('preview'), 
-              status = document.getElementById('status'), 
-              result = document.getElementById('result'),
-              historyContainer = document.getElementById('historyContainer');
+        const gallery = document.getElementById('gallery'), status = document.getElementById('status'), 
+              result = document.getElementById('result'), hist = document.getElementById('historyContainer');
 
-        function toggleHistory() {
-            historyContainer.style.display = (historyContainer.style.display === 'block') ? 'none' : 'block';
+        function toggleHistory() { hist.style.display = (hist.style.display === 'block') ? 'none' : 'block'; }
+
+        async function processImages(files) {
+            gallery.innerHTML = ""; status.innerText = "Analyzing..."; result.innerText = "";
+            let base64Array = [];
+            
+            for (const file of Array.from(files)) {
+                const b64 = await new Promise(r => {
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        const img = document.createElement('img');
+                        img.src = e.target.result;
+                        gallery.appendChild(img);
+                        r(e.target.result.split(',')[1]);
+                    };
+                    reader.readAsDataURL(file);
+                });
+                base64Array.push(b64);
+            }
+
+            const res = await fetch('/api/analyze', { 
+                method: 'POST', 
+                headers: {'Content-Type': 'application/json'}, 
+                body: JSON.stringify({ imagesBase64: base64Array }) 
+            });
+            const data = await res.json();
+            if (res.ok) {
+                const text = data.candidates[0].content.parts[0].text;
+                result.innerText = text; status.innerText = "Done!";
+                let h = JSON.parse(localStorage.getItem('resaleHistory') || '[]');
+                h.unshift(text); if (h.length > 5) h.pop();
+                localStorage.setItem('resaleHistory', JSON.stringify(h));
+            } else { status.innerText = "Error!"; }
         }
 
-        const renderHistory = () => {
-            const history = JSON.parse(localStorage.getItem('resaleHistory') || '[]');
-            historyContainer.innerHTML = "<h3>Recent History</h3>";
-            history.forEach(item => {
-                const div = document.createElement('div');
-                div.className = 'history-item';
-                div.innerText = item.substring(0, 80) + "...";
-                historyContainer.appendChild(div);
-            });
-        };
-
-        const saveToHistory = (text) => {
-            let history = JSON.parse(localStorage.getItem('resaleHistory') || '[]');
-            history.unshift(text);
-            if (history.length > 5) history.pop();
-            localStorage.setItem('resaleHistory', JSON.stringify(history));
-            renderHistory();
-        };
-
-        const runAnalysis = async (imageData) => {
-            status.innerText = "Analyzing automatically...";
-            result.innerText = "";
-            
-            const img = new Image(); 
-            img.src = imageData; 
-            await img.decode();
-            
-            const canvas = document.createElement('canvas');
-            canvas.width = 400; 
-            canvas.height = img.height * (400 / img.width);
-            canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
-            const base64 = canvas.toDataURL('image/jpeg', 0.2).split(',')[1];
-
-            try {
-                const res = await fetch('/api/analyze', { 
-                    method: 'POST', 
-                    headers: {'Content-Type': 'application/json'}, 
-                    body: JSON.stringify({ imageBase64: base64 }) 
-                });
-                const data = await res.json();
-                if (res.ok) { 
-                    const text = data.candidates[0].content.parts[0].text;
-                    result.innerText = text; 
-                    result.style.display = 'block'; 
-                    status.innerText = "Done!"; 
-                    saveToHistory(text);
-                } else { 
-                    status.innerText = "Error: " + (data.error || "Failed"); 
-                }
-            } catch (e) { status.innerText = "Error: " + e.message; }
-        };
-
-        const handle = (e) => { 
-            const reader = new FileReader(); 
-            reader.onload = (ev) => { 
-                preview.src = ev.target.result; 
-                preview.style.display = 'block'; 
-                runAnalysis(ev.target.result);
-            }; 
-            reader.readAsDataURL(e.target.files[0]); 
-        };
-        
-        document.getElementById('uploadInput').onchange = handle;
-        document.getElementById('cameraInput').onchange = handle;
-        window.onload = renderHistory;
+        document.getElementById('fileInput').onchange = (e) => processImages(e.target.files);
     </script>
 </body>
 </html>
