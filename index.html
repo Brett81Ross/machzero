@@ -15,12 +15,14 @@
         .pro-notice { font-weight: bold; color: #0070f3; }
         
         .btn { width: 100%; padding: 15px; margin: 10px 0; border-radius: 10px; border: none; background: #333; color: #fff; font-size: 16px; cursor: pointer; }
+        .secondary-btn { background: #444; font-size: 14px; padding: 10px; }
         
         #preview { width: 100%; border-radius: 10px; margin: 10px 0; display: none; }
         #result { background: #1a1a1a; padding: 15px; border-radius: 10px; margin-top: 20px; text-align: left; white-space: pre-wrap; font-size: 16px; line-height: 1.5; }
         #status { margin-top: 10px; color: #ffcc00; font-weight: bold; }
         
-        .history-item { background: #222; padding: 12px; margin-top: 10px; border-radius: 8px; font-size: 14px; text-align: left; border-left: 4px solid #0070f3; }
+        #historyContainer { display: none; margin-top: 20px; text-align: left; }
+        .history-item { background: #222; padding: 12px; margin-top: 10px; border-radius: 8px; font-size: 14px; border-left: 4px solid #0070f3; }
     </style>
 </head>
 <body>
@@ -37,6 +39,8 @@
         <input type="file" id="cameraInput" accept="image/*" capture="environment" style="display:none;">
         <button class="btn" onclick="document.getElementById('cameraInput').click()">📷 Take Photo</button>
         
+        <button class="btn secondary-btn" onclick="toggleHistory()">🕒 View Recent History</button>
+        
         <img id="preview">
         <div id="status"></div>
         <div id="result"></div>
@@ -51,13 +55,12 @@
               result = document.getElementById('result'),
               historyContainer = document.getElementById('historyContainer');
 
-        window.onload = () => {
-            const history = JSON.parse(localStorage.getItem('resaleHistory') || '[]');
-            renderHistory(history);
-        };
+        function toggleHistory() {
+            historyContainer.style.display = (historyContainer.style.display === 'block') ? 'none' : 'block';
+        }
 
-        const renderHistory = (history) => {
-            if (history.length === 0) return;
+        const renderHistory = () => {
+            const history = JSON.parse(localStorage.getItem('resaleHistory') || '[]');
             historyContainer.innerHTML = "<h3>Recent History</h3>";
             history.forEach(item => {
                 const div = document.createElement('div');
@@ -72,7 +75,7 @@
             history.unshift(text);
             if (history.length > 5) history.pop();
             localStorage.setItem('resaleHistory', JSON.stringify(history));
-            renderHistory(history);
+            renderHistory();
         };
 
         const runAnalysis = async (imageData) => {
@@ -120,6 +123,7 @@
         
         document.getElementById('uploadInput').onchange = handle;
         document.getElementById('cameraInput').onchange = handle;
+        window.onload = renderHistory;
     </script>
 </body>
 </html>
