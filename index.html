@@ -8,23 +8,19 @@
         body { background: #000; color: #fff; font-family: sans-serif; padding: 20px; display: flex; flex-direction: column; align-items: center; }
         .container { width: 100%; max-width: 400px; text-align: center; }
         
-        /* Logo Styling */
         .logo { width: 250px; margin-bottom: 20px; }
         
-        /* Status Badges */
         .badge { background: #0070f3; padding: 4px 10px; border-radius: 5px; font-size: 12px; font-weight: bold; text-transform: uppercase; margin-bottom: 5px; display: inline-block; }
         .notice { color: #888; font-size: 13px; margin: 2px 0; }
         .pro-notice { font-weight: bold; color: #0070f3; }
         
-        /* Buttons */
         .btn { width: 100%; padding: 15px; margin: 10px 0; border-radius: 10px; border: none; background: #333; color: #fff; font-size: 16px; cursor: pointer; }
         
-        /* Display elements */
         #preview { width: 100%; border-radius: 10px; margin: 10px 0; display: none; }
-        
-        /* Result styling */
         #result { background: #1a1a1a; padding: 15px; border-radius: 10px; margin-top: 20px; text-align: left; white-space: pre-wrap; font-size: 16px; line-height: 1.5; }
         #status { margin-top: 10px; color: #ffcc00; font-weight: bold; }
+        
+        .history-item { background: #222; padding: 12px; margin-top: 10px; border-radius: 8px; font-size: 14px; text-align: left; border-left: 4px solid #0070f3; }
     </style>
 </head>
 <body>
@@ -44,6 +40,7 @@
         <img id="preview">
         <div id="status"></div>
         <div id="result"></div>
+        <div id="historyContainer"></div>
         
         <script defer src="/_vercel/insights/script.js"></script>
     </div>
@@ -51,7 +48,32 @@
     <script>
         const preview = document.getElementById('preview'), 
               status = document.getElementById('status'), 
-              result = document.getElementById('result');
+              result = document.getElementById('result'),
+              historyContainer = document.getElementById('historyContainer');
+
+        window.onload = () => {
+            const history = JSON.parse(localStorage.getItem('resaleHistory') || '[]');
+            renderHistory(history);
+        };
+
+        const renderHistory = (history) => {
+            if (history.length === 0) return;
+            historyContainer.innerHTML = "<h3>Recent History</h3>";
+            history.forEach(item => {
+                const div = document.createElement('div');
+                div.className = 'history-item';
+                div.innerText = item.substring(0, 80) + "...";
+                historyContainer.appendChild(div);
+            });
+        };
+
+        const saveToHistory = (text) => {
+            let history = JSON.parse(localStorage.getItem('resaleHistory') || '[]');
+            history.unshift(text);
+            if (history.length > 5) history.pop();
+            localStorage.setItem('resaleHistory', JSON.stringify(history));
+            renderHistory(history);
+        };
 
         const runAnalysis = async (imageData) => {
             status.innerText = "Analyzing automatically...";
@@ -75,9 +97,11 @@
                 });
                 const data = await res.json();
                 if (res.ok) { 
-                    result.innerText = data.candidates[0].content.parts[0].text; 
+                    const text = data.candidates[0].content.parts[0].text;
+                    result.innerText = text; 
                     result.style.display = 'block'; 
                     status.innerText = "Done!"; 
+                    saveToHistory(text);
                 } else { 
                     status.innerText = "Error: " + (data.error || "Failed"); 
                 }
