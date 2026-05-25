@@ -31,6 +31,9 @@
         <input type="file" id="fileInput" accept="image/*" multiple style="display:none;">
         <button class="btn" onclick="document.getElementById('fileInput').click()">📁 Select Photos</button>
         
+        <input type="file" id="cameraInput" accept="image/*" capture="environment" style="display:none;">
+        <button class="btn" onclick="document.getElementById('cameraInput').click()">📷 Take Photo</button>
+        
         <button class="btn secondary-btn" onclick="toggleHistory()">🕒 View Recent History</button>
         
         <div id="gallery"></div>
@@ -75,10 +78,24 @@
                 let h = JSON.parse(localStorage.getItem('resaleHistory') || '[]');
                 h.unshift(text); if (h.length > 5) h.pop();
                 localStorage.setItem('resaleHistory', JSON.stringify(h));
-            } else { status.innerText = "Error!"; }
+                renderHistory();
+            } else { status.innerText = "Error: " + (data.error || "Failed"); }
+        }
+
+        function renderHistory() {
+            const h = JSON.parse(localStorage.getItem('resaleHistory') || '[]');
+            hist.innerHTML = "<h3>Recent History</h3>";
+            h.forEach(item => {
+                const div = document.createElement('div');
+                div.className = 'history-item';
+                div.innerText = item.substring(0, 80) + "...";
+                hist.appendChild(div);
+            });
         }
 
         document.getElementById('fileInput').onchange = (e) => processImages(e.target.files);
+        document.getElementById('cameraInput').onchange = (e) => processImages(e.target.files);
+        window.onload = renderHistory;
     </script>
 </body>
 </html>
