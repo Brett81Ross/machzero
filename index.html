@@ -13,6 +13,11 @@
         .analyze-btn { background: #0070f3; }
         .expense-btn { background: #f39c12; }
         input { width: 90%; padding: 10px; margin: 5px 0; border-radius: 5px; border: none; }
+        
+        /* Help Section Styles */
+        .help-section { background: #1a1a1a; padding: 15px; border-radius: 10px; margin-top: 10px; text-align: left; font-size: 13px; color: #ccc; }
+        .help-section h4 { margin-top: 0; color: #0070f3; }
+        
         #gallery { display: flex; flex-wrap: wrap; gap: 10px; margin: 15px 0; }
         #gallery img { width: 80px; height: 80px; object-fit: cover; border-radius: 5px; }
         #result { background: #1a1a1a; padding: 15px; border-radius: 10px; margin-top: 20px; text-align: left; font-size: 14px; }
@@ -27,6 +32,14 @@
         </div>
 
         <input type="number" id="costInput" placeholder="Sourcing Cost ($)">
+        
+        <div class="help-section">
+            <h4>💡 How to calculate Source Cost</h4>
+            • <b>Thrift/Garage:</b> Total paid / Number of items.<br>
+            • <b>Auction/Bulk:</b> (Price + Fees + Shipping) / Total items.<br>
+            • <b>Found/Gift:</b> Use $0 (or cost of transport).
+        </div>
+
         <button class="btn analyze-btn" onclick="document.getElementById('fileInput').click()">📁 Select Photos & Analyze</button>
         <input type="file" id="fileInput" accept="image/*" multiple style="display:none;">
 
@@ -89,3 +102,5 @@
     </script>
 </body>
 </html>
+
+
