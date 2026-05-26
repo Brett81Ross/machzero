@@ -194,6 +194,7 @@
             font-size: 0.95rem;
             line-height: 1.4;
             margin-bottom: 20px;
+            white-space: pre-wrap; /* Allows line breaks in javascript text */
         }
 
         .modal-close-btn {
@@ -243,12 +244,12 @@
         <div class="profit-card">
             <div class="card-title">Net Profit</div>
             <p class="profit-amount">$0.00</p>
-            <button class="info-trigger" onclick="openModal('net-profit')">ⓘ</button>
+            <button class="info-trigger" onclick="openInfoModal('net-profit')">ⓘ</button>
         </div>
 
         <div class="input-group">
             <input type="number" class="app-input" placeholder="Sourcing Cost ($)" inputmode="decimal">
-            <button class="info-trigger" onclick="openModal('sourcing-cost')">ⓘ</button>
+            <button class="info-trigger" onclick="openInfoModal('sourcing-cost')">ⓘ</button>
         </div>
 
         <input type="file" id="file-gallery-input" class="hidden-uploader" accept="image/*" onchange="processSelectedImage(this)">
@@ -302,13 +303,14 @@
             'sourcing-cost': 'Enter the precise amount paid out-of-pocket to purchase this item before restoration, listing fees, or secondary shipping costs.'
         };
 
-        // UI Modal Visibility Management Logic
-        function openModal(contextKey) {
+        // Standard Info Modal Trigger
+        function openInfoModal(contextKey) {
             const descriptionString = infoExplainerData[contextKey] || 'Information parameters unavailable.';
             document.getElementById('modal-content-field').textContent = descriptionString;
             document.getElementById('info-modal').classList.add('active');
         }
 
+        // Closes the modal
         function closeModal() {
             document.getElementById('info-modal').classList.remove('active');
         }
@@ -318,7 +320,7 @@
             if (e.target === this) closeModal();
         });
 
-        // Bulletproof Event Listeners replacing inline click handlers to prevent mobile action blocking
+        // Event Listeners for the Photo Buttons
         document.getElementById('gallery-trigger-btn').addEventListener('click', function(e) {
             e.preventDefault();
             document.getElementById('file-gallery-input').click();
@@ -329,11 +331,24 @@
             document.getElementById('camera-capture-input').click();
         });
 
-        // Background handler for processing image file objects once selected or captured
+        // The actual function that fires AFTER a photo is chosen or taken
         function processSelectedImage(inputElement) {
             if (inputElement.files && inputElement.files[0]) {
                 const targetFile = inputElement.files[0];
-                console.log("Image received successfully for processing: ", targetFile.name);
+                console.log("Image received successfully: ", targetFile.name);
+                
+                // 1. Immediately visually confirm to the user that analysis has started
+                document.getElementById('modal-content-field').textContent = "📸 Analyzing: " + targetFile.name + "\n\n(This is where your backend image analysis code will execute.)";
+                document.getElementById('info-modal').classList.add('active');
+
+                // 2. Update the button text so it feels responsive
+                if (inputElement.id === 'file-gallery-input') {
+                    document.getElementById('gallery-trigger-btn').innerHTML = '<span>✅</span> Photo Selected';
+                } else if (inputElement.id === 'camera-capture-input') {
+                    document.getElementById('camera-trigger-btn').innerHTML = '<span>✅</span> Photo Captured';
+                }
+
+                // TODO: Insert your actual Fetch/Axios API call here to send the image to your backend for analysis.
             }
         }
     </script>
