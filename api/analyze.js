@@ -1,14 +1,23 @@
 export default async function handler(req, res) {
-    if (req.method !== 'POST') return res.status(405).end();
+    // Only allow POST requests
+    if (req.method !== 'POST') {
+        return res.status(405).json({ error: "Method not allowed" });
+    }
 
     try {
-        const { imagesBase64 } = req.body; // Now expects an array
+        const { imagesBase64 } = req.body;
+
+        // Validation: Check if images exist
+        if (!imagesBase64 || !Array.isArray(imagesBase64) || imagesBase64.length === 0) {
+            return res.status(400).json({ error: "No images provided" });
+        }
         
         // Map the array of base64 strings into the format Gemini requires
         const imageParts = imagesBase64.map(base64 => ({
             inline_data: { mime_type: "image/jpeg", data: base64 }
         }));
 
+        // Send to Gemini
         const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${process.env.GEMINI_API_KEY}`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -29,14 +38,22 @@ export default async function handler(req, res) {
             })
         });
 
+        // Parse response
         const data = await response.json();
         
+        // Error handling for non-200 responses
         if (!response.ok) {
-            return res.status(500).json({ error: data.error?.message || "Gemini API Error" });
+            console.error("Gemini API Error:", data);
+            return res.status(500).json({ 
+                error: data.error?.message || "Gemini API returned an error" 
+            });
         }
         
+        // Return valid JSON
         res.status(200).json(data);
+
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        console.error("Server Error:", error);
+        res.status(500).json({ error: error.message || "Internal server error" });
     }
 }
