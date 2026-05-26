@@ -3,42 +3,27 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Resale IQ - Pro UX</title>
+    <title>Resale IQ</title>
     <style>
-        body { background: #000; color: #fff; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; padding: 20px; display: flex; flex-direction: column; align-items: center; }
-        .container { width: 100%; max-width: 400px; }
-        .logo { width: 200px; margin: 0 auto 20px; display: block; }
-        
-        /* Dashboard Card */
-        .dashboard { background: #1a1a1a; padding: 15px; border-radius: 15px; margin-bottom: 20px; text-align: center; border: 1px solid #222; }
-        .dashboard h3 { margin: 5px 0; font-size: 20px; }
-        .dashboard small { color: #888; }
-
-        /* Card Layout for Sections */
-        .card { background: #1a1a1a; padding: 15px; border-radius: 15px; margin-bottom: 15px; border: 1px solid #222; }
-        .card h3 { margin-top: 0; font-size: 16px; color: #fff; text-align: left; }
-        
-        /* One-Tap Grid Layout */
-        .action-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px; }
-        .btn { padding: 18px; border-radius: 15px; border: none; color: #fff; font-weight: bold; font-size: 16px; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; transition: background 0.2s; }
-        .camera-btn { background: #28a745; }
-        .camera-btn:active { background: #1e7e34; }
+        body { background: #000; color: #fff; font-family: sans-serif; padding: 20px; display: flex; flex-direction: column; align-items: center; }
+        .container { width: 100%; max-width: 400px; text-align: center; }
+        .logo { width: 250px; margin-bottom: 20px; }
+        .dashboard { background: #222; padding: 15px; border-radius: 10px; margin-bottom: 20px; }
+        .btn { width: 100%; padding: 15px; margin: 10px 0; border-radius: 10px; border: none; background: #333; color: #fff; font-size: 16px; cursor: pointer; }
         .analyze-btn { background: #0070f3; }
-        .analyze-btn:active { background: #0056b3; }
-        .expense-btn { background: #f39c12; width: 100%; margin-top: 10px; }
-        .expense-btn:active { background: #d35400; }
+        .camera-btn { background: #28a745; }
+        .expense-btn { background: #f39c12; }
+        input { width: 90%; padding: 10px; margin: 5px 0; border-radius: 5px; border: none; }
         
-        input { width: 90%; padding: 12px; margin: 6px 0; border-radius: 10px; border: 1px solid #333; background: #000; color: #fff; font-size: 14px; }
-        input:focus { border-color: #0070f3; outline: none; }
-        
-        /* Help Box inside Sourcing Card */
-        .help-box { background: #111; padding: 12px; border-radius: 10px; margin-top: 10px; text-align: left; font-size: 12px; color: #aaa; border: 1px solid #222; line-height: 1.5; }
-        .help-box b { color: #0070f3; }
+        /* Expanded Help Section Styles */
+        .help-section { background: #1a1a1a; padding: 15px; border-radius: 10px; margin-top: 10px; text-align: left; font-size: 13px; color: #ccc; line-height: 1.5; }
+        .help-section h4 { margin-top: 0; margin-bottom: 8px; color: #0070f3; display: flex; align-items: center; gap: 5px; }
+        .help-section ul { margin: 5px 0; padding-left: 18px; }
+        .help-section li { margin-bottom: 6px; }
         
         #gallery { display: flex; flex-wrap: wrap; gap: 10px; margin: 15px 0; }
-        #gallery img { width: 80px; height: 80px; object-fit: cover; border-radius: 8px; }
-        #result { background: #111; padding: 15px; border-radius: 15px; font-size: 14px; line-height: 1.6; border: 1px solid #333; white-space: pre-wrap; min-height: 50px; }
-        .expense-card { background: #111; padding: 10px; margin: 8px 0; border-radius: 8px; border-left: 4px solid #f39c12; text-align: left; font-size: 13px; }
+        #gallery img { width: 80px; height: 80px; object-fit: cover; border-radius: 5px; }
+        #result { background: #1a1a1a; padding: 15px; border-radius: 10px; margin-top: 20px; text-align: left; font-size: 14px; }
     </style>
 </head>
 <body>
@@ -46,61 +31,48 @@
         <img src="logo1.png" class="logo" alt="Logo">
         
         <div class="dashboard">
-            <h3>Net Profit: $<span id="netProfit">0.00</span></h3>
-            <small>Revenue: $<span id="rev">0.00</span> | Expenses/COGS: $<span id="exp">0.00</span></small>
+            <h3>Net Profit: $<span id="netProfit">0</span></h3>
         </div>
 
-        <div class="card">
-            <h3>1. Enter Sourcing Cost</h3>
-            <input type="number" id="costInput" placeholder="Sourcing Cost ($)" step="0.01">
-            
-            <div class="help-box">
-                💡 <b>Thrift:</b> Cost / item count • <b>Bulk:</b> (Cost + Fees) / items • <b>Free:</b> $0
-            </div>
-        </div>
-
-        <div class="action-grid">
-            <button class="btn camera-btn" onclick="document.getElementById('cameraInput').click()">📷 Snap Photo</button>
-            <button class="btn analyze-btn" onclick="document.getElementById('fileInput').click()">📁 Browse Files</button>
-        </div>
+        <input type="number" id="costInput" placeholder="Sourcing Cost ($)">
         
-        <input type="file" id="cameraInput" accept="image/*" capture="environment" style="display:none;">
+        <div class="help-section">
+            <h4>💡 Master Sourcing Cost Guide</h4>
+            <ul>
+                <li><b>Thrift & Garage Sales:</b> Use the exact register price. If you bought a bundle, divide the total receipt cost by the number of usable items.</li>
+                <li><b>Auctions & Bulk Lots:</b> Add the item cost, buyer’s premiums, taxes, and shipping costs altogether, then divide by the total items to find the cost per unit.</li>
+                <li><b>Found, Gifted, or Free Items:</b> Enter <b>$0</b>. If you spent money on gas to pick it up, log that down below under general expenses instead.</li>
+                <li><b>Repairs & Cleaning:</b> If you had to buy a replacement part or specific cleaner just for this item, add that directly to this sourcing cost.</li>
+            </ul>
+        </div>
+
+        <button class="btn analyze-btn" onclick="document.getElementById('fileInput').click()">📁 Select Photos</button>
         <input type="file" id="fileInput" accept="image/*" multiple style="display:none;">
+
+        <button class="btn camera-btn" onclick="document.getElementById('cameraInput').click()">📷 Take Photo</button>
+        <input type="file" id="cameraInput" accept="image/*" capture="environment" style="display:none;">
+
+        <h3>Add Expense</h3>
+        <input type="text" id="expDesc" placeholder="Description (e.g., Mileage)">
+        <input type="number" id="expAmt" placeholder="Amount ($)">
+        <button class="btn expense-btn" onclick="addExpense()">Add Expense</button>
         
         <div id="gallery"></div>
-        <div id="result">Waiting for item scan...</div>
-
-        <div class="card" style="margin-top: 20px;">
-            <h3>2. Log Business Expense</h3>
-            <input type="text" id="expDesc" placeholder="Description (e.g., Shipping tape, Mileage)">
-            <input type="number" id="expAmt" placeholder="Amount ($)" step="0.01">
-            <button class="btn expense-btn" onclick="addExpense()">Add Expense</button>
-            <div id="expenseList"></div>
-        </div>
+        <div id="result"></div>
     </div>
 
     <script>
         let allImages = [];
 
         async function handleFiles(files) {
-            const cost = parseFloat(document.getElementById('costInput').value) || 0;
+            const cost = document.getElementById('costInput').value || 0;
             allImages = []; 
             document.getElementById('gallery').innerHTML = "";
-            document.getElementById('result').innerText = "Analyzing item properties & fetching market values...";
             
             for (const file of Array.from(files)) {
-                // Render thumb previews
-                const reader = new FileReader();
-                reader.onload = (e) => {
-                    const img = document.createElement('img');
-                    img.src = e.target.result;
-                    document.getElementById('gallery').appendChild(img);
-                };
-                reader.readAsDataURL(file);
-
                 const b64 = await new Promise(r => {
-                    const readerRef = new FileReader();
-                    readerRef.onload = (e) => {
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
                         const img = new Image();
                         img.onload = () => {
                             const canvas = document.createElement('canvas');
@@ -110,7 +82,7 @@
                         };
                         img.src = e.target.result;
                     };
-                    readerRef.readAsDataURL(file);
+                    reader.readAsDataURL(file);
                 });
                 allImages.push(b64);
             }
@@ -118,75 +90,25 @@
         }
 
         async function runAnalysis(cost) {
-            try {
-                const res = await fetch('/api/analyze', { 
-                    method: 'POST', 
-                    headers: {'Content-Type': 'application/json'}, 
-                    body: JSON.stringify({ imagesBase64: allImages }) 
-                });
-                const data = await res.json();
-                const text = data.candidates[0].content.parts[0].text;
-                document.getElementById('result').innerText = text;
-                
-                // Parse out price safely for the dashboard metrics
-                const priceMatch = text.match(/PRICE:\s*\$?(\d+)/i) || text.match(/\$?(\d+)/);
-                const salePrice = priceMatch ? parseFloat(priceMatch[1]) : 0;
-                
-                let h = JSON.parse(localStorage.getItem('resaleHistory') || '[]');
-                h.unshift({ text: text, cost: cost, price: salePrice, status: 'Sold' }); // Automatically counting as sold for baseline metrics
-                localStorage.setItem('resaleHistory', JSON.stringify(h));
-                
-                updateDashboard();
-            } catch (err) {
-                document.getElementById('result').innerText = "Analysis encountered an error. Please try again.";
-            }
+            document.getElementById('result').innerText = "Analyzing...";
+            const res = await fetch('/api/analyze', { 
+                method: 'POST', headers: {'Content-Type': 'application/json'}, 
+                body: JSON.stringify({ imagesBase64: allImages }) 
+            });
+            const data = await res.json();
+            const text = data.candidates[0].content.parts[0].text;
+            document.getElementById('result').innerText = text;
         }
 
         function addExpense() {
             const desc = document.getElementById('expDesc').value;
             const amt = parseFloat(document.getElementById('expAmt').value) || 0;
             if (!desc || amt <= 0) return;
-
-            let exps = JSON.parse(localStorage.getItem('expenses') || '[]');
-            exps.push({ desc, amt });
-            localStorage.setItem('expenses', JSON.stringify(exps));
-            
-            document.getElementById('expDesc').value = "";
-            document.getElementById('expAmt').value = "";
-            updateDashboard();
-        }
-
-        function updateDashboard() {
-            const items = JSON.parse(localStorage.getItem('resaleHistory') || '[]');
-            let revenue = 0, cogs = 0;
-            items.forEach(i => {
-                if(i.status === 'Sold') {
-                    revenue += i.price;
-                    cogs += parseFloat(i.cost);
-                }
-            });
-
-            const exps = JSON.parse(localStorage.getItem('expenses') || '[]');
-            let totalExp = 0;
-            const list = document.getElementById('expenseList');
-            list.innerHTML = "";
-            
-            exps.slice(-3).reverse().forEach(e => { // Show last 3 expenses
-                totalExp += e.amt;
-                list.innerHTML += `<div class="expense-card"><b>${e.desc}</b>: $${e.amt.toFixed(2)}</div>`;
-            });
-            
-            // Calculate true overhead sum
-            exps.forEach(e => { totalExp += e.amt; });
-
-            document.getElementById('netProfit').innerText = (revenue - cogs - totalExp).toFixed(2);
-            document.getElementById('rev').innerText = revenue.toFixed(2);
-            document.getElementById('exp').innerText = (cogs + totalExp).toFixed(2);
+            alert("Expense added: " + desc);
         }
 
         document.getElementById('fileInput').onchange = (e) => handleFiles(e.target.files);
         document.getElementById('cameraInput').onchange = (e) => handleFiles(e.target.files);
-        window.onload = updateDashboard;
     </script>
 </body>
 </html>
