@@ -5,17 +5,24 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ResaleIQ</title>
     <style>
-        html, body { margin: 0; padding: 0; height: 100%; background-color: #000000; color: #ffffff; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+        html, body { margin: 0; padding: 0; min-height: 100%; background-color: #000000; color: #ffffff; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
         .app-container { max-width: 480px; margin: 0 auto; display: flex; flex-direction: column; min-height: 100vh; }
         .brand-header { width: 100%; text-align: center; padding: 20px 0; background-color: #000; }
         .main-logo { width: 150px; height: 150px; object-fit: contain; margin: 0 auto; display: block; }
-        .promo-banner { background-color: transparent; border-bottom: 1px solid #333; color: #ffffff; text-align: center; padding: 12px; font-size: 0.85rem; }
+        .promo-banner { border-bottom: 1px solid #333; color: #ffffff; text-align: center; padding: 12px; font-size: 0.85rem; }
         .content-area { flex: 1; padding: 20px; }
-        .profit-card { background-color: #161616; border-radius: 16px; padding: 24px; text-align: center; margin-bottom: 20px; }
+        .profit-card { background-color: #161616; border-radius: 16px; padding: 24px; text-align: center; margin-bottom: 20px; position: relative; }
         .profit-amount { color: #2ecc71; font-size: 2.5rem; font-weight: bold; margin: 5px 0; }
-        .btn { width: 100%; padding: 16px; border-radius: 12px; font-size: 1rem; font-weight: 600; border: none; cursor: pointer; color: #ffffff; background-color: #007aff; margin-top: 10px; }
+        .input-group { position: relative; margin-bottom: 16px; }
+        .app-input { width: 100%; background-color: #161616; border: 1px solid #333; border-radius: 12px; padding: 16px; font-size: 1rem; color: #ffffff; box-sizing: border-box; }
+        .btn { width: 100%; padding: 16px; border-radius: 12px; font-size: 1rem; font-weight: 600; border: none; cursor: pointer; color: #ffffff; margin-bottom: 12px; }
+        .btn-blue { background-color: #007aff; }
+        .btn-green { background-color: #34c759; }
+        .btn-orange { background-color: #ff9f0a; }
+        .info-trigger { position: absolute; top: 16px; right: 16px; background: none; border: none; color: #007aff; font-size: 1.2rem; cursor: pointer; padding: 8px; }
+        .section-label { font-size: 1.1rem; font-weight: 600; margin: 24px 0 16px 0; }
         .hidden-uploader { position: absolute !important; opacity: 0 !important; width: 1px !important; height: 1px !important; overflow: hidden !important; }
-        #status-display { background-color: #1c1c1e; border-radius: 12px; padding: 20px; margin: 16px 0; font-size: 0.95rem; line-height: 1.5; border-left: 4px solid #007aff; display: none; white-space: pre-wrap; }
+        #status-display { background-color: #1c1c1e; border-radius: 12px; padding: 20px; margin: 16px 0; font-size: 0.95rem; border-left: 4px solid #007aff; display: none; }
         .log-item { background-color: #161616; border-radius: 12px; padding: 16px; margin-bottom: 8px; border-left: 4px solid #34c759; font-size: 0.9rem; }
     </style>
 </head>
@@ -31,58 +38,45 @@
             <div class="profit-card">
                 <div style="color:#8a8a8f; font-size:0.8rem; text-transform: uppercase;">Net Profit</div>
                 <p class="profit-amount">$0.00</p>
+                <button class="info-trigger" onclick="alert('Net Profit is your total take-home earnings.')">ⓘ</button>
             </div>
 
-            <input type="file" id="file-input" class="hidden-uploader" accept="image/*">
-            <button class="btn" onclick="document.getElementById('file-input').click()">Analyze Item</button>
+            <div class="input-group">
+                <input type="number" class="app-input" placeholder="Sourcing Cost ($)">
+                <button class="info-trigger" onclick="alert('Enter the exact amount you paid for the item.')">ⓘ</button>
+            </div>
+
+            <input type="file" id="file-gallery" class="hidden-uploader" accept="image/*">
+            <input type="file" id="file-camera" class="hidden-uploader" accept="image/*" capture="environment">
+
+            <button class="btn btn-blue" onclick="document.getElementById('file-gallery').click()">Select Photos</button>
+            <button class="btn btn-green" onclick="document.getElementById('file-camera').click()">Take Photo</button>
 
             <div id="status-display"></div>
+
+            <div class="section-label">Add Expense</div>
+            <div class="input-group"><input type="text" class="app-input" placeholder="Description (e.g., Mileage)"></div>
+            <div class="input-group"><input type="number" class="app-input" placeholder="Amount ($)"></div>
+            <button class="btn btn-orange">Add Expense</button>
+
+            <div class="section-label">Inventory Log</div>
             <div id="inventory-log"></div>
         </div>
     </div>
 
     <script>
-        const API_KEY = 'YOUR_GEMINI_API_KEY_HERE';
-
-        document.getElementById('file-input').addEventListener('change', async (e) => {
-            const file = e.target.files[0];
-            if (!file) return;
-
+        // AI Logic placeholder - Add your API key below
+        const API_KEY = 'AIzaSyCp54LGv8iu-IxPbpaoakU83OZNMheErCA';
+        
+        function handleFile(file) {
             const statusDiv = document.getElementById('status-display');
             statusDiv.style.display = 'block';
-            statusDiv.textContent = "Processing image with AI...";
+            statusDiv.textContent = "Processing " + file.name + "...";
+            // ... Add your fetch logic here
+        }
 
-            const reader = new FileReader();
-            reader.onloadend = async () => {
-                const base64Image = reader.result.split(',')[1];
-                try {
-                    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${API_KEY}`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            contents: [{
-                                parts: [
-                                    { text: "Analyze this item for resale: Provide 1. Item Name, 2. Est. Market Value, 3. Selling Advice, 4. Listing Description." },
-                                    { inline_data: { mime_type: "image/jpeg", data: base64Image } }
-                                ]
-                            }]
-                        })
-                    });
-                    const data = await response.json();
-                    const result = data.candidates[0].content.parts[0].text;
-                    statusDiv.textContent = result;
-                    
-                    const log = document.getElementById('inventory-log');
-                    const entry = document.createElement('div');
-                    entry.className = 'log-item';
-                    entry.textContent = result;
-                    log.prepend(entry);
-                } catch (err) {
-                    statusDiv.textContent = "Error: " + err.message;
-                }
-            };
-            reader.readAsDataURL(file);
-        });
+        document.getElementById('file-gallery').addEventListener('change', (e) => handleFile(e.target.files[0]));
+        document.getElementById('file-camera').addEventListener('change', (e) => handleFile(e.target.files[0]));
     </script>
 </body>
 </html>
