@@ -138,6 +138,11 @@
             color: #ffffff;
         }
 
+        /* Hidden Inputs for File/Camera API Triggers */
+        .hidden-uploader {
+            display: none;
+        }
+
         /* Information Modals/Popups */
         .modal-overlay {
             position: fixed;
@@ -234,11 +239,14 @@
             <button class="info-trigger" onclick="openModal('sourcing-cost')">ⓘ</button>
         </div>
 
-        <button class="btn btn-blue">
+        <input type="file" id="file-gallery-input" class="hidden-uploader" accept="image/*" onchange="processSelectedImage(this)">
+        <input type="file" id="camera-capture-input" class="hidden-uploader" accept="image/*" capture="environment" onchange="processSelectedImage(this)">
+
+        <button class="btn btn-blue" onclick="triggerGallery()">
             <span>📁</span> Select Photos
         </button>
         
-        <button class="btn btn-green">
+        <button class="btn btn-green" onclick="triggerCamera()">
             <span>📷</span> Take Photo
         </button>
 
@@ -297,6 +305,24 @@
         document.getElementById('info-modal').addEventListener('click', function(e) {
             if (e.target === this) closeModal();
         });
+
+        // Trigger mechanisms to route stylized buttons to native hardware processes
+        function triggerGallery() {
+            document.getElementById('file-gallery-input').click();
+        }
+
+        function triggerCamera() {
+            document.getElementById('camera-capture-input').click();
+        }
+
+        // Processing hook for handling image file objects once selected or captured
+        function processSelectedImage(inputElement) {
+            if (inputElement.files && inputElement.files[0]) {
+                const targetFile = inputElement.files[0];
+                console.log("Image received successfully for processing: ", targetFile.name);
+                // Future integration point for uploading files or running computer vision scanning can go here
+            }
+        }
     </script>
 </body>
 </html>
