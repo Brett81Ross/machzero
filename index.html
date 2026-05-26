@@ -22,7 +22,9 @@
         .hidden-uploader { position: absolute !important; opacity: 0 !important; width: 1px !important; height: 1px !important; overflow: hidden !important; }
         .section-label { text-align: center; font-size: 1.1rem; font-weight: 600; margin: 24px 0 16px 0; }
         
-        #status-display { background-color: #1c1c1e; border-radius: 12px; padding: 16px; margin: 16px 0; font-size: 0.9rem; color: #ffffff; border-left: 4px solid #007aff; display: none; white-space: pre-wrap; }
+        #status-display { background-color: #1c1c1e; border-radius: 12px; padding: 16px; margin: 16px 0; font-size: 0.9rem; color: #ffffff; border-left: 4px solid #007aff; display: none; white-space: pre-wrap; transition: opacity 0.5s; }
+        .pulsing { animation: pulse 1.5s infinite; }
+        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.6; } 100% { opacity: 1; } }
         
         .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background-color: rgba(0, 0, 0, 0.9); display: none; align-items: center; justify-content: center; z-index: 1000; padding: 20px; }
         .modal-box { background-color: #1c1c1e; border-radius: 16px; padding: 24px; max-width: 400px; width: 100%; }
@@ -75,7 +77,7 @@
 
     <script>
         document.getElementById('gallery-trigger-btn').addEventListener('click', () => document.getElementById('file-gallery-input').click());
-        document.getElementById('camera-trigger-btn').addEventListener('click', () => document.getElementById('camera-capture-input').click());
+        document.getElementById('camera-capture-input').addEventListener('click', () => document.getElementById('camera-capture-input').click());
 
         function showHelp(topic) {
             const modal = document.getElementById('help-modal');
@@ -94,18 +96,27 @@
 
         async function handleImageUpload(input) {
             if (!input.files || !input.files[0]) return;
-            const file = input.files[0];
             const statusDiv = document.getElementById('status-display');
-            
+            const steps = ["Scanning image...", "Connecting to AI...", "Evaluating market data...", "Analyzing photo details..."];
+            let stepIndex = 0;
+
             const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
+            const updateStatus = () => {
+                statusDiv.textContent = steps[stepIndex % steps.length];
+                stepIndex++;
+            };
+
+            const statusInterval = setInterval(updateStatus, 2000);
+            
             const process = async () => {
                 statusDiv.style.display = 'block';
+                statusDiv.classList.add('pulsing');
                 statusDiv.style.borderColor = '#007aff';
-                statusDiv.textContent = "Analyzing " + file.name + "...";
+                updateStatus();
 
                 const reader = new FileReader();
-                reader.readAsDataURL(file);
+                reader.readAsDataURL(input.files[0]);
                 reader.onload = async () => {
                     const base64String = reader.result.split(',')[1];
                     try {
@@ -116,6 +127,8 @@
                         });
                         
                         const data = await response.json();
+                        clearInterval(statusInterval);
+                        statusDiv.classList.remove('pulsing');
                         
                         if (response.ok) {
                             statusDiv.style.borderColor = '#34c759';
@@ -123,7 +136,7 @@
                         } 
                         else if (response.status === 429) {
                             statusDiv.style.borderColor = '#ff9f0a';
-                            statusDiv.textContent = "Rate limit reached. Waiting 35s to auto-retry...";
+                            statusDiv.textContent = "Rate limit reached. Retrying in 35s...";
                             await sleep(35000); 
                             process(); 
                         } 
@@ -132,6 +145,7 @@
                             statusDiv.textContent = "Error: " + (data.error || "Server issue.");
                         }
                     } catch (error) {
+                        clearInterval(statusInterval);
                         statusDiv.style.borderColor = '#ff3b30';
                         statusDiv.textContent = "Connection error. Check internet.";
                     }
@@ -140,5 +154,5 @@
             process();
         }
     </script>
-    </body>
+</body>
 </html>
