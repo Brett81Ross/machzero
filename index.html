@@ -11,10 +11,15 @@
         .main-logo { width: 120px; }
         
         /* Net Profit Box */
-        .profit-card { background: #1c1c1e; border-radius: 15px; padding: 20px; text-align: center; margin-bottom: 15px; border: 1px solid #333; }
+        .profit-card { background: #1c1c1e; border-radius: 15px; padding: 20px; text-align: center; margin-bottom: 15px; border: 1px solid #333; position: relative; }
         .profit-label { color: #888; font-size: 0.9rem; margin-bottom: 5px; }
         .profit-amount { color: #34c759; font-size: 2.5rem; font-weight: bold; }
         
+        /* Info Button Styling */
+        .info-btn { background: #444; border-radius: 50%; width: 25px; height: 25px; border: none; color: white; cursor: pointer; font-size: 12px; position: absolute; top: 15px; right: 15px; }
+        .input-row { display: flex; align-items: center; gap: 10px; }
+        .inline-info { background: #444; border-radius: 50%; width: 30px; height: 30px; border: none; color: white; cursor: pointer; flex-shrink: 0; }
+
         /* Inputs */
         input { width: 100%; padding: 15px; border-radius: 10px; border: 1px solid #333; background: #1c1c1e; color: #fff; margin-bottom: 10px; box-sizing: border-box; }
         
@@ -37,11 +42,15 @@
         </div>
 
         <div class="profit-card">
+            <button class="info-btn" onclick="alert('Net Profit = Estimated Sale Price - Sourcing Cost - Expenses')">ℹ️</button>
             <div class="profit-label">NET PROFIT</div>
             <div class="profit-amount" id="net-profit">$0.00</div>
         </div>
 
-        <input type="number" id="sourcing-cost" placeholder="Sourcing Cost ($)">
+        <div class="input-row">
+            <input type="number" id="sourcing-cost" placeholder="Sourcing Cost ($)">
+            <button class="inline-info" onclick="alert('Enter the total amount you paid to source the item.')">ℹ️</button>
+        </div>
 
         <input type="file" id="file-input" class="hidden-uploader" accept="image/*">
         <button class="btn btn-blue" id="gallery-btn">Select Photos</button>
@@ -59,11 +68,9 @@
     <script>
         const API_KEY = 'AIzaSyBzcnjEsoze4PGMiTD6usC4PXIiYKUlJK8';
 
-        // Elements
         const fileInput = document.getElementById('file-input');
         const status = document.getElementById('status-display');
 
-        // Handlers
         document.getElementById('gallery-btn').addEventListener('click', () => fileInput.click());
         document.getElementById('camera-btn').addEventListener('click', () => fileInput.click());
         fileInput.addEventListener('change', (e) => upload(e.target.files[0]));
