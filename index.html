@@ -5,45 +5,27 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ResaleIQ</title>
     <style>
-        /* Base Application Layout */
-        html, body {
-            margin: 0;
-            padding: 0;
-            min-height: 100%;
-            background-color: #000000;
-            color: #ffffff;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .brand-header { width: 100%; margin: 0; padding: 0; overflow: hidden; }
+        html, body { margin: 0; padding: 0; min-height: 100%; background-color: #000000; color: #ffffff; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; display: flex; flex-direction: column; }
+        .brand-header { width: 100%; margin: 0; padding: 0; }
         .main-logo { width: 100%; height: auto; aspect-ratio: 1 / 1; display: block; object-fit: contain; background-color: #ffffff; }
         .app-wrapper { flex: 1; padding: 16px; max-width: 480px; width: 100%; margin: 0 auto; box-sizing: border-box; }
-        
         .profit-card { background-color: #161616; border-radius: 16px; padding: 24px 16px; text-align: center; position: relative; margin-bottom: 16px; }
-        .card-title { color: #8a8a8f; font-size: 0.85rem; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
+        .card-title { color: #8a8a8f; font-size: 0.85rem; font-weight: 600; text-transform: uppercase; margin-bottom: 8px; }
         .profit-amount { color: #2ecc71; font-size: 2.5rem; font-weight: bold; margin: 0; }
-        
         .info-trigger { position: absolute; top: 16px; right: 16px; background: none; border: none; color: #007aff; font-size: 1.2rem; cursor: pointer; padding: 4px; }
-        
         .input-group { position: relative; margin-bottom: 16px; }
         .app-input { width: 100%; background-color: #161616; border: 1px solid #222222; border-radius: 12px; padding: 16px; font-size: 1rem; color: #ffffff; box-sizing: border-box; }
-        
-        .btn { width: 100%; padding: 16px; border-radius: 12px; font-size: 1rem; font-weight: 600; border: none; cursor: pointer; margin-bottom: 12px; display: flex; align-items: center; justify-content: center; gap: 8px; color: #ffffff; font-family: inherit; }
+        .btn { width: 100%; padding: 16px; border-radius: 12px; font-size: 1rem; font-weight: 600; border: none; cursor: pointer; margin-bottom: 12px; color: #ffffff; }
         .btn-blue { background-color: #007aff; }
         .btn-green { background-color: #34c759; }
         .btn-orange { background-color: #ff9f0a; margin-top: 8px; }
-        
         .hidden-uploader { position: absolute !important; opacity: 0 !important; width: 1px !important; height: 1px !important; overflow: hidden !important; }
-        .section-label { text-align: center; font-size: 1.1rem; font-weight: 600; margin: 24px 0 16px 0; color: #ffffff; }
-
-        .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background-color: rgba(0, 0, 0, 0.75); display: flex; align-items: center; justify-content: center; z-index: 1000; opacity: 0; visibility: hidden; transition: opacity 0.2s; padding: 20px; }
+        .section-label { text-align: center; font-size: 1.1rem; font-weight: 600; margin: 24px 0 16px 0; }
+        .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background-color: rgba(0, 0, 0, 0.85); display: flex; align-items: center; justify-content: center; z-index: 1000; opacity: 0; visibility: hidden; transition: opacity 0.2s; padding: 20px; }
         .modal-overlay.active { opacity: 1; visibility: visible; }
         .modal-box { background-color: #1c1c1e; border-radius: 14px; padding: 20px; max-width: 320px; width: 100%; text-align: center; }
-        .modal-text { color: #ffffff; font-size: 0.95rem; line-height: 1.4; margin-bottom: 20px; white-space: pre-wrap; }
-        .modal-close-btn { background-color: #007aff; color: white; border: none; padding: 10px 24px; border-radius: 8px; font-weight: 600; width: 100%; cursor: pointer; }
-
+        .modal-text { color: #ffffff; font-size: 0.95rem; margin-bottom: 20px; white-space: pre-wrap; }
+        .modal-close-btn { background-color: #007aff; color: white; border: none; padding: 10px 24px; border-radius: 8px; width: 100%; cursor: pointer; }
         .app-footer { background-color: #0a0a0a; padding: 20px; text-align: center; font-size: 0.8rem; color: #666666; margin-top: auto; }
     </style>
 </head>
@@ -55,13 +37,24 @@
         <div class="profit-card">
             <div class="card-title">Net Profit</div>
             <p class="profit-amount">$0.00</p>
+            <button class="info-trigger" onclick="alert('Net Profit = Sales - Costs')">ⓘ</button>
+        </div>
+
+        <div class="input-group">
+            <input type="number" class="app-input" placeholder="Sourcing Cost ($)">
+            <button class="info-trigger" onclick="alert('Enter purchase price')">ⓘ</button>
         </div>
 
         <input type="file" id="file-gallery-input" class="hidden-uploader" accept="image/*" onchange="handleImageUpload(this)">
         <input type="file" id="camera-capture-input" class="hidden-uploader" accept="image/*" capture="environment" onchange="handleImageUpload(this)">
 
-        <button class="btn btn-blue" id="gallery-trigger-btn"><span>📁</span> Select Photos</button>
-        <button class="btn btn-green" id="camera-trigger-btn"><span>📷</span> Take Photo</button>
+        <button class="btn btn-blue" id="gallery-trigger-btn">Select Photos</button>
+        <button class="btn btn-green" id="camera-trigger-btn">Take Photo</button>
+
+        <div class="section-label">Add Expense</div>
+        <div class="input-group"><input type="text" class="app-input" placeholder="Description (e.g., Mileage)"></div>
+        <div class="input-group"><input type="number" class="app-input" placeholder="Amount ($)"></div>
+        <button class="btn btn-orange">Add Expense</button>
 
         <div class="section-label">Inventory Log</div>
     </div>
@@ -77,7 +70,7 @@
 
     <script>
         document.getElementById('gallery-trigger-btn').addEventListener('click', () => document.getElementById('file-gallery-input').click());
-        document.getElementById('camera-trigger-btn').addEventListener('click', () => document.getElementById('camera-capture-input').click());
+        document.getElementById('camera-capture-input').addEventListener('click', () => document.getElementById('camera-capture-input').click());
 
         function closeModal() { document.getElementById('info-modal').classList.remove('active'); }
 
@@ -85,14 +78,16 @@
             if (!input.files || !input.files[0]) return;
             const file = input.files[0];
             
-            document.getElementById('modal-content-field').textContent = "Analyzing " + file.name + "... Please wait.";
+            // Show modal immediately
+            document.getElementById('modal-content-field').textContent = "Analyzing " + file.name + "...";
             document.getElementById('info-modal').classList.add('active');
 
             const reader = new FileReader();
             reader.readAsDataURL(file);
             reader.onload = async () => {
                 const base64String = reader.result.split(',')[1];
-
+                
+                // Android-specific: Sending as JSON payload
                 try {
                     const response = await fetch('/api/analyze', { 
                         method: 'POST', 
@@ -101,15 +96,13 @@
                     });
                     
                     const data = await response.json();
-                    
                     if (response.ok) {
-                        const resultText = data.candidates[0].content.parts[0].text;
-                        document.getElementById('modal-content-field').textContent = resultText;
+                        document.getElementById('modal-content-field').textContent = data.candidates[0].content.parts[0].text;
                     } else {
-                        document.getElementById('modal-content-field').textContent = "Error: " + (data.error || "Unknown server error");
+                        document.getElementById('modal-content-field').textContent = "Server Error: " + (data.error || "Check backend.");
                     }
                 } catch (error) {
-                    document.getElementById('modal-content-field').textContent = "Error: Could not connect to analysis server.";
+                    document.getElementById('modal-content-field').textContent = "Android/Network Error. Ensure your API key is configured in Vercel environment variables.";
                 }
             };
         }
