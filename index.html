@@ -100,34 +100,52 @@
         document.getElementById('gallery-btn').addEventListener('click', () => galleryInput.click());
         document.getElementById('camera-btn').addEventListener('click', () => cameraInput.click());
         
-        galleryInput.addEventListener('change', (e) => upload(e.target.files[0]));
-        cameraInput.addEventListener('change', (e) => upload(e.target.files[0]));
+        galleryInput.addEventListener('change', (e) => handleFile(e.target.files[0]));
+        cameraInput.addEventListener('change', (e) => handleFile(e.target.files[0]));
 
-        async function upload(file) {
+        function handleFile(file) {
             if (!file) return;
-            status.textContent = "Analyzing item...";
+            status.textContent = "Compressing and analyzing...";
+            
             const reader = new FileReader();
-            reader.onloadend = async () => {
-                const base64Data = reader.result.split(',')[1];
-                try {
-                    const response = await fetch('/api/analyze', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ imagesBase64: [base64Data] })
-                    });
+            reader.onload = (event) => {
+                const img = new Image();
+                img.onload = () => {
+                    const canvas = document.createElement('canvas');
+                    const MAX_WIDTH = 800;
+                    const scaleSize = MAX_WIDTH / img.width;
+                    canvas.width = MAX_WIDTH;
+                    canvas.height = img.height * scaleSize;
                     
-                    const data = await response.json();
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
                     
-                    if (!response.ok) {
-                        throw new Error(data.error || 'Server error occurred');
-                    }
-                    
-                    status.textContent = data.candidates[0].content.parts[0].text;
-                } catch (err) {
-                    status.textContent = "Error: " + err.message;
-                }
+                    const compressedBase64 = canvas.toDataURL('image/jpeg', 0.7).split(',')[1];
+                    sendToServer(compressedBase64);
+                };
+                img.src = event.target.result;
             };
             reader.readAsDataURL(file);
+        }
+
+        async function sendToServer(base64Data) {
+            try {
+                const response = await fetch('/api/analyze', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ imagesBase64: [base64Data] })
+                });
+                
+                const data = await response.json();
+                
+                if (!response.ok) {
+                    throw new Error(data.error || 'Server error occurred');
+                }
+                
+                status.textContent = data.candidates[0].content.parts[0].text;
+            } catch (err) {
+                status.textContent = "Error: " + err.message;
+            }
         }
     </script>
 </body>
