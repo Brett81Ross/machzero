@@ -26,6 +26,10 @@
         .pulsing { animation: pulse 1.5s infinite; }
         @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.6; } 100% { opacity: 1; } }
         
+        /* Inventory Log Styles */
+        #inventory-log { margin-top: 16px; }
+        .log-item { background-color: #161616; border-radius: 12px; padding: 16px; margin-bottom: 8px; border-left: 4px solid #34c759; font-size: 0.9rem; }
+        
         .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background-color: rgba(0, 0, 0, 0.9); display: none; align-items: center; justify-content: center; z-index: 1000; padding: 20px; }
         .modal-box { background-color: #1c1c1e; border-radius: 16px; padding: 24px; max-width: 400px; width: 100%; }
         .modal-title { font-size: 1.2rem; font-weight: bold; margin-bottom: 16px; color: #007aff; }
@@ -64,6 +68,7 @@
         <button class="btn btn-orange">Add Expense</button>
 
         <div class="section-label">Inventory Log</div>
+        <div id="inventory-log"></div>
     </div>
 
     <div class="modal-overlay" id="help-modal">
@@ -74,14 +79,22 @@
         </div>
     </div>
 
-    <footer class="app-footer">&copy; 2026 ResaleIQ Powered by CactusByte Systems. All Rights Reserved.</footer>
+    <footer class="app-footer">&copy; 2026 ResaleIQ Powered by CactusByte. All Rights Reserved.</footer>
 
     <script>
         document.getElementById('gallery-trigger-btn').addEventListener('click', () => document.getElementById('file-gallery-input').click());
-        document.getElementById('camera-trigger-btn').addEventListener('click', () => document.getElementById('camera-capture-input').click());
+        document.getElementById('camera-capture-input').addEventListener('click', () => document.getElementById('camera-capture-input').click());
 
         document.getElementById('file-gallery-input').addEventListener('change', (e) => startUpload(e.target.files[0]));
         document.getElementById('camera-capture-input').addEventListener('change', (e) => startUpload(e.target.files[0]));
+
+        function addToLog(text) {
+            const logDiv = document.getElementById('inventory-log');
+            const newEntry = document.createElement('div');
+            newEntry.className = 'log-item';
+            newEntry.textContent = text;
+            logDiv.prepend(newEntry);
+        }
 
         function showHelp(topic) {
             const modal = document.getElementById('help-modal');
@@ -114,7 +127,6 @@
                 statusDiv.classList.add('pulsing');
                 statusDiv.style.borderColor = '#007aff';
                 
-                // Compress image to max 800px width
                 const img = new Image();
                 img.src = URL.createObjectURL(file);
                 await img.decode();
@@ -137,13 +149,11 @@
                     
                     if (response.ok) {
                         const data = await response.json();
+                        const resultText = data.candidates[0].content.parts[0].text;
                         statusDiv.style.borderColor = '#34c759';
-                        statusDiv.textContent = data.candidates[0].content.parts[0].text;
+                        statusDiv.textContent = resultText;
+                        addToLog(resultText); // Add to log automatically
                     } 
-                    else if (response.status === 413) {
-                        statusDiv.style.borderColor = '#ff3b30';
-                        statusDiv.textContent = "Error: Image still too large. Try a smaller photo.";
-                    }
                     else if (response.status === 429) {
                         statusDiv.style.borderColor = '#ff9f0a';
                         statusDiv.textContent = "Rate limit reached. Waiting 35s to auto-retry...";
