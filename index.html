@@ -27,16 +27,19 @@
             box-sizing: border-box;
         }
 
-        /* Header Image Positioning */
+        /* Fixed Brand Logo Proportioning Header */
         .brand-header {
             text-align: left;
             margin-bottom: 20px;
+            padding-top: 8px;
         }
 
         .main-logo {
-            max-width: 260px;
-            height: auto;
+            max-height: 90px;
+            width: auto;
             display: block;
+            border-radius: 12px; /* Smooths the stark white square bounding box */
+            object-fit: contain;
         }
 
         /* Cards & Panels */
@@ -320,7 +323,6 @@
             if (inputElement.files && inputElement.files[0]) {
                 const targetFile = inputElement.files[0];
                 console.log("Image received successfully for processing: ", targetFile.name);
-                // Future integration point for uploading files or running computer vision scanning can go here
             }
         }
     </script>
