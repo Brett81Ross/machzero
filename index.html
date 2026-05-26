@@ -31,6 +31,7 @@
         .modal-title { font-size: 1.2rem; font-weight: bold; margin-bottom: 16px; color: #007aff; }
         .modal-body { font-size: 0.95rem; line-height: 1.5; margin-bottom: 24px; color: #e0e0e0; }
         .modal-close { background-color: #333; color: white; border: none; padding: 12px; border-radius: 8px; width: 100%; cursor: pointer; }
+        .app-footer { text-align: center; font-size: 0.8rem; color: #555; padding: 20px; margin-top: auto; }
     </style>
 </head>
 <body>
@@ -49,8 +50,8 @@
             <button class="info-trigger" onclick="showHelp('cost')">ⓘ</button>
         </div>
 
-        <input type="file" id="file-gallery-input" class="hidden-uploader" accept="image/*" onchange="handleImageUpload(this)">
-        <input type="file" id="camera-capture-input" class="hidden-uploader" accept="image/*" capture="environment" onchange="handleImageUpload(this)">
+        <input type="file" id="file-gallery-input" class="hidden-uploader" accept="image/*">
+        <input type="file" id="camera-capture-input" class="hidden-uploader" accept="image/*" capture="environment">
 
         <button class="btn btn-blue" id="gallery-trigger-btn">Select Photos</button>
         <button class="btn btn-green" id="camera-trigger-btn">Take Photo</button>
@@ -73,11 +74,14 @@
         </div>
     </div>
 
-    <footer class="app-footer">&copy; 2026 ResaleIQ. All Rights Reserved.</footer>
+    <footer class="app-footer">&copy; 2026 ResaleIQ Powered by CactusByte Systems. All Rights Reserved.</footer>
 
     <script>
         document.getElementById('gallery-trigger-btn').addEventListener('click', () => document.getElementById('file-gallery-input').click());
-        document.getElementById('camera-capture-input').addEventListener('click', () => document.getElementById('camera-capture-input').click());
+        document.getElementById('camera-trigger-btn').addEventListener('click', () => document.getElementById('camera-capture-input').click());
+
+        document.getElementById('file-gallery-input').addEventListener('change', (e) => startUpload(e.target.files[0]));
+        document.getElementById('camera-capture-input').addEventListener('change', (e) => startUpload(e.target.files[0]));
 
         function showHelp(topic) {
             const modal = document.getElementById('help-modal');
@@ -85,19 +89,19 @@
             const body = document.getElementById('help-body');
             if (topic === 'profit') {
                 title.textContent = "About Net Profit";
-                body.textContent = "Net Profit is your total take-home earnings. It is calculated by taking your final sale price and subtracting your sourcing costs, mileage, platform fees, and packaging supplies.";
+                body.textContent = "Net Profit is your total take-home earnings.";
             } else if (topic === 'cost') {
                 title.textContent = "Sourcing Cost";
-                body.textContent = "Enter the exact amount you paid for the item. If you bought an item as part of a bundle, divide the total cost by the number of items to get your per-unit cost.";
+                body.textContent = "Enter the exact amount you paid for the item.";
             }
             modal.style.display = 'flex';
         }
         function closeHelp() { document.getElementById('help-modal').style.display = 'none'; }
 
-        async function handleImageUpload(input) {
-            if (!input.files || !input.files[0]) return;
+        async function startUpload(file) {
+            if (!file) return;
             const statusDiv = document.getElementById('status-display');
-            const steps = ["Scanning image...", "Connecting to AI...", "Evaluating market data...", "Analyzing photo details..."];
+            const steps = ["Scanning image...", "Connecting to AI...", "Evaluating market data..."];
             let stepIndex = 0;
 
             const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
@@ -112,7 +116,7 @@
                 statusDiv.style.borderColor = '#007aff';
                 
                 const reader = new FileReader();
-                reader.readAsDataURL(input.files[0]);
+                reader.readAsDataURL(file);
                 reader.onload = async () => {
                     const base64String = reader.result.split(',')[1];
                     try {
@@ -132,19 +136,19 @@
                         } 
                         else if (response.status === 429) {
                             statusDiv.style.borderColor = '#ff9f0a';
-                            statusDiv.textContent = "Rate limit hit. Waiting 35s to auto-retry...";
+                            statusDiv.textContent = "Rate limit reached. Waiting 35s to auto-retry...";
                             await sleep(35000); 
                             process(); 
                         } 
                         else {
                             statusDiv.style.borderColor = '#ff3b30';
-                            statusDiv.textContent = "Server Error (" + response.status + "): Please try again in a moment.";
+                            statusDiv.textContent = "Server Error (" + response.status + ").";
                         }
                     } catch (error) {
                         clearInterval(statusInterval);
                         statusDiv.classList.remove('pulsing');
                         statusDiv.style.borderColor = '#ff3b30';
-                        statusDiv.textContent = "Connection failed. Check your network and try again.";
+                        statusDiv.textContent = "Connection failed. Please check your data connection.";
                     }
                 };
             };
