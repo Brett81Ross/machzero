@@ -17,339 +17,101 @@
             flex-direction: column;
         }
 
-        /* Top Header Container - Flushed edge-to-edge */
-        .brand-header {
-            width: 100%;
-            margin: 0;
-            padding: 0;
-            overflow: hidden;
-        }
-
-        /* Full Screen Width Square Logo Styling */
-        .main-logo {
-            width: 100%;
-            height: auto;
-            aspect-ratio: 1 / 1;
-            display: block;
-            object-fit: contain;
-            background-color: #ffffff;
-        }
-
-        /* Content Wrapper for the App UI */
-        .app-wrapper {
-            flex: 1;
-            padding: 16px;
-            max-width: 480px;
-            width: 100%;
-            margin: 0 auto;
-            box-sizing: border-box;
-        }
-
-        /* Cards & Panels */
-        .profit-card {
-            background-color: #161616;
-            border-radius: 16px;
-            padding: 24px 16px;
-            text-align: center;
-            position: relative;
-            margin-bottom: 16px;
-        }
-
-        .card-title {
-            color: #8a8a8f;
-            font-size: 0.85rem;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            margin-bottom: 8px;
-        }
-
-        .profit-amount {
-            color: #2ecc71;
-            font-size: 2.5rem;
-            font-weight: bold;
-            margin: 0;
-        }
-
-        /* Interactive Info Icons */
-        .info-trigger {
-            position: absolute;
-            top: 16px;
-            right: 16px;
-            background: none;
-            border: none;
-            color: #007aff;
-            font-size: 1.2rem;
-            cursor: pointer;
-            padding: 4px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        /* Form Inputs */
-        .input-group {
-            position: relative;
-            margin-bottom: 16px;
-        }
-
-        .app-input {
-            width: 100%;
-            background-color: #161616;
-            border: 1px solid #222222;
-            border-radius: 12px;
-            padding: 16px;
-            font-size: 1rem;
-            color: #ffffff;
-            box-sizing: border-box;
-        }
-
-        .app-input::placeholder {
-            color: #555555;
-        }
-
-        .input-group .info-trigger {
-            top: 50%;
-            transform: translateY(-50%);
-            right: 16px;
-        }
-
-        /* UI Action Buttons */
-        .btn {
-            width: 100%;
-            padding: 16px;
-            border-radius: 12px;
-            font-size: 1rem;
-            font-weight: 600;
-            border: none;
-            cursor: pointer;
-            margin-bottom: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            color: #ffffff;
-            font-family: inherit;
-        }
-
+        .brand-header { width: 100%; margin: 0; padding: 0; overflow: hidden; }
+        .main-logo { width: 100%; height: auto; aspect-ratio: 1 / 1; display: block; object-fit: contain; background-color: #ffffff; }
+        .app-wrapper { flex: 1; padding: 16px; max-width: 480px; width: 100%; margin: 0 auto; box-sizing: border-box; }
+        
+        .profit-card { background-color: #161616; border-radius: 16px; padding: 24px 16px; text-align: center; position: relative; margin-bottom: 16px; }
+        .card-title { color: #8a8a8f; font-size: 0.85rem; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
+        .profit-amount { color: #2ecc71; font-size: 2.5rem; font-weight: bold; margin: 0; }
+        
+        .info-trigger { position: absolute; top: 16px; right: 16px; background: none; border: none; color: #007aff; font-size: 1.2rem; cursor: pointer; padding: 4px; }
+        
+        .input-group { position: relative; margin-bottom: 16px; }
+        .app-input { width: 100%; background-color: #161616; border: 1px solid #222222; border-radius: 12px; padding: 16px; font-size: 1rem; color: #ffffff; box-sizing: border-box; }
+        
+        .btn { width: 100%; padding: 16px; border-radius: 12px; font-size: 1rem; font-weight: 600; border: none; cursor: pointer; margin-bottom: 12px; display: flex; align-items: center; justify-content: center; gap: 8px; color: #ffffff; font-family: inherit; }
         .btn-blue { background-color: #007aff; }
         .btn-green { background-color: #34c759; }
         .btn-orange { background-color: #ff9f0a; margin-top: 8px; }
+        
+        .hidden-uploader { position: absolute !important; opacity: 0 !important; width: 1px !important; height: 1px !important; overflow: hidden !important; }
+        .section-label { text-align: center; font-size: 1.1rem; font-weight: 600; margin: 24px 0 16px 0; color: #ffffff; }
 
-        /* Absolute hiding rule so native buttons never ruin your UI layout */
-        .hidden-uploader {
-            position: absolute !important;
-            opacity: 0 !important;
-            width: 1px !important;
-            height: 1px !important;
-            overflow: hidden !important;
-            clip: rect(1px, 1px, 1px, 1px) !important;
-        }
+        .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background-color: rgba(0, 0, 0, 0.75); display: flex; align-items: center; justify-content: center; z-index: 1000; opacity: 0; visibility: hidden; transition: opacity 0.2s; padding: 20px; }
+        .modal-overlay.active { opacity: 1; visibility: visible; }
+        .modal-box { background-color: #1c1c1e; border-radius: 14px; padding: 20px; max-width: 320px; width: 100%; text-align: center; }
+        .modal-text { color: #ffffff; font-size: 0.95rem; line-height: 1.4; margin-bottom: 20px; white-space: pre-wrap; }
+        .modal-close-btn { background-color: #007aff; color: white; border: none; padding: 10px 24px; border-radius: 8px; font-weight: 600; width: 100%; cursor: pointer; }
 
-        /* Section Headings */
-        .section-label {
-            text-align: center;
-            font-size: 1.1rem;
-            font-weight: 600;
-            margin: 24px 0 16px 0;
-            color: #ffffff;
-        }
-
-        /* Information Modals/Popups */
-        .modal-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background-color: rgba(0, 0, 0, 0.75);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 1000;
-            opacity: 0;
-            visibility: hidden;
-            transition: opacity 0.2s ease, visibility 0.2s ease;
-            padding: 20px;
-        }
-
-        .modal-overlay.active {
-            opacity: 1;
-            visibility: visible;
-        }
-
-        .modal-box {
-            background-color: #1c1c1e;
-            border: 1px solid #2c2c2e;
-            border-radius: 14px;
-            padding: 20px;
-            max-width: 320px;
-            width: 100%;
-            text-align: center;
-            box-shadow: 0 8px 24px rgba(0,0,0,0.5);
-        }
-
-        .modal-text {
-            color: #ffffff;
-            font-size: 0.95rem;
-            line-height: 1.4;
-            margin-bottom: 20px;
-            white-space: pre-wrap; /* Allows line breaks in javascript text */
-        }
-
-        .modal-close-btn {
-            background-color: #007aff;
-            color: white;
-            border: none;
-            padding: 10px 24px;
-            border-radius: 8px;
-            font-weight: 600;
-            cursor: pointer;
-            width: 100%;
-        }
-
-        /* App Legal Footer */
-        .app-footer {
-            background-color: #0a0a0a;
-            border-top: 1px solid #161616;
-            padding: 20px;
-            text-align: center;
-            font-size: 0.8rem;
-            color: #666666;
-            margin-top: auto;
-        }
-
-        .footer-logo {
-            height: 18px;
-            vertical-align: middle;
-            margin-right: 6px;
-            opacity: 0.5;
-        }
-
-        .copyright-text {
-            display: inline-block;
-            vertical-align: middle;
-            letter-spacing: 0.3px;
-        }
+        .app-footer { background-color: #0a0a0a; padding: 20px; text-align: center; font-size: 0.8rem; color: #666666; margin-top: auto; }
     </style>
 </head>
 <body>
 
-    <div class="brand-header">
-        <img src="logo1.png" alt="ResaleIQ" class="main-logo">
-    </div>
+    <div class="brand-header"><img src="logo1.png" alt="ResaleIQ" class="main-logo"></div>
 
     <div class="app-wrapper">
-
         <div class="profit-card">
             <div class="card-title">Net Profit</div>
             <p class="profit-amount">$0.00</p>
-            <button class="info-trigger" onclick="openInfoModal('net-profit')">ⓘ</button>
         </div>
 
-        <div class="input-group">
-            <input type="number" class="app-input" placeholder="Sourcing Cost ($)" inputmode="decimal">
-            <button class="info-trigger" onclick="openInfoModal('sourcing-cost')">ⓘ</button>
-        </div>
+        <input type="file" id="file-gallery-input" class="hidden-uploader" accept="image/*" onchange="handleImageUpload(this)">
+        <input type="file" id="camera-capture-input" class="hidden-uploader" accept="image/*" capture="environment" onchange="handleImageUpload(this)">
 
-        <input type="file" id="file-gallery-input" class="hidden-uploader" accept="image/*" onchange="processSelectedImage(this)">
-        <input type="file" id="camera-capture-input" class="hidden-uploader" accept="image/*" capture="environment" onchange="processSelectedImage(this)">
-
-        <button class="btn btn-blue" id="gallery-trigger-btn">
-            <span>📁</span> Select Photos
-        </button>
-        
-        <button class="btn btn-green" id="camera-trigger-btn">
-            <span>📷</span> Take Photo
-        </button>
-
-        <div class="section-label">Add Expense</div>
-
-        <div class="input-group">
-            <input type="text" class="app-input" placeholder="Description (e.g., Mileage)">
-        </div>
-
-        <div class="input-group">
-            <input type="number" class="app-input" placeholder="Amount ($)" inputmode="decimal">
-        </div>
-
-        <button class="btn btn-orange">Add Expense</button>
+        <button class="btn btn-blue" id="gallery-trigger-btn"><span>📁</span> Select Photos</button>
+        <button class="btn btn-green" id="camera-trigger-btn"><span>📷</span> Take Photo</button>
 
         <div class="section-label">Inventory Log</div>
-
     </div>
 
     <div class="modal-overlay" id="info-modal">
         <div class="modal-box">
-            <div class="modal-text" id="modal-content-field">Context text drops here.</div>
+            <div class="modal-text" id="modal-content-field">Analyzing...</div>
             <button class="modal-close-btn" onclick="closeModal()">Dismiss</button>
         </div>
     </div>
 
-    <footer class="app-footer">
-        <img src="logo1.png" alt="ResaleIQ Logo" class="footer-logo">
-        <div class="copyright-text">
-            &copy; <span id="copyright-year"></span> ResaleIQ. All Rights Reserved.
-        </div>
-    </footer>
+    <footer class="app-footer">&copy; 2026 ResaleIQ. All Rights Reserved.</footer>
 
     <script>
-        // Synchronize copyright timestamp data automatically 
-        document.getElementById('copyright-year').textContent = new Date().getFullYear();
+        document.getElementById('gallery-trigger-btn').addEventListener('click', () => document.getElementById('file-gallery-input').click());
+        document.getElementById('camera-trigger-btn').addEventListener('click', () => document.getElementById('camera-capture-input').click());
 
-        // Object containing text payloads for descriptive popups
-        const infoExplainerData = {
-            'net-profit': 'Your Net Profit calculates your total sales values minus item sourcing fees, marketplace shipping rates, and calculated mileage/operating expenses.',
-            'sourcing-cost': 'Enter the precise amount paid out-of-pocket to purchase this item before restoration, listing fees, or secondary shipping costs.'
-        };
+        function closeModal() { document.getElementById('info-modal').classList.remove('active'); }
 
-        // Standard Info Modal Trigger
-        function openInfoModal(contextKey) {
-            const descriptionString = infoExplainerData[contextKey] || 'Information parameters unavailable.';
-            document.getElementById('modal-content-field').textContent = descriptionString;
+        async function handleImageUpload(input) {
+            if (!input.files || !input.files[0]) return;
+            const file = input.files[0];
+            
+            document.getElementById('modal-content-field').textContent = "Analyzing " + file.name + "... Please wait.";
             document.getElementById('info-modal').classList.add('active');
-        }
 
-        // Closes the modal
-        function closeModal() {
-            document.getElementById('info-modal').classList.remove('active');
-        }
+            const reader = new FileReader();
+            reader.readAsDataURL(file);
+            reader.onload = async () => {
+                const base64String = reader.result.split(',')[1];
 
-        // Tap background shield container to close modal cleanly
-        document.getElementById('info-modal').addEventListener('click', function(e) {
-            if (e.target === this) closeModal();
-        });
-
-        // Event Listeners for the Photo Buttons
-        document.getElementById('gallery-trigger-btn').addEventListener('click', function(e) {
-            e.preventDefault();
-            document.getElementById('file-gallery-input').click();
-        });
-
-        document.getElementById('camera-trigger-btn').addEventListener('click', function(e) {
-            e.preventDefault();
-            document.getElementById('camera-capture-input').click();
-        });
-
-        // The actual function that fires AFTER a photo is chosen or taken
-        function processSelectedImage(inputElement) {
-            if (inputElement.files && inputElement.files[0]) {
-                const targetFile = inputElement.files[0];
-                console.log("Image received successfully: ", targetFile.name);
-                
-                // 1. Immediately visually confirm to the user that analysis has started
-                document.getElementById('modal-content-field').textContent = "📸 Analyzing: " + targetFile.name + "\n\n(This is where your backend image analysis code will execute.)";
-                document.getElementById('info-modal').classList.add('active');
-
-                // 2. Update the button text so it feels responsive
-                if (inputElement.id === 'file-gallery-input') {
-                    document.getElementById('gallery-trigger-btn').innerHTML = '<span>✅</span> Photo Selected';
-                } else if (inputElement.id === 'camera-capture-input') {
-                    document.getElementById('camera-trigger-btn').innerHTML = '<span>✅</span> Photo Captured';
+                try {
+                    const response = await fetch('/api/analyze', { 
+                        method: 'POST', 
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ imagesBase64: [base64String] }) 
+                    });
+                    
+                    const data = await response.json();
+                    
+                    if (response.ok) {
+                        const resultText = data.candidates[0].content.parts[0].text;
+                        document.getElementById('modal-content-field').textContent = resultText;
+                    } else {
+                        document.getElementById('modal-content-field').textContent = "Error: " + (data.error || "Unknown server error");
+                    }
+                } catch (error) {
+                    document.getElementById('modal-content-field').textContent = "Error: Could not connect to analysis server.";
                 }
-
-                // TODO: Insert your actual Fetch/Axios API call here to send the image to your backend for analysis.
-            }
+            };
         }
     </script>
 </body>
