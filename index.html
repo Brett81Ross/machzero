@@ -40,3 +40,136 @@
             letter-spacing: 1.5px;
             color: #888;
             margin-bottom: 8px;
+            font-weight: 700;
+        }
+        .dashboard-value { 
+            margin: 0; 
+            font-size: 32px; 
+            font-weight: 700; 
+            letter-spacing: -0.5px;
+            color: #28a745; 
+            text-shadow: 0 0 10px rgba(40, 167, 69, 0.2);
+        }
+        
+        .section-title { font-size: 18px; font-weight: 600; margin: 30px 0 15px 0; text-align: center; color: #fff; }
+        
+        /* Input Field Design */
+        .input-wrapper { position: relative; width: 100%; margin-bottom: 15px; }
+        input { width: 100%; padding: 16px; border-radius: 10px; border: 1px solid #2a2a2a; font-size: 16px; background: #111; color: #fff; box-sizing: border-box; outline: none; }
+        input::placeholder { color: #555; }
+        input:focus { border-color: #0070f3; }
+        
+        /* Standard Action Buttons */
+        .btn { width: 100%; padding: 16px; margin-bottom: 12px; border-radius: 10px; border: none; color: #fff; font-size: 16px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; box-sizing: border-box; }
+        .select-btn { background: #0070f3; }
+        .camera-btn { background: #28a745; }
+        .expense-btn { background: #f39c12; margin-top: 5px; }
+        
+        /* Interactive History Log Panels */
+        .history-list { width: 100%; display: flex; flex-direction: column; gap: 12px; margin-top: 15px; text-align: left; }
+        .history-card { background: #111; border: 1px solid #222; border-radius: 12px; padding: 14px; position: relative; }
+        .history-meta { display: flex; justify-content: space-between; font-size: 12px; color: #666; margin-bottom: 6px; }
+        .history-title { font-size: 15px; font-weight: 600; color: #fff; margin-bottom: 8px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 85%; }
+        .history-metrics { display: flex; gap: 15px; font-size: 13px; }
+        .metric-cogs { color: #ff808b; }
+        .metric-rev { color: #28a745; }
+        .delete-log-btn { position: absolute; right: 14px; top: 14px; background: transparent; border: none; color: #444; font-size: 16px; cursor: pointer; padding: 0; }
+        .delete-log-btn:hover { color: #dc3545; }
+        .empty-history-text { color: #444; font-size: 14px; font-style: italic; margin-top: 10px; }
+
+        #gallery { display: flex; flex-wrap: wrap; gap: 10px; margin: 15px 0; width: 100%; justify-content: center; }
+        #gallery img { width: 75px; height: 75px; object-fit: cover; border-radius: 8px; border: 1px solid #222; }
+        
+        #result { display: none; background: #111; padding: 16px; border-radius: 10px; margin-top: 20px; text-align: left; font-size: 14px; border: 1px solid #222; line-height: 1.6; width: 100%; box-sizing: border-box; white-space: pre-wrap; }
+        #result.error-state { border-color: #dc3545; background: rgba(220, 53, 69, 0.05); color: #ff808b; }
+        .retry-action-link { color: #0070f3; font-weight: bold; text-decoration: underline; cursor: pointer; display: block; margin-top: 8px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="app-header">
+            <span class="header-title">Resale IQ</span>
+        </div>
+
+        <div class="logo-container">
+            <img src="logo1.png" class="logo" alt="Resale IQ">
+        </div>
+        
+        <div class="dashboard">
+            <div class="dashboard-label">Net Profit</div>
+            <div class="dashboard-value">$<span id="netProfit">0.00</span></div>
+        </div>
+
+        <div class="input-wrapper">
+            <input type="number" id="costInput" placeholder="Sourcing Cost ($)" inputmode="decimal">
+        </div>
+
+        <button class="btn select-btn" onclick="document.getElementById('fileInput').click()">📁 Select Photos</button>
+        <input type="file" id="fileInput" accept="image/*" multiple style="display:none;">
+
+        <button class="btn camera-btn" onclick="document.getElementById('cameraInput').click()">📷 Take Photo</button>
+        <input type="file" id="cameraInput" accept="image/*" capture="environment" style="display:none;">
+
+        <div class="section-title">Add Expense</div>
+        
+        <div class="input-wrapper">
+            <input type="text" id="expDesc" placeholder="Description (e.g., Mileage)">
+        </div>
+        <div class="input-wrapper">
+            <input type="number" id="expAmt" placeholder="Amount ($)" inputmode="decimal">
+        </div>
+        <button class="btn expense-btn" onclick="addExpense()">Add Expense</button>
+        
+        <div id="gallery"></div>
+        <div id="result"></div>
+
+        <div class="section-title">Inventory Log</div>
+        <div class="history-list" id="historyContainer"></div>
+    </div>
+
+    <script>
+        let allImages = [];
+        let currentSourcingCostCache = 0;
+
+        async function handleFiles(files) {
+            currentSourcingCostCache = document.getElementById('costInput').value || 0;
+            allImages = []; 
+            
+            const gallery = document.getElementById('gallery');
+            const resultBox = document.getElementById('result');
+            
+            gallery.innerHTML = "";
+            resultBox.className = ""; 
+            resultBox.style.display = "none";
+            
+            const fileArray = Array.from(files);
+            if (fileArray.length === 0) return;
+
+            for (const file of fileArray) {
+                if (!file.type.startsWith('image/')) {
+                    displayErrorUI("Invalid format detected. Please select standard images.");
+                    return;
+                }
+
+                try {
+                    const b64 = await new Promise((resolve, reject) => {
+                        const reader = new FileReader();
+                        reader.onerror = () => reject(new Error("File conversion aborted."));
+                        reader.onload = (e) => {
+                            const img = new Image();
+                            img.onerror = () => reject(new Error("Corrupted media architecture."));
+                            img.onload = () => {
+                                const canvas = document.createElement('canvas');
+                                const MAX_WIDTH = 1024; 
+                                let width = img.width;
+                                let height = img.height;
+
+                                if (width > MAX_WIDTH) {
+                                    height *= MAX_WIDTH / width;
+                                    width = MAX_WIDTH;
+                                }
+
+                                canvas.width = width; 
+                                canvas.height = height;
+                                
+                                const ctx = canvas.getContext('2d');
