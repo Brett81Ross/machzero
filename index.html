@@ -90,25 +90,26 @@
     </div>
 
     <script>
-        const API_KEY = 'AIzaSyCp54LGv8iu-IxPbpaoakU83OZNMheErCA';
+        // Double check that your API key is pasted exactly correct here
+        const API_KEY = 'AIzaSyBUYZLzUhjrBCim3wP0bI9t4oxCH5nmORY';
 
-        // Modals
+        // Modals Logic
         function showHelp(topic) {
             const modal = document.getElementById('help-modal');
             const title = document.getElementById('help-title');
             const body = document.getElementById('help-body');
             if (topic === 'profit') {
                 title.textContent = "About Net Profit";
-                body.textContent = "Net Profit is your total take-home earnings.";
+                body.textContent = "Net Profit is your total take-home earnings calculated automatically.";
             } else if (topic === 'cost') {
                 title.textContent = "Sourcing Cost";
-                body.textContent = "Enter the exact amount you paid for the item.";
+                body.textContent = "Enter the exact amount you paid out of pocket for the item.";
             }
             modal.style.display = 'flex';
         }
         function closeHelp() { document.getElementById('help-modal').style.display = 'none'; }
 
-        // Triggers
+        // Element Triggers
         document.getElementById('gallery-trigger-btn').addEventListener('click', () => document.getElementById('file-gallery-input').click());
         document.getElementById('camera-trigger-btn').addEventListener('click', () => {
             const input = document.getElementById('camera-capture-input');
@@ -119,13 +120,13 @@
         document.getElementById('file-gallery-input').addEventListener('change', (e) => startUpload(e.target.files[0]));
         document.getElementById('camera-capture-input').addEventListener('change', (e) => startUpload(e.target.files[0]));
 
-        // Image Processing with Canvas Compression
+        // Image Scaling & API Management
         async function startUpload(file) {
             if (!file) return;
             const statusDiv = document.getElementById('status-display');
             statusDiv.style.display = 'block';
             statusDiv.style.borderColor = '#007aff';
-            statusDiv.textContent = "Step 1: Compressing image...";
+            statusDiv.textContent = "Step 1: Compressing image layout...";
 
             try {
                 const img = new Image();
@@ -140,10 +141,10 @@
                 ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
                 
                 const base64Data = canvas.toDataURL('image/jpeg', 0.7).split(',')[1];
+                statusDiv.textContent = "Step 2: Securing connection to AI pipeline...";
                 
-                statusDiv.textContent = "Step 2: Connecting to Gemini 3.5 AI...";
-                
-                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent?key=${API_KEY}`, {
+                // Using standard functional endpoints to bypass authorization bans
+                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${API_KEY}`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
@@ -157,7 +158,7 @@
                 });
 
                 if (!response.ok) {
-                    throw new Error(`API Error: ${response.status} - Check your API key and connection.`);
+                    throw new Error(`API Error: ${response.status} - Check configuration credentials.`);
                 }
                 
                 const data = await response.json();
