@@ -12,7 +12,7 @@
         .logo-container { width: 100%; overflow: hidden; margin-bottom: 20px; display: flex; justify-content: center; }
         .logo { width: 100%; max-width: 320px; height: auto; object-fit: contain; }
         
-        /* Upgraded Visual Dashboard Tab */
+        /* Dashboard Card with Inline Info Button */
         .dashboard { 
             background: linear-gradient(145deg, #1e1e1e, #121212); 
             padding: 22px 16px; 
@@ -22,6 +22,7 @@
             box-sizing: border-box; 
             border: 1px solid #2a2a2a;
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+            position: relative;
         }
         .dashboard-label {
             font-size: 13px;
@@ -36,7 +37,7 @@
             font-size: 32px; 
             font-weight: 700; 
             letter-spacing: -0.5px;
-            color: #28a745; /* Clean profit green accent text */
+            color: #28a745; 
             text-shadow: 0 0 10px rgba(40, 167, 69, 0.2);
         }
         
@@ -48,9 +49,11 @@
         input::placeholder { color: #555; }
         input:focus { border-color: #0070f3; }
         
+        /* Reusable info toggle styling */
         .info-toggle-btn { position: absolute; right: 16px; top: 50%; transform: translateY(-50%); background: transparent; color: #0070f3; border: none; font-size: 20px; cursor: pointer; padding: 0; display: flex; align-items: center; justify-content: center; }
+        .dashboard .info-toggle-btn { top: 25px; transform: none; } /* Specific positioning inside dashboard */
         
-        /* Button Color Layouts */
+        /* Button Styles */
         .btn { width: 100%; padding: 16px; margin-bottom: 12px; border-radius: 10px; border: none; color: #fff; font-size: 16px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; box-sizing: border-box; }
         .select-btn { background: #0070f3; }
         .camera-btn { background: #28a745; }
@@ -63,7 +66,7 @@
         .modal-content h4 { margin-top: 0; color: #0070f3; font-size: 18px; margin-bottom: 15px; }
         .modal-content ul { padding-left: 20px; margin: 0; }
         .modal-content li { margin-bottom: 12px; color: #ccc; font-size: 14px; line-height: 1.5; }
-        .close-modal-btn { width: 100%; padding: 12px; background: #222; border: 1px solid #333; color: #fff; border-radius: 8px; margin-top: 15px; cursor: pointer; font-weight: 600; }
+        .close-modal-btn { width: 100%; padding: 12px; background: #222; border: 1px solid #333; color: #fff; border-radius: 8px; margin-top: 15px; cursor: pointer; font-weight: 600; text-align: center; }
 
         #gallery { display: flex; flex-wrap: wrap; gap: 10px; margin: 15px 0; width: 100%; justify-content: center; }
         #gallery img { width: 75px; height: 75px; object-fit: cover; border-radius: 8px; border: 1px solid #222; }
@@ -80,11 +83,12 @@
         <div class="dashboard">
             <div class="dashboard-label">Net Profit</div>
             <div class="dashboard-value">$<span id="netProfit">0.00</span></div>
+            <button class="info-toggle-btn" onclick="openHelpModal('profit')">ⓘ</button>
         </div>
 
         <div class="input-wrapper">
             <input type="number" id="costInput" placeholder="Sourcing Cost ($)" inputmode="decimal">
-            <button class="info-toggle-btn" onclick="openHelpModal()">ⓘ</button>
+            <button class="info-toggle-btn" onclick="openHelpModal('sourcing')">ⓘ</button>
         </div>
 
         <button class="btn select-btn" onclick="document.getElementById('fileInput').click()">📁 Select Photos</button>
@@ -109,13 +113,7 @@
 
     <div class="modal-overlay" id="modalOverlay" onclick="closeHelpModal()">
         <div class="modal-content" id="modalContent" onclick="event.stopPropagation()">
-            <h4>💡 Master Sourcing Cost Guide</h4>
-            <ul>
-                <li><b>Thrift & Garage Sales:</b> Use the exact register price. If you bought a bundle, divide the total receipt cost by the number of usable items.</li>
-                <li><b>Auctions & Bulk Lots:</b> Add the item cost, buyer’s premiums, taxes, and shipping costs altogether, then divide by the total items to find the cost per unit.</li>
-                <li><b>Found, Gifted, or Free Items:</b> Enter <b>$0</b>. If you spent money on gas to pick it up, log that down below under general expenses instead.</li>
-                <li><b>Repairs & Cleaning:</b> If you had to buy a replacement part or specific cleaner just for this item, add that directly to this sourcing cost.</li>
-            </ul>
+            <div id="modalTargetContent"></div>
             <button class="close-modal-btn" onclick="closeHelpModal()">Got It</button>
         </div>
     </div>
@@ -123,9 +121,33 @@
     <script>
         let allImages = [];
 
-        function openHelpModal() {
+        // Dynamic Help Drawer Generator
+        const guides = {
+            sourcing: `
+                <h4>💡 Master Sourcing Cost Guide</h4>
+                <ul>
+                    <li><b>Thrift & Garage Sales:</b> Use the exact register price. If you bought a bundle, divide the total receipt cost by the number of usable items.</li>
+                    <li><b>Auctions & Bulk Lots:</b> Add the item cost, buyer’s premiums, taxes, and shipping costs altogether, then divide by the total items to find the cost per unit.</li>
+                    <li><b>Found, Gifted, or Free Items:</b> Enter <b>$0</b>. If you spent money on gas to pick it up, log that down below under general expenses instead.</li>
+                    <li><b>Repairs & Cleaning:</b> If you had to buy a replacement part or specific cleaner just for this item, add that directly to this sourcing cost.</li>
+                </ul>
+            `,
+            profit: `
+                <h4>📊 Net Profit Calculation Breakdown</h4>
+                <ul>
+                    <li><b>The Formula:</b> Gross Revenue minus Cost of Goods Sold (COGS) minus your Operational Expenses.</li>
+                    <li><b>Gross Revenue:</b> The total projected listing or final checkout sales numbers generated from item analysis scans.</li>
+                    <li><b>COGS (Sourcing Costs):</b> The base acquisition capital logged when items were parsed into inventory processing.</li>
+                    <li><b>Expenses:</b> Extra structural business operations tracking overhead liabilities like mileage tax credits, tools, or bubble wrap.</li>
+                </ul>
+            `
+        };
+
+        function openHelpModal(type) {
             const overlay = document.getElementById('modalOverlay');
             const content = document.getElementById('modalContent');
+            document.getElementById('modalTargetContent').innerHTML = guides[type] || '';
+            
             overlay.style.display = 'flex';
             setTimeout(() => { content.classList.add('open'); }, 10);
         }
@@ -178,7 +200,6 @@
                     body: JSON.stringify({ imagesBase64: allImages }) 
                 });
                 const data = await res.json();
-                
                 if (!res.ok) throw new Error(data.error || "Failed analysis iteration");
                 
                 const text = data.candidates[0].content.parts[0].text;
