@@ -15,25 +15,27 @@
         
         .profit-card { background: #1c1c1e; border-radius: 15px; padding: 20px; text-align: center; margin-bottom: 15px; border: 1px solid #333; position: relative; }
         .profit-label { color: #888; font-size: 0.9rem; margin-bottom: 5px; }
-        .profit-amount { color: #34c759; font-size: 2.5rem; font-weight: bold; }
+        .profit-amount { color: #34c759; font-size: 2.5rem; font-weight: bold; transition: color 0.3s; }
         
         .input-group { position: relative; margin-bottom: 15px; }
-        input { width: 100%; padding: 15px; border-radius: 10px; border: 1px solid #333; background: #1c1c1e; color: #fff; box-sizing: border-box; padding-right: 45px; }
+        input { width: 100%; padding: 15px; border-radius: 10px; border: 1px solid #333; background: #1c1c1e; color: #fff; box-sizing: border-box; margin-bottom: 10px; }
+        input.with-info { padding-right: 45px; margin-bottom: 0; }
         
         .embedded-info { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: #333; border: none; color: #fff; border-radius: 50%; width: 28px; height: 28px; cursor: pointer; font-size: 14px; display: flex; align-items: center; justify-content: center; }
         
         #info-box { background: #1c1c1e; border-radius: 10px; padding: 15px; margin-bottom: 15px; border: 1px solid #444; display: none; font-size: 0.9rem; line-height: 1.5; color: #ccc; }
         .info-header { color: #007aff; font-weight: bold; margin-bottom: 5px; }
         
-        .btn { width: 100%; padding: 15px; border-radius: 10px; border: none; font-weight: bold; cursor: pointer; margin-bottom: 10px; font-size: 1rem; }
+        .btn { width: 100%; padding: 15px; border-radius: 10px; border: none; font-weight: bold; cursor: pointer; margin-bottom: 10px; font-size: 1rem; transition: background-color 0.2s; }
         .btn-blue { background-color: #007aff; color: white; }
         .btn-green { background-color: #34c759; color: white; }
         .btn-orange { background-color: #ff9500; color: white; }
         
-        .section-title { font-size: 1.2rem; margin: 20px 0 10px 0; font-weight: bold; }
+        .section-title { font-size: 1.2rem; margin: 20px 0 10px 0; font-weight: bold; display: flex; justify-content: space-between; align-items: center; }
+        .expense-total { font-size: 0.9rem; color: #ff9500; font-weight: normal; }
+        
         .hidden-uploader { display: none; }
         
-        /* Updated font-size to 1.1rem */
         #status-display { margin-top: 15px; background: #1c1c1e; padding: 15px; border-radius: 10px; white-space: pre-wrap; font-size: 1.1rem; border-left: 4px solid #007aff; line-height: 1.6; color: #eee; }
     </style>
 </head>
@@ -46,14 +48,14 @@
 
         <div class="profit-card">
             <button class="embedded-info" onclick="showInfo('profit')">i</button>
-            <div class="profit-label">NET PROFIT</div>
+            <div class="profit-label">NET PROFIT (Est.)</div>
             <div class="profit-amount" id="net-profit">$0.00</div>
         </div>
 
         <div id="info-box"></div>
 
         <div class="input-group">
-            <input type="number" id="sourcing-cost" placeholder="Sourcing Cost ($)">
+            <input type="number" id="sourcing-cost" class="with-info" placeholder="Sourcing Cost ($)">
             <button class="embedded-info" onclick="showInfo('cost')">i</button>
         </div>
 
@@ -63,31 +65,88 @@
         <button class="btn btn-blue" id="gallery-btn">Select Photos</button>
         <button class="btn btn-green" id="camera-btn">Take Photo</button>
 
-        <div class="section-title">Add Expense</div>
+        <div class="section-title">
+            <span>Add Expense</span>
+            <span class="expense-total" id="expense-total-display">Total: $0.00</span>
+        </div>
         <input type="text" id="expense-desc" placeholder="Description (e.g., Mileage)">
         <input type="number" id="expense-amount" placeholder="Amount ($)">
-        <button class="btn btn-orange">Add Expense</button>
+        <button class="btn btn-orange" id="add-expense-btn">Add Expense</button>
 
         <div class="section-title">Inventory Log</div>
         <div id="status-display">Waiting for analysis...</div>
     </div>
 
     <script>
+        // Global Variables for Math
+        let aiEstimatedValue = 0;
+        let totalExpenses = 0;
+
+        const netProfitDisplay = document.getElementById('net-profit');
+        const sourcingCostInput = document.getElementById('sourcing-cost');
+        const expenseAmountInput = document.getElementById('expense-amount');
+        const expenseDescInput = document.getElementById('expense-desc');
+        const expenseTotalDisplay = document.getElementById('expense-total-display');
+        const addExpenseBtn = document.getElementById('add-expense-btn');
+        const status = document.getElementById('status-display');
+
+        // Function to Calculate and Update the UI
+        function calculateProfit() {
+            const sourcingCost = parseFloat(sourcingCostInput.value) || 0;
+            const netProfit = aiEstimatedValue - sourcingCost - totalExpenses;
+            
+            // Format for currency and negative signs
+            if (netProfit < 0) {
+                netProfitDisplay.textContent = '-$' + Math.abs(netProfit).toFixed(2);
+                netProfitDisplay.style.color = '#ff3b30'; // Red for negative
+            } else {
+                netProfitDisplay.textContent = '$' + netProfit.toFixed(2);
+                netProfitDisplay.style.color = '#34c759'; // Green for positive
+            }
+        }
+
+        // Event Listeners for Math Updates
+        sourcingCostInput.addEventListener('input', calculateProfit);
+
+        addExpenseBtn.addEventListener('click', () => {
+            const expense = parseFloat(expenseAmountInput.value) || 0;
+            if (expense > 0) {
+                totalExpenses += expense;
+                expenseTotalDisplay.textContent = `Total: $${totalExpenses.toFixed(2)}`;
+                
+                // Clear the inputs
+                expenseAmountInput.value = '';
+                expenseDescInput.value = '';
+                
+                // Visual feedback on button
+                const originalText = addExpenseBtn.textContent;
+                addExpenseBtn.textContent = 'Expense Added!';
+                addExpenseBtn.style.backgroundColor = '#34c759';
+                setTimeout(() => {
+                    addExpenseBtn.textContent = originalText;
+                    addExpenseBtn.style.backgroundColor = '#ff9500';
+                }, 1000);
+
+                calculateProfit();
+            }
+        });
+
+        // Info Box Toggle Logic
         function showInfo(type) {
             const box = document.getElementById('info-box');
             box.style.display = 'block';
             if (type === 'profit') {
                 box.innerHTML = `<div class="info-header">What is Net Profit?</div>
-                    <ul><li>Formula: Sale Price - (Cost + Expenses) = Profit.</li></ul>`;
+                    <ul><li>Formula: AI Estimated Value - (Sourcing Cost + Expenses) = Profit.</li></ul>`;
             } else if (type === 'cost') {
                 box.innerHTML = `<div class="info-header">Sourcing Cost Guide</div>
                     <ul><li>Include tax paid. Keep receipts for tax purposes.</li></ul>`;
             }
         }
 
+        // Camera and Upload Logic
         const galleryInput = document.getElementById('gallery-input');
         const cameraInput = document.getElementById('camera-input');
-        const status = document.getElementById('status-display');
 
         document.getElementById('gallery-btn').addEventListener('click', () => galleryInput.click());
         document.getElementById('camera-btn').addEventListener('click', () => cameraInput.click());
@@ -134,11 +193,20 @@
                     throw new Error(data.error || 'Server error occurred');
                 }
                 
-                // Get the raw text, filter out empty lines, and join with a double break for the gap
                 const rawText = data.candidates[0].content.parts[0].text;
-                const spacedText = rawText.trim().split('\\n').filter(line => line.trim() !== '').join('\\n\\n');
                 
+                // Parse out the Estimated Market Value from AI response
+                // Looks for "Estimated Market Value:" and captures the first number after it
+                const match = rawText.match(/Estimated Market Value:[^\d]*(\d+(\.\d+)?)/i);
+                if (match && match[1]) {
+                    aiEstimatedValue = parseFloat(match[1]);
+                    calculateProfit(); // Trigger calculation automatically
+                }
+
+                // Format the text with double line breaks for readability
+                const spacedText = rawText.trim().split('\n').filter(line => line.trim() !== '').join('\n\n');
                 status.textContent = spacedText;
+
             } catch (err) {
                 status.textContent = "Error: " + err.message;
             }
