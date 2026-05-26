@@ -14,7 +14,7 @@ export default async function handler(req, res) {
             return res.status(400).json({ error: 'Invalid data format' });
         }
 
-        // Updated prompt to force the 6-point format
+        // Clean, structured 6-point layout
         const prompt = `Analyze this item and provide exactly these 6 points. Do not include introductory text.
         1. Estimated Market Value: [Value]
         2. Average Profit: [Amount]
@@ -23,7 +23,7 @@ export default async function handler(req, res) {
         5. Description: [Thorough but brief description]
         6. Listing Text: [A catchy title and short description ready to copy/paste into eBay, Mercari, Poshmark, Depop, and FB Marketplace]`;
 
-        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${API_KEY}`, {
+        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent?key=${API_KEY}`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
