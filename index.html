@@ -90,7 +90,6 @@
     </div>
 
     <script>
-        // Make sure you replace this with your actual key!
         const API_KEY = 'AIzaSyCp54LGv8iu-IxPbpaoakU83OZNMheErCA';
 
         // Modals
@@ -120,7 +119,7 @@
         document.getElementById('file-gallery-input').addEventListener('change', (e) => startUpload(e.target.files[0]));
         document.getElementById('camera-capture-input').addEventListener('change', (e) => startUpload(e.target.files[0]));
 
-        // Image Processing and AI Logic
+        // Image Processing with Canvas Compression
         async function startUpload(file) {
             if (!file) return;
             const statusDiv = document.getElementById('status-display');
@@ -128,50 +127,55 @@
             statusDiv.style.borderColor = '#007aff';
             statusDiv.textContent = "Step 1: Compressing image...";
 
-            const reader = new FileReader();
-            reader.onloadend = async () => {
-                const base64Data = reader.result.split(',')[1];
+            try {
+                const img = new Image();
+                img.src = URL.createObjectURL(file);
+                await img.decode();
+
+                const canvas = document.createElement('canvas');
+                const scale = Math.min(800 / img.width, 1);
+                canvas.width = img.width * scale;
+                canvas.height = img.height * scale;
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                
+                const base64Data = canvas.toDataURL('image/jpeg', 0.7).split(',')[1];
+                
                 statusDiv.textContent = "Step 2: Connecting to Gemini 3.5 AI...";
                 
-                try {
-                    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent?key=${API_KEY}`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            contents: [{
-                                parts: [
-                                    { text: "Analyze this item and provide the response in this exact order: 1. Item Description, 2. Market Value, 3. Where to Sell, 4. Optimized Listing (for copy-pasting), 5. Any other relevant details." },
-                                    { inline_data: { mime_type: "image/jpeg", data: base64Data } }
-                                ]
-                            }]
-                        })
-                    });
+                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent?key=${API_KEY}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        contents: [{
+                            parts: [
+                                { text: "Analyze this item and provide the response in this exact order: 1. Item Description, 2. Market Value, 3. Where to Sell, 4. Optimized Listing (for copy-pasting), 5. Any other relevant details." },
+                                { inline_data: { mime_type: "image/jpeg", data: base64Data } }
+                            ]
+                        }]
+                    })
+                });
 
-                    if (!response.ok) {
-                        throw new Error(`API Error: ${response.status} - Check your API key and connection.`);
-                    }
-                    
-                    const data = await response.json();
-                    const resultText = data.candidates[0].content.parts[0].text;
-                    
-                    statusDiv.style.borderColor = '#34c759';
-                    statusDiv.textContent = resultText;
-                    
-                    // Add to log
-                    const logDiv = document.getElementById('inventory-log');
-                    const newEntry = document.createElement('div');
-                    newEntry.className = 'log-item';
-                    newEntry.textContent = resultText;
-                    logDiv.prepend(newEntry);
-                    
-                } catch (err) {
-                    statusDiv.style.borderColor = "#ff3b30";
-                    statusDiv.textContent = "Error: " + err.message;
+                if (!response.ok) {
+                    throw new Error(`API Error: ${response.status} - Check your API key and connection.`);
                 }
-            };
-            
-            // Read and compress
-            reader.readAsDataURL(file);
+                
+                const data = await response.json();
+                const resultText = data.candidates[0].content.parts[0].text;
+                
+                statusDiv.style.borderColor = '#34c759';
+                statusDiv.textContent = resultText;
+                
+                const logDiv = document.getElementById('inventory-log');
+                const newEntry = document.createElement('div');
+                newEntry.className = 'log-item';
+                newEntry.textContent = resultText;
+                logDiv.prepend(newEntry);
+                
+            } catch (err) {
+                statusDiv.style.borderColor = "#ff3b30";
+                statusDiv.textContent = "Error: " + err.message;
+            }
         }
     </script>
 </body>
