@@ -8,27 +8,33 @@
         html, body { margin: 0; padding: 0; min-height: 100%; background-color: #000000; color: #ffffff; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; display: flex; flex-direction: column; }
         .brand-header { width: 100%; }
         .main-logo { width: 100%; height: auto; aspect-ratio: 1 / 1; display: block; object-fit: contain; background-color: #ffffff; }
-        .promo-banner { background-color: #000000; border-bottom: 1px solid #333; color: #ffffff; text-align: center; padding: 12px; font-size: 0.85rem; font-weight: 600; }
-        .app-wrapper { flex: 1; padding: 16px; max-width: 480px; width: 100%; margin: 0 auto; box-sizing: border-box; }
-        .profit-card { background-color: #161616; border-radius: 16px; padding: 24px 16px; text-align: center; position: relative; margin-bottom: 16px; }
+        
+        /* Promo banner with transparent background to match body */
+        .promo-banner { background-color: transparent; border-bottom: 1px solid #333; color: #ffffff; text-align: center; padding: 12px; font-size: 0.85rem; font-weight: 600; }
+        
+        .app-wrapper { flex: 1; padding: 16px; max-width: 480px; width: 100%; margin: 0 auto; box-sizing: border-box; color: #ffffff; }
+        .profit-card { background-color: #161616; border-radius: 16px; padding: 24px 16px; text-align: center; position: relative; margin-bottom: 16px; color: #ffffff; }
         .card-title { color: #8a8a8f; font-size: 0.85rem; font-weight: 600; text-transform: uppercase; margin-bottom: 8px; }
         .profit-amount { color: #2ecc71; font-size: 2.5rem; font-weight: bold; margin: 0; }
         .info-trigger { position: absolute; top: 16px; right: 16px; background: none; border: none; color: #007aff; font-size: 1.2rem; cursor: pointer; padding: 8px; }
+        
         .input-group { position: relative; margin-bottom: 16px; }
-        .app-input { width: 100%; background-color: #161616; border: 1px solid #222222; border-radius: 12px; padding: 16px; font-size: 1rem; color: #ffffff; box-sizing: border-box; }
+        .app-input { width: 100%; background-color: #161616; border: 1px solid #333; border-radius: 12px; padding: 16px; font-size: 1rem; color: #ffffff; box-sizing: border-box; }
+        
         .btn { width: 100%; padding: 16px; border-radius: 12px; font-size: 1rem; font-weight: 600; border: none; cursor: pointer; margin-bottom: 12px; color: #ffffff; }
         .btn-blue { background-color: #007aff; }
         .btn-green { background-color: #34c759; }
         .btn-orange { background-color: #ff9f0a; margin-top: 8px; }
-        .hidden-uploader { position: absolute !important; opacity: 0 !important; width: 1px !important; height: 1px !important; overflow: hidden !important; }
-        .section-label { text-align: center; font-size: 1.1rem; font-weight: 600; margin: 24px 0 16px 0; }
         
-        #status-display { background-color: #1c1c1e; border-radius: 12px; padding: 20px; margin: 16px 0; font-size: 1.1rem; line-height: 1.6; color: #ffffff; border-left: 4px solid #007aff; display: none; white-space: pre-wrap; transition: opacity 0.5s; }
+        .hidden-uploader { position: absolute !important; opacity: 0 !important; width: 1px !important; height: 1px !important; overflow: hidden !important; }
+        .section-label { text-align: center; font-size: 1.1rem; font-weight: 600; margin: 24px 0 16px 0; color: #ffffff; }
+        
+        #status-display { background-color: #1c1c1e; border-radius: 12px; padding: 20px; margin: 16px 0; font-size: 1.1rem; line-height: 1.6; color: #ffffff; border-left: 4px solid #007aff; display: none; }
         .pulsing { animation: pulse 1.5s infinite; }
         @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.6; } 100% { opacity: 1; } }
         
         #inventory-log { margin-top: 16px; }
-        .log-item { background-color: #161616; border-radius: 12px; padding: 16px; margin-bottom: 8px; border-left: 4px solid #34c759; font-size: 0.9rem; }
+        .log-item { background-color: #161616; border-radius: 12px; padding: 16px; margin-bottom: 8px; border-left: 4px solid #34c759; font-size: 0.9rem; color: #ffffff; }
         
         .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background-color: rgba(0, 0, 0, 0.9); display: none; align-items: center; justify-content: center; z-index: 1000; padding: 20px; }
         .modal-box { background-color: #1c1c1e; border-radius: 16px; padding: 24px; max-width: 400px; width: 100%; }
@@ -40,4 +46,151 @@
 </head>
 <body>
 
-    <div class
+    <div class="brand-header">
+        <img src="logo1.png" alt="ResaleIQ" class="main-logo">
+        <div class="promo-banner">Free for Early Testers • PRO Version Coming Soon 🌟🌟🌟</div>
+    </div>
+
+    <div class="app-wrapper">
+        <div class="profit-card">
+            <div class="card-title">Net Profit</div>
+            <p class="profit-amount">$0.00</p>
+            <button class="info-trigger" onclick="showHelp('profit')">ⓘ</button>
+        </div>
+
+        <div class="input-group">
+            <input type="number" class="app-input" placeholder="Sourcing Cost ($)">
+            <button class="info-trigger" onclick="showHelp('cost')">ⓘ</button>
+        </div>
+
+        <input type="file" id="file-gallery-input" class="hidden-uploader" accept="image/*">
+        <input type="file" id="camera-capture-input" class="hidden-uploader" accept="image/*" capture="environment">
+
+        <button class="btn btn-blue" id="gallery-trigger-btn">Select Photos</button>
+        <button class="btn btn-green" id="camera-trigger-btn">Take Photo</button>
+
+        <div id="status-display"></div>
+
+        <div class="section-label">Add Expense</div>
+        <div class="input-group"><input type="text" class="app-input" placeholder="Description (e.g., Mileage)"></div>
+        <div class="input-group"><input type="number" class="app-input" placeholder="Amount ($)"></div>
+        <button class="btn btn-orange">Add Expense</button>
+
+        <div class="section-label">Inventory Log</div>
+        <div id="inventory-log"></div>
+    </div>
+
+    <div class="modal-overlay" id="help-modal">
+        <div class="modal-box">
+            <div class="modal-title" id="help-title">Help</div>
+            <div class="modal-body" id="help-body"></div>
+            <button class="modal-close" onclick="closeHelp()">Close</button>
+        </div>
+    </div>
+
+    <footer class="app-footer">&copy; 2026 ResaleIQ by CactusByte. All Rights Reserved.</footer>
+
+    <script>
+        document.getElementById('gallery-trigger-btn').addEventListener('click', () => document.getElementById('file-gallery-input').click());
+        document.getElementById('camera-trigger-btn').addEventListener('click', () => {
+            const input = document.getElementById('camera-capture-input');
+            input.value = "";
+            input.click();
+        });
+
+        document.getElementById('file-gallery-input').addEventListener('change', (e) => startUpload(e.target.files[0]));
+        document.getElementById('camera-capture-input').addEventListener('change', (e) => startUpload(e.target.files[0]));
+
+        function addToLog(text) {
+            const logDiv = document.getElementById('inventory-log');
+            const newEntry = document.createElement('div');
+            newEntry.className = 'log-item';
+            newEntry.textContent = text;
+            logDiv.prepend(newEntry);
+        }
+
+        function showHelp(topic) {
+            const modal = document.getElementById('help-modal');
+            const title = document.getElementById('help-title');
+            const body = document.getElementById('help-body');
+            if (topic === 'profit') {
+                title.textContent = "About Net Profit";
+                body.textContent = "Net Profit is your total take-home earnings.";
+            } else if (topic === 'cost') {
+                title.textContent = "Sourcing Cost";
+                body.textContent = "Enter the exact amount you paid for the item.";
+            }
+            modal.style.display = 'flex';
+        }
+        function closeHelp() { document.getElementById('help-modal').style.display = 'none'; }
+
+        async function startUpload(file) {
+            if (!file) return;
+            const statusDiv = document.getElementById('status-display');
+            const steps = ["Compressing image...", "Connecting to AI...", "Evaluating market data..."];
+            let stepIndex = 0;
+
+            const statusInterval = setInterval(() => {
+                statusDiv.textContent = steps[stepIndex % steps.length];
+                stepIndex++;
+            }, 2000);
+            
+            const process = async () => {
+                statusDiv.style.display = 'block';
+                statusDiv.classList.add('pulsing');
+                statusDiv.style.borderColor = '#007aff';
+                
+                const img = new Image();
+                img.src = URL.createObjectURL(file);
+                await img.decode();
+                const canvas = document.createElement('canvas');
+                const scale = Math.min(800 / img.width, 1);
+                canvas.width = img.width * scale;
+                canvas.height = img.height * scale;
+                canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
+                const base64String = canvas.toDataURL('image/jpeg', 0.7).split(',')[1];
+
+                const promptInstruction = "Analyze this item and provide the response in this exact order: 1. Item Description, 2. Market Value, 3. Where to Sell, 4. Optimized Listing (for copy-pasting), 5. Any other relevant details.";
+
+                try {
+                    const response = await fetch('/api/analyze', { 
+                        method: 'POST', 
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ 
+                            imagesBase64: [base64String],
+                            prompt: promptInstruction 
+                        }) 
+                    });
+                    
+                    clearInterval(statusInterval);
+                    statusDiv.classList.remove('pulsing');
+                    
+                    if (response.ok) {
+                        const data = await response.json();
+                        const resultText = data.candidates[0].content.parts[0].text;
+                        statusDiv.style.borderColor = '#34c759';
+                        statusDiv.textContent = resultText;
+                        addToLog(resultText);
+                    } 
+                    else if (response.status === 429) {
+                        statusDiv.style.borderColor = '#ff9f0a';
+                        statusDiv.textContent = "Rate limit reached. Waiting 35s to auto-retry...";
+                        await new Promise(r => setTimeout(r, 35000)); 
+                        process(); 
+                    } 
+                    else {
+                        statusDiv.style.borderColor = '#ff3b30';
+                        statusDiv.textContent = "Server Error (" + response.status + ").";
+                    }
+                } catch (error) {
+                    clearInterval(statusInterval);
+                    statusDiv.classList.remove('pulsing');
+                    statusDiv.style.borderColor = '#ff3b30';
+                    statusDiv.textContent = "Connection failed. Check your data connection.";
+                }
+            };
+            process();
+        }
+    </script>
+</body>
+</html>
