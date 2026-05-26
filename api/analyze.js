@@ -14,13 +14,22 @@ export default async function handler(req, res) {
             return res.status(400).json({ error: 'Invalid data format' });
         }
 
-        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent?key=${API_KEY}`, {
+        // Updated prompt to force the 6-point format
+        const prompt = `Analyze this item and provide exactly these 6 points. Do not include introductory text.
+        1. Estimated Market Value: [Value]
+        2. Average Profit: [Amount]
+        3. Sell Speed: [Fast/Medium/Slow]
+        4. Confidence: [Percentage]
+        5. Description: [Thorough but brief description]
+        6. Listing Text: [A catchy title and short description ready to copy/paste into eBay, Mercari, Poshmark, Depop, and FB Marketplace]`;
+
+        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${API_KEY}`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
                 contents: [{
                     parts: [
-                        { text: "Analyze this item and provide: 1. Description, 2. Estimated Market Value, 3. Suggested Resale Price, 4. Best place to sell/list,  4. Exactly What to copy and paste in selling ad/post in marketplace. " },
+                        { text: prompt },
                         { inline_data: { mime_type: "image/jpeg", data: imagesBase64[0] } }
                     ]
                 }]
