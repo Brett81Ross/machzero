@@ -1,4 +1,3 @@
-# machzero 
 # MachZero
 
 MachZero is a high-performance inventory analysis tool designed for resellers who need precision market data at lightning speed. Built for speed, accuracy, and tactical decision-making.
