@@ -6,7 +6,7 @@
     <title>ResaleIQ</title>
     <style>
         html, body { margin: 0; padding: 0; min-height: 100%; background-color: #000000; color: #ffffff; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; display: flex; flex-direction: column; }
-        .brand-header { width: 100%; margin: 0; padding: 0; }
+        .brand-header { width: 100%; }
         .main-logo { width: 100%; height: auto; aspect-ratio: 1 / 1; display: block; object-fit: contain; background-color: #ffffff; }
         .app-wrapper { flex: 1; padding: 16px; max-width: 480px; width: 100%; margin: 0 auto; box-sizing: border-box; }
         .profit-card { background-color: #161616; border-radius: 16px; padding: 24px 16px; text-align: center; position: relative; margin-bottom: 16px; }
@@ -21,11 +21,10 @@
         .btn-orange { background-color: #ff9f0a; margin-top: 8px; }
         .hidden-uploader { position: absolute !important; opacity: 0 !important; width: 1px !important; height: 1px !important; overflow: hidden !important; }
         .section-label { text-align: center; font-size: 1.1rem; font-weight: 600; margin: 24px 0 16px 0; }
-        .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background-color: rgba(0, 0, 0, 0.85); display: flex; align-items: center; justify-content: center; z-index: 1000; opacity: 0; visibility: hidden; transition: opacity 0.2s; padding: 20px; }
-        .modal-overlay.active { opacity: 1; visibility: visible; }
-        .modal-box { background-color: #1c1c1e; border-radius: 14px; padding: 20px; max-width: 320px; width: 100%; text-align: center; }
-        .modal-text { color: #ffffff; font-size: 0.95rem; margin-bottom: 20px; white-space: pre-wrap; }
-        .modal-close-btn { background-color: #007aff; color: white; border: none; padding: 10px 24px; border-radius: 8px; width: 100%; cursor: pointer; }
+        
+        /* New Status Display Area */
+        #status-display { background-color: #1c1c1e; border-radius: 12px; padding: 16px; margin: 16px 0; font-size: 0.9rem; color: #ffffff; border-left: 4px solid #007aff; display: none; white-space: pre-wrap; }
+        
         .app-footer { background-color: #0a0a0a; padding: 20px; text-align: center; font-size: 0.8rem; color: #666666; margin-top: auto; }
     </style>
 </head>
@@ -51,6 +50,8 @@
         <button class="btn btn-blue" id="gallery-trigger-btn">Select Photos</button>
         <button class="btn btn-green" id="camera-trigger-btn">Take Photo</button>
 
+        <div id="status-display"></div>
+
         <div class="section-label">Add Expense</div>
         <div class="input-group"><input type="text" class="app-input" placeholder="Description (e.g., Mileage)"></div>
         <div class="input-group"><input type="number" class="app-input" placeholder="Amount ($)"></div>
@@ -59,27 +60,21 @@
         <div class="section-label">Inventory Log</div>
     </div>
 
-    <div class="modal-overlay" id="info-modal">
-        <div class="modal-box">
-            <div class="modal-text" id="modal-content-field">Analyzing...</div>
-            <button class="modal-close-btn" onclick="closeModal()">Dismiss</button>
-        </div>
-    </div>
-
     <footer class="app-footer">&copy; 2026 ResaleIQ. All Rights Reserved.</footer>
 
     <script>
         document.getElementById('gallery-trigger-btn').addEventListener('click', () => document.getElementById('file-gallery-input').click());
         document.getElementById('camera-capture-input').addEventListener('click', () => document.getElementById('camera-capture-input').click());
 
-        function closeModal() { document.getElementById('info-modal').classList.remove('active'); }
-
         async function handleImageUpload(input) {
             if (!input.files || !input.files[0]) return;
             const file = input.files[0];
+            const statusDiv = document.getElementById('status-display');
             
-            document.getElementById('modal-content-field').textContent = "Analyzing " + file.name + "...";
-            document.getElementById('info-modal').classList.add('active');
+            // Show status area and set text
+            statusDiv.style.display = 'block';
+            statusDiv.style.borderColor = '#007aff';
+            statusDiv.textContent = "Analyzing " + file.name + "... Please wait.";
 
             const reader = new FileReader();
             reader.readAsDataURL(file);
@@ -96,17 +91,19 @@
                     const data = await response.json();
                     
                     if (response.ok) {
-                        document.getElementById('modal-content-field').textContent = data.candidates[0].content.parts[0].text;
+                        statusDiv.style.borderColor = '#34c759';
+                        statusDiv.textContent = data.candidates[0].content.parts[0].text;
                     } else {
-                        // Intelligent error parsing
+                        statusDiv.style.borderColor = '#ff3b30';
                         let errorMessage = data.error || "Server error occurred.";
                         if (errorMessage.includes("quota")) {
                             errorMessage = "Rate limit reached. Please wait a moment and try again.";
                         }
-                        document.getElementById('modal-content-field').textContent = "Error: " + errorMessage;
+                        statusDiv.textContent = "Error: " + errorMessage;
                     }
                 } catch (error) {
-                    document.getElementById('modal-content-field').textContent = "Connection error. Please check your internet.";
+                    statusDiv.style.borderColor = '#ff3b30';
+                    statusDiv.textContent = "Connection error. Please check your internet.";
                 }
             };
         }
