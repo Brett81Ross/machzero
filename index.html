@@ -114,49 +114,71 @@
             right: 16px;
         }
 
-        /* Hardware Action Trigger Group */
-        .hardware-container {
-            position: relative;
-            width: 100%;
-            margin-bottom: 12px;
-        }
-
-        /* Active, invisible native inputs stacked safely behind buttons */
-        .hidden-hardware-input {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            opacity: 0;
-            cursor: pointer;
-            z-index: 1;
-        }
-
-        /* UI Action Buttons & Native Labels */
-        .btn, .label-btn-trigger {
-            position: relative;
+        /* UI Action Buttons */
+        .btn {
             width: 100%;
             padding: 16px;
             border-radius: 12px;
             font-size: 1rem;
             font-weight: 600;
             border: none;
+            cursor: pointer;
+            margin-bottom: 12px;
             display: flex;
             align-items: center;
             justify-content: center;
             gap: 8px;
             color: #ffffff;
-            box-sizing: border-box;
-            user-select: none;
-            -webkit-tap-highlight-color: transparent;
-            z-index: 2;
-            pointer-events: none; /* Passes the actual finger tap straight through to the transparent file input overlay */
         }
 
-        .btn-blue { background-color: #007aff; }
-        .btn-green { background-color: #34c759; }
-        .btn-orange { background-color: #ff9f0a; margin-top: 8px; pointer-events: auto; cursor: pointer; }
+        .btn-orange { background-color: #ff9f0a; margin-top: 8px; }
+
+        /* BULLETPROOF DIRECT INPUT STYLING */
+        /* Eliminates layers, labels, and hacks. Staged to native click detection. */
+        .hardware-file-field {
+            display: block;
+            width: 100%;
+            margin-bottom: 12px;
+            color: transparent; /* Hides default "No file chosen" browser label text cleanly */
+            outline: none;
+            cursor: pointer;
+        }
+
+        /* Customizing the actual native clickable region for Select Photos */
+        #file-gallery-input::file-selector-button {
+            width: 100%;
+            padding: 16px;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 600;
+            border: none;
+            color: #ffffff;
+            background-color: #007aff; /* Blue button core theme */
+            cursor: pointer;
+            content: "📁 Select Photos";
+        }
+
+        /* Customizing the actual native clickable region for Take Photo */
+        #camera-capture-input::file-selector-button {
+            width: 100%;
+            padding: 16px;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 600;
+            border: none;
+            color: #ffffff;
+            background-color: #34c759; /* Green button core theme */
+            cursor: pointer;
+            content: "📷 Take Photo";
+        }
+
+        /* Webkit layout handling compatibility fixes */
+        #file-gallery-input::-webkit-file-upload-button {
+            width: 100%; padding: 16px; border-radius: 12px; font-size: 1rem; font-weight: 600; border: none; color: #ffffff; background-color: #007aff; cursor: pointer;
+        }
+        #camera-capture-input::-webkit-file-upload-button {
+            width: 100%; padding: 16px; border-radius: 12px; font-size: 1rem; font-weight: 600; border: none; color: #ffffff; background-color: #34c759; cursor: pointer;
+        }
 
         /* Section Headings */
         .section-label {
@@ -263,19 +285,8 @@
             <button class="info-trigger" onclick="openModal('sourcing-cost')">ⓘ</button>
         </div>
 
-        <div class="hardware-container">
-            <input type="file" id="file-gallery-input" class="hidden-hardware-input" accept="image/*" onchange="processSelectedImage(this)">
-            <label for="file-gallery-input" class="label-btn-trigger btn-blue">
-                <span>📁</span> Select Photos
-            </label>
-        </div>
-        
-        <div class="hardware-container">
-            <input type="file" id="camera-capture-input" class="hidden-hardware-input" accept="image/*" capture="environment" onchange="processSelectedImage(this)">
-            <label for="camera-capture-input" class="label-btn-trigger btn-green">
-                <span>📷</span> Take Photo
-            </label>
-        </div>
+        <input type="file" id="file-gallery-input" class="hardware-file-field" accept="image/*" onchange="processSelectedImage(this)">
+        <input type="file" id="camera-capture-input" class="hardware-file-field" accept="image/*" capture="environment" onchange="processSelectedImage(this)">
 
         <div class="section-label">Add Expense</div>
 
@@ -311,6 +322,10 @@
         // Synchronize copyright timestamp data automatically 
         document.getElementById('copyright-year').textContent = new Date().getFullYear();
 
+        // Fallback programmatic label customization for standard old-spec engines
+        document.getElementById('file-gallery-input').setAttribute('data-label', '📁 Select Photos');
+        document.getElementById('camera-capture-input').setAttribute('data-label', '📷 Take Photo');
+
         // Object containing text payloads for descriptive popups
         const infoExplainerData = {
             'net-profit': 'Your Net Profit calculates your total sales values minus item sourcing fees, marketplace shipping rates, and calculated mileage/operating expenses.',
@@ -324,7 +339,6 @@
             document.getElementById('info-modal').classList.add('active');
         }
 
-        // Closes info popups securely
         function closeModal() {
             document.getElementById('info-modal').classList.remove('active');
         }
