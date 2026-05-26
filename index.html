@@ -11,6 +11,7 @@
         .dashboard { background: #222; padding: 15px; border-radius: 10px; margin-bottom: 20px; }
         .btn { width: 100%; padding: 15px; margin: 10px 0; border-radius: 10px; border: none; background: #333; color: #fff; font-size: 16px; cursor: pointer; }
         .analyze-btn { background: #0070f3; }
+        .camera-btn { background: #28a745; }
         .expense-btn { background: #f39c12; }
         input { width: 90%; padding: 10px; margin: 5px 0; border-radius: 5px; border: none; }
         
@@ -40,8 +41,11 @@
             • <b>Found/Gift:</b> Use $0 (or cost of transport).
         </div>
 
-        <button class="btn analyze-btn" onclick="document.getElementById('fileInput').click()">📁 Select Photos & Analyze</button>
+        <button class="btn analyze-btn" onclick="document.getElementById('fileInput').click()">📁 Select Photos</button>
         <input type="file" id="fileInput" accept="image/*" multiple style="display:none;">
+
+        <button class="btn camera-btn" onclick="document.getElementById('cameraInput').click()">📷 Take Photo</button>
+        <input type="file" id="cameraInput" accept="image/*" capture="environment" style="display:none;">
 
         <h3>Add Expense</h3>
         <input type="text" id="expDesc" placeholder="Description (e.g., Mileage)">
@@ -98,9 +102,9 @@
             alert("Expense added: " + desc);
         }
 
+        // Connect both inputs to the file handler
         document.getElementById('fileInput').onchange = (e) => handleFiles(e.target.files);
+        document.getElementById('cameraInput').onchange = (e) => handleFiles(e.target.files);
     </script>
 </body>
 </html>
-
-
