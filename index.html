@@ -315,23 +315,24 @@
             if (e.target === this) closeModal();
         });
 
-        // Fixed Trigger mechanisms to explicitly click native HTML file elements
+        // Trigger mechanisms to route stylized buttons to native HTML file elements
         function triggerGallery(e) {
             if(e) e.preventDefault();
             document.getElementById('file-gallery-input').click();
         }
 
+        // Launches native device camera
         function triggerCamera(e) {
             if(e) e.preventDefault();
             document.getElementById('camera-capture-input').click();
         }
 
-        // Processing hook for handling image file objects once selected or captured
+        // Background handler for processing image file objects once selected or captured
         function processSelectedImage(inputElement) {
             if (inputElement.files && inputElement.files[0]) {
                 const targetFile = inputElement.files[0];
                 console.log("Image received successfully for processing: ", targetFile.name);
-                alert("File Selected successfully: " + targetFile.name);
+                // The dynamic alert confirmation has been safely removed here for a production-ready flow
             }
         }
     </script>
