@@ -20,7 +20,7 @@ export default async function handler(req, res) {
             body: JSON.stringify({
                 contents: [{
                     parts: [
-                        { text: "Analyze this item and provide: 1. Description, 2. Estimated Market Value, 3. Suggested Resale Price." },
+                        { text: "Analyze this item and provide: 1. Description, 2. Estimated Market Value, 3. Suggested Resale Price, 4. Best place to sell/list,  4. Exactly What to copy and paste in selling ad/post in marketplace. " },
                         { inline_data: { mime_type: "image/jpeg", data: imagesBase64[0] } }
                     ]
                 }]
