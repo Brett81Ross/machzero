@@ -140,11 +140,17 @@
                 canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
                 const base64String = canvas.toDataURL('image/jpeg', 0.7).split(',')[1];
 
+                // Instruction forced for AI order
+                const promptInstruction = "Analyze this item and provide the response in this exact order: 1. Item Description, 2. Market Value, 3. Where to Sell, 4. Optimized Listing (for copy-pasting), 5. Any other relevant details.";
+
                 try {
                     const response = await fetch('/api/analyze', { 
                         method: 'POST', 
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ imagesBase64: [base64String] }) 
+                        body: JSON.stringify({ 
+                            imagesBase64: [base64String],
+                            prompt: promptInstruction 
+                        }) 
                     });
                     
                     clearInterval(statusInterval);
