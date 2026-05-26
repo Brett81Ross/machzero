@@ -93,10 +93,9 @@
         .delete-log-btn:hover { color: #dc3545; }
         .empty-history-text { color: #444; font-size: 14px; font-style: italic; margin-top: 10px; }
 
-        /* Bottom Drawer Panel Layout */
+        /* Stabilized Drawer Panel Infrastructure */
         .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1000; justify-content: center; align-items: flex-end; }
-        .modal-content { background: #161616; width: 100%; max-width: 420px; border-top-left-radius: 20px; border-top-right-radius: 20px; padding: 25px; box-sizing: border-box; text-align: left; border-top: 1px solid #2a2a2a; transform: translateY(100%); transition: transform 0.3s ease-out; max-height: 80vh; overflow-y: auto; }
-        .modal-content.open { transform: translateY(0); }
+        .modal-content { background: #161616; width: 100%; max-width: 420px; border-top-left-radius: 20px; border-top-right-radius: 20px; padding: 25px; box-sizing: border-box; text-align: left; border-top: 1px solid #2a2a2a; max-height: 80vh; overflow-y: auto; }
         .modal-content h4 { margin-top: 0; color: #0070f3; font-size: 18px; margin-bottom: 12px; }
         .modal-content ul { padding-left: 20px; margin: 0 0 20px 0; }
         .modal-content li { margin-bottom: 10px; color: #ccc; font-size: 14px; line-height: 1.5; }
@@ -156,7 +155,7 @@
     </div>
 
     <div class="modal-overlay" id="modalOverlay" onclick="closeHelpModal()">
-        <div class="modal-content" id="modalContent" onclick="event.stopPropagation()">
+        <div class="modal-content" onclick="event.stopPropagation()">
             <div id="modalTargetContent"></div>
             <button class="close-modal-btn" onclick="closeHelpModal()">Got It</button>
         </div>
@@ -166,6 +165,7 @@
         let allImages = [];
         let currentSourcingCostCache = 0;
 
+        // Static Help Repository Matrix
         const guides = {
             sourcing: `
                 <h4>💡 Master Sourcing Cost Guide</h4>
@@ -179,35 +179,4 @@
             profit: `
                 <h4>📊 Net Profit Calculation Breakdown</h4>
                 <ul>
-                    <li><b>The Formula:</b> Gross Revenue minus Cost of Goods Sold (COGS) minus your Operational Expenses.</li>
-                    <li><b>Gross Revenue:</b> The total projected listing or final checkout sales numbers generated from item analysis scans.</li>
-                    <li><b>COGS (Sourcing Costs):</b> The base acquisition capital logged when items were parsed into inventory processing.</li>
-                    <li><b>Expenses:</b> Extra structural business operations tracking overhead liabilities like mileage tax credits, tools, or bubble wrap.</li>
-                </ul>
-            `,
-            app: `
-                <h4>📱 Resale IQ Quick Start Guide & FAQ</h4>
-                
-                <h4>How do I scan inventory?</h4>
-                <ul>
-                    <li>Enter what you paid for the item in the <b>Sourcing Cost</b> box, then click <b>Select Photos</b> or <b>Take Photo</b> to run the AI engine.</li>
-                </ul>
-
-                <h4>What happens after a scan?</h4>
-                <ul>
-                    <li>The Gemini 3.5 engine analyzes the graphics to pull pricing data, sales run-rates, optimization strategies, and build an ad copy layout.</li>
-                </ul>
-
-                <h4>How do expenses affect my profit metrics?</h4>
-                <ul>
-                    <li>Adding business expenses (like packaging, fuel, tape, or label printers) subtracts instantly from the <b>Net Profit Card</b>.</li>
-                </ul>
-            `
-        };
-
-        function openHelpModal(type) {
-            const overlay = document.getElementById('modalOverlay');
-            const content = document.getElementById('modalContent');
-            document.getElementById('modalTargetContent').innerHTML = guides[type] || '';
-            
-            overlay.style.display = '
+                    <li><b>The Formula:</b> Gross Revenue minus Cost of Goods Sold (COGS) minus your
