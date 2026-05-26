@@ -8,31 +8,56 @@
         body { background: #000; color: #fff; font-family: sans-serif; padding: 20px; display: flex; flex-direction: column; align-items: center; margin: 0; }
         .container { width: 100%; max-width: 400px; text-align: center; }
         
-        /* Matching your exact image layout styles */
-        .logo-container { width: 100%; overflow: hidden; margin-bottom: 10px; display: flex; justify-content: center; }
+        /* Logo Alignment */
+        .logo-container { width: 100%; overflow: hidden; margin-bottom: 20px; display: flex; justify-content: center; }
         .logo { width: 100%; max-width: 320px; height: auto; object-fit: contain; }
         
-        .dashboard { background: #1a1a1a; padding: 25px 15px; border-radius: 12px; margin-bottom: 20px; width: 100%; box-sizing: border-box; }
-        .dashboard h3 { margin: 0; font-size: 20px; font-weight: 600; letter-spacing: 0.5px; }
+        /* Upgraded Visual Dashboard Tab */
+        .dashboard { 
+            background: linear-gradient(145deg, #1e1e1e, #121212); 
+            padding: 22px 16px; 
+            border-radius: 16px; 
+            margin-bottom: 25px; 
+            width: 100%; 
+            box-sizing: border-box; 
+            border: 1px solid #2a2a2a;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+        }
+        .dashboard-label {
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: #888;
+            margin-bottom: 8px;
+            font-weight: 700;
+        }
+        .dashboard-value { 
+            margin: 0; 
+            font-size: 32px; 
+            font-weight: 700; 
+            letter-spacing: -0.5px;
+            color: #28a745; /* Clean profit green accent text */
+            text-shadow: 0 0 10px rgba(40, 167, 69, 0.2);
+        }
         
-        .section-title { font-size: 18px; font-weight: 600; margin: 25px 0 15px 0; text-align: center; }
+        .section-title { font-size: 18px; font-weight: 600; margin: 30px 0 15px 0; text-align: center; color: #fff; }
         
-        /* Modern Input Design with Integrated Info Button */
+        /* Input Design with Integrated Info Button */
         .input-wrapper { position: relative; width: 100%; margin-bottom: 15px; }
         input { width: 100%; padding: 16px 50px 16px 16px; border-radius: 10px; border: 1px solid #2a2a2a; font-size: 16px; background: #111; color: #fff; box-sizing: border-box; outline: none; }
         input::placeholder { color: #555; }
         input:focus { border-color: #0070f3; }
         
-        .info-toggle-btn { position: absolute; right: 16px; top: 50%; transform: translateY(-50%); background: transparent; color: #0056b3; border: none; font-size: 20px; cursor: pointer; padding: 0; display: flex; align-items: center; justify-content: center; }
+        .info-toggle-btn { position: absolute; right: 16px; top: 50%; transform: translateY(-50%); background: transparent; color: #0070f3; border: none; font-size: 20px; cursor: pointer; padding: 0; display: flex; align-items: center; justify-content: center; }
         
-        /* Exact Button Color Matching From Your Screen Snapshots */
+        /* Button Color Layouts */
         .btn { width: 100%; padding: 16px; margin-bottom: 12px; border-radius: 10px; border: none; color: #fff; font-size: 16px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; box-sizing: border-box; }
         .select-btn { background: #0070f3; }
         .camera-btn { background: #28a745; }
-        .expense-btn { background: #f39c12; color: #fff; margin-top: 5px; }
+        .expense-btn { background: #f39c12; margin-top: 5px; }
         
-        /* Smooth Mobile Bottom Drawer Modal for Help Info */
-        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 1000; justify-content: center; align-items: flex-end; }
+        /* Bottom Drawer Panel */
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1000; justify-content: center; align-items: flex-end; }
         .modal-content { background: #161616; width: 100%; max-width: 420px; border-top-left-radius: 20px; border-top-right-radius: 20px; padding: 25px; box-sizing: border-box; text-align: left; border-top: 1px solid #2a2a2a; transform: translateY(100%); transition: transform 0.3s ease-out; }
         .modal-content.open { transform: translateY(0); }
         .modal-content h4 { margin-top: 0; color: #0070f3; font-size: 18px; margin-bottom: 15px; }
@@ -53,7 +78,8 @@
         </div>
         
         <div class="dashboard">
-            <h3>Net Profit: $<span id="netProfit">0</span></h3>
+            <div class="dashboard-label">Net Profit</div>
+            <div class="dashboard-value">$<span id="netProfit">0.00</span></div>
         </div>
 
         <div class="input-wrapper">
@@ -97,7 +123,6 @@
     <script>
         let allImages = [];
 
-        // Smooth Mobile Overlay Controls
         function openHelpModal() {
             const overlay = document.getElementById('modalOverlay');
             const content = document.getElementById('modalContent');
@@ -112,7 +137,6 @@
             setTimeout(() => { overlay.style.display = 'none'; }, 300);
         }
 
-        // Image Slicing and Encoding Logic
         async function handleFiles(files) {
             const cost = document.getElementById('costInput').value || 0;
             allImages = []; 
@@ -142,7 +166,6 @@
             runAnalysis(cost);
         }
 
-        // Live API Execution Loop
         async function runAnalysis(cost) {
             const resultBox = document.getElementById('result');
             resultBox.style.display = 'block';
@@ -161,7 +184,6 @@
                 const text = data.candidates[0].content.parts[0].text;
                 resultBox.innerText = text;
                 
-                // Parse generated price range to auto-log expected value
                 const priceMatch = text.match(/\$?(\d+)/);
                 const estimatedSalePrice = priceMatch ? parseFloat(priceMatch[1]) : 0;
                 
@@ -175,7 +197,6 @@
             }
         }
 
-        // Expense Ledger Persistence Flow
         function addExpense() {
             const desc = document.getElementById('expDesc').value.trim();
             const amt = parseFloat(document.getElementById('expAmt').value) || 0;
@@ -192,7 +213,6 @@
             alert(`Logged expense: "${desc}" for $${amt.toFixed(2)}`);
         }
 
-        // Full Math Aggregator for Live Profit Output
         function calculateFinances() {
             const items = JSON.parse(localStorage.getItem('resaleHistory') || '[]');
             const exps = JSON.parse(localStorage.getItem('expenses') || '[]');
@@ -202,7 +222,6 @@
             let operationalExpenses = 0;
 
             items.forEach(item => {
-                // For demonstration, if active or sold, account for gross valuation adjustments
                 accumulatedRevenue += item.price;
                 totalCogs += item.cost;
             });
