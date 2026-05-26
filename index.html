@@ -385,7 +385,22 @@
 
         document.getElementById('fileInput').onchange = (e) => handleFiles(e.target.files);
         document.getElementById('cameraInput').onchange = (e) => handleFiles(e.target.files);
+       
         window.onload = calculateFinances;
+        <footer style="background-color: #1a1a1a; border-top: 1px solid #2d2d2d; padding: 15px 20px; text-align: center; font-size: 0.85rem; color: #888888; font-family: sans-serif;">
+        <img src="logo1.png" alt="ResaleIQ Logo" style="height: 20px; vertical-align: middle; margin-right: 8px; opacity: 0.7;">
+        <div style="display: inline-block; vertical-align: middle; letter-spacing: 0.5px;">
+            &copy; <span id="copyright-year"></span> ResaleIQ. All Rights Reserved.
+        </div>
+    </footer>
+
+    <script>
+        // Automatically updates the footer to the current year
+        document.getElementById('copyright-year').textContent = new Date().getFullYear();
+    </script>
+</body>
+</html>
+
     </script>
 </body>
 </html>
