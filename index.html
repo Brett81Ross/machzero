@@ -26,7 +26,6 @@
         .pulsing { animation: pulse 1.5s infinite; }
         @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.6; } 100% { opacity: 1; } }
         
-        /* Inventory Log Styles */
         #inventory-log { margin-top: 16px; }
         .log-item { background-color: #161616; border-radius: 12px; padding: 16px; margin-bottom: 8px; border-left: 4px solid #34c759; font-size: 0.9rem; }
         
@@ -79,11 +78,15 @@
         </div>
     </div>
 
-    <footer class="app-footer">&copy; 2026 ResaleIQ Powered by CactusByte. All Rights Reserved.</footer>
+    <footer class="app-footer">&copy; 2026 ResaleIQ by CactusByte. All Rights Reserved.</footer>
 
     <script>
         document.getElementById('gallery-trigger-btn').addEventListener('click', () => document.getElementById('file-gallery-input').click());
-        document.getElementById('camera-capture-input').addEventListener('click', () => document.getElementById('camera-capture-input').click());
+        document.getElementById('camera-trigger-btn').addEventListener('click', () => {
+            const input = document.getElementById('camera-capture-input');
+            input.value = "";
+            input.click();
+        });
 
         document.getElementById('file-gallery-input').addEventListener('change', (e) => startUpload(e.target.files[0]));
         document.getElementById('camera-capture-input').addEventListener('change', (e) => startUpload(e.target.files[0]));
@@ -152,7 +155,7 @@
                         const resultText = data.candidates[0].content.parts[0].text;
                         statusDiv.style.borderColor = '#34c759';
                         statusDiv.textContent = resultText;
-                        addToLog(resultText); // Add to log automatically
+                        addToLog(resultText);
                     } 
                     else if (response.status === 429) {
                         statusDiv.style.borderColor = '#ff9f0a';
@@ -168,7 +171,7 @@
                     clearInterval(statusInterval);
                     statusDiv.classList.remove('pulsing');
                     statusDiv.style.borderColor = '#ff3b30';
-                    statusDiv.textContent = "Connection failed.";
+                    statusDiv.textContent = "Connection failed. Check your data connection.";
                 }
             };
             process();
