@@ -8,11 +8,34 @@
         body { background: #000; color: #fff; font-family: sans-serif; padding: 20px; display: flex; flex-direction: column; align-items: center; margin: 0; }
         .container { width: 100%; max-width: 400px; text-align: center; }
         
+        /* Top Navigation Header Layer */
+        .app-header { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            width: 100%; 
+            margin-bottom: 20px;
+            padding: 5px 0;
+        }
+        .header-title { font-size: 20px; font-weight: 700; color: #fff; letter-spacing: 0.5px; }
+        .faq-top-btn { 
+            background: #111; 
+            border: 1px solid #2a2a2a; 
+            color: #ccc; 
+            padding: 8px 14px; 
+            border-radius: 20px; 
+            font-size: 13px; 
+            font-weight: 600; 
+            cursor: pointer; 
+            transition: all 0.2s;
+        }
+        .faq-top-btn:hover { background: #222; border-color: #0070f3; color: #fff; }
+
         /* Logo Alignment */
         .logo-container { width: 100%; overflow: hidden; margin-bottom: 20px; display: flex; justify-content: center; }
         .logo { width: 100%; max-width: 320px; height: auto; object-fit: contain; }
         
-        /* Dashboard Card with Inline Info Button */
+        /* Dashboard Card Layout */
         .dashboard { 
             background: linear-gradient(145deg, #1e1e1e, #121212); 
             padding: 22px 16px; 
@@ -43,30 +66,29 @@
         
         .section-title { font-size: 18px; font-weight: 600; margin: 30px 0 15px 0; text-align: center; color: #fff; }
         
-        /* Input Design with Integrated Info Button */
+        /* Input Field Design with Inline Info Accessors */
         .input-wrapper { position: relative; width: 100%; margin-bottom: 15px; }
         input { width: 100%; padding: 16px 50px 16px 16px; border-radius: 10px; border: 1px solid #2a2a2a; font-size: 16px; background: #111; color: #fff; box-sizing: border-box; outline: none; }
         input::placeholder { color: #555; }
         input:focus { border-color: #0070f3; }
         
-        /* Reusable info toggle styling */
         .info-toggle-btn { position: absolute; right: 16px; top: 50%; transform: translateY(-50%); background: transparent; color: #0070f3; border: none; font-size: 20px; cursor: pointer; padding: 0; display: flex; align-items: center; justify-content: center; }
-        .dashboard .info-toggle-btn { top: 25px; transform: none; } /* Specific positioning inside dashboard */
+        .dashboard .info-toggle-btn { top: 25px; transform: none; }
         
-        /* Button Styles */
+        /* Standard Action Buttons */
         .btn { width: 100%; padding: 16px; margin-bottom: 12px; border-radius: 10px; border: none; color: #fff; font-size: 16px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; box-sizing: border-box; }
         .select-btn { background: #0070f3; }
         .camera-btn { background: #28a745; }
         .expense-btn { background: #f39c12; margin-top: 5px; }
         
-        /* Bottom Drawer Panel */
+        /* Bottom Drawer Panel CSS Animation Architecture */
         .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1000; justify-content: center; align-items: flex-end; }
-        .modal-content { background: #161616; width: 100%; max-width: 420px; border-top-left-radius: 20px; border-top-right-radius: 20px; padding: 25px; box-sizing: border-box; text-align: left; border-top: 1px solid #2a2a2a; transform: translateY(100%); transition: transform 0.3s ease-out; }
+        .modal-content { background: #161616; width: 100%; max-width: 420px; border-top-left-radius: 20px; border-top-right-radius: 20px; padding: 25px; box-sizing: border-box; text-align: left; border-top: 1px solid #2a2a2a; transform: translateY(100%); transition: transform 0.3s ease-out; max-height: 80vh; overflow-y: auto; }
         .modal-content.open { transform: translateY(0); }
-        .modal-content h4 { margin-top: 0; color: #0070f3; font-size: 18px; margin-bottom: 15px; }
-        .modal-content ul { padding-left: 20px; margin: 0; }
-        .modal-content li { margin-bottom: 12px; color: #ccc; font-size: 14px; line-height: 1.5; }
-        .close-modal-btn { width: 100%; padding: 12px; background: #222; border: 1px solid #333; color: #fff; border-radius: 8px; margin-top: 15px; cursor: pointer; font-weight: 600; text-align: center; }
+        .modal-content h4 { margin-top: 0; color: #0070f3; font-size: 18px; margin-bottom: 12px; }
+        .modal-content ul { padding-left: 20px; margin: 0 0 20px 0; }
+        .modal-content li { margin-bottom: 10px; color: #ccc; font-size: 14px; line-height: 1.5; }
+        .close-modal-btn { width: 100%; padding: 14px; background: #222; border: 1px solid #333; color: #fff; border-radius: 8px; margin-top: 10px; cursor: pointer; font-weight: 600; text-align: center; }
 
         #gallery { display: flex; flex-wrap: wrap; gap: 10px; margin: 15px 0; width: 100%; justify-content: center; }
         #gallery img { width: 75px; height: 75px; object-fit: cover; border-radius: 8px; border: 1px solid #222; }
@@ -76,6 +98,11 @@
 </head>
 <body>
     <div class="container">
+        <div class="app-header">
+            <span class="header-title">Resale IQ</span>
+            <button class="faq-top-btn" onclick="openHelpModal('app')">❓ Help FAQ</button>
+        </div>
+
         <div class="logo-container">
             <img src="logo1.png" class="logo" alt="Resale IQ">
         </div>
@@ -121,7 +148,7 @@
     <script>
         let allImages = [];
 
-        // Dynamic Help Drawer Generator
+        // Global Help Guides Core Matrix
         const guides = {
             sourcing: `
                 <h4>💡 Master Sourcing Cost Guide</h4>
@@ -139,6 +166,24 @@
                     <li><b>Gross Revenue:</b> The total projected listing or final checkout sales numbers generated from item analysis scans.</li>
                     <li><b>COGS (Sourcing Costs):</b> The base acquisition capital logged when items were parsed into inventory processing.</li>
                     <li><b>Expenses:</b> Extra structural business operations tracking overhead liabilities like mileage tax credits, tools, or bubble wrap.</li>
+                </ul>
+            `,
+            app: `
+                <h4>📱 Resale IQ Quick Start Guide & FAQ</h4>
+                
+                <h4>How do I scan inventory?</h4>
+                <ul>
+                    <li>Enter what you paid for the item in the <b>Sourcing Cost</b> box, then click <b>Select Photos</b> or <b>Take Photo</b> to run the AI engine.</li>
+                </ul>
+
+                <h4>What happens after a scan?</h4>
+                <ul>
+                    <li>The Gemini 3.5 engine analyzes the graphics to pull pricing data, sales run-rates, optimization strategies, and build an ad copy layout.</li>
+                </ul>
+
+                <h4>How do expenses affect my profit metrics?</h4>
+                <ul>
+                    <li>Adding business expenses (like packaging, fuel, tape, or label printers) subtracts instantly from the <b>Net Profit Card</b>.</li>
                 </ul>
             `
         };
