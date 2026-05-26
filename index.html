@@ -28,11 +28,12 @@
             background: linear-gradient(145deg, #1e1e1e, #121212); 
             padding: 22px 16px; 
             border-radius: 16px; 
-            margin-bottom: 25px; 
+            margin-bottom: 15px; 
             width: 100%; 
             box-sizing: border-box; 
             border: 1px solid #2a2a2a;
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+            position: relative;
         }
         .dashboard-label {
             font-size: 13px;
@@ -53,12 +54,22 @@
         
         .section-title { font-size: 18px; font-weight: 600; margin: 30px 0 15px 0; text-align: center; color: #fff; }
         
-        /* Input Field Design */
+        /* Input Field Design with Inline Help Accessors */
         .input-wrapper { position: relative; width: 100%; margin-bottom: 15px; }
-        input { width: 100%; padding: 16px; border-radius: 10px; border: 1px solid #2a2a2a; font-size: 16px; background: #111; color: #fff; box-sizing: border-box; outline: none; }
+        input { width: 100%; padding: 16px 50px 16px 16px; border-radius: 10px; border: 1px solid #2a2a2a; font-size: 16px; background: #111; color: #fff; box-sizing: border-box; outline: none; }
         input::placeholder { color: #555; }
         input:focus { border-color: #0070f3; }
         
+        .info-toggle-btn { position: absolute; right: 16px; top: 50%; transform: translateY(-50%); background: transparent; color: #0070f3; border: none; font-size: 20px; cursor: pointer; padding: 0; display: flex; align-items: center; justify-content: center; z-index: 5; }
+        .dashboard .info-toggle-btn { top: 20px; transform: none; }
+        
+        /* Embedded Local Context Help Trays */
+        .help-tray { display: none; background: #161616; border: 1px solid #2a2a2a; border-radius: 10px; padding: 16px; text-align: left; margin-bottom: 15px; width: 100%; box-sizing: border-box; }
+        .help-tray h4 { margin: 0 0 10px 0; color: #0070f3; font-size: 15px; }
+        .help-tray ul { padding-left: 18px; margin: 0; }
+        .help-tray li { margin-bottom: 8px; color: #ccc; font-size: 13px; line-height: 1.4; }
+        .help-tray li:last-child { margin-bottom: 0; }
+
         /* Standard Action Buttons */
         .btn { width: 100%; padding: 16px; margin-bottom: 12px; border-radius: 10px; border: none; color: #fff; font-size: 16px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; box-sizing: border-box; }
         .select-btn { background: #0070f3; }
@@ -98,10 +109,30 @@
         <div class="dashboard">
             <div class="dashboard-label">Net Profit</div>
             <div class="dashboard-value">$<span id="netProfit">0.00</span></div>
+            <button class="info-toggle-btn" onclick="toggleHelpTray('profitTray')">ⓘ</button>
+        </div>
+
+        <div id="profitTray" class="help-tray">
+            <h4>📊 Net Profit Calculation</h4>
+            <ul>
+                <li><b>Formula:</b> Projected Sales Revenue minus Sourcing Costs (COGS) minus your Operational Expenses.</li>
+                <li><b>Scan Revenue:</b> Generated instantly from historical marketplace data parsed through the Gemini 3.5 vision engine.</li>
+                <li><b>Overhead Liability:</b> Items logged via the 'Add Expense' workflow subtract directly from this dashboard card value.</li>
+            </ul>
         </div>
 
         <div class="input-wrapper">
             <input type="number" id="costInput" placeholder="Sourcing Cost ($)" inputmode="decimal">
+            <button class="info-toggle-btn" onclick="toggleHelpTray('sourcingTray')">ⓘ</button>
+        </div>
+
+        <div id="sourcingTray" class="help-tray">
+            <h4>💡 Sourcing Cost Breakdown</h4>
+            <ul>
+                <li><b>Thrift/Bundles:</b> Take the total checkout receipt cost divided evenly by the number of usable items purchased.</li>
+                <li><b>Unearned/Found Items:</b> Enter <b>$0</b>. If gas or travel overhead was required for pickup, log it down under general operational expenses.</li>
+                <li><b>Repairs & Cleaning:</b> If dedicated parts or restoration chemicals were bought for this specific unit, add that to the initial value here.</li>
+            </ul>
         </div>
 
         <button class="btn select-btn" onclick="document.getElementById('fileInput').click()">📁 Select Photos</button>
@@ -130,6 +161,16 @@
     <script>
         let allImages = [];
         let currentSourcingCostCache = 0;
+
+        // Clean Localized Element Toggler
+        function toggleHelpTray(trayId) {
+            const tray = document.getElementById(trayId);
+            if (tray.style.display === 'block') {
+                tray.style.display = 'none';
+            } else {
+                tray.style.display = 'block';
+            }
+        }
 
         async function handleFiles(files) {
             currentSourcingCostCache = document.getElementById('costInput').value || 0;
@@ -173,3 +214,178 @@
                                 canvas.height = height;
                                 
                                 const ctx = canvas.getContext('2d');
+                                ctx.drawImage(img, 0, 0, width, height);
+                                
+                                const base64Result = canvas.toDataURL('image/jpeg', 0.75).split(',')[1];
+                                resolve(base64Result);
+                            };
+                            img.src = e.target.result;
+                        };
+                        reader.readAsDataURL(file);
+                    });
+                    
+                    allImages.push(b64);
+                    
+                    const thumb = document.createElement('img');
+                    thumb.src = `data:image/jpeg;base64,${b64}`;
+                    gallery.appendChild(thumb);
+                    
+                } catch (processingErr) {
+                    displayErrorUI(`Pre-processing Failure: ${processingErr.message}`);
+                    return;
+                }
+            }
+            runAnalysis(currentSourcingCostCache);
+        }
+
+        async function runAnalysis(cost) {
+            const resultBox = document.getElementById('result');
+            resultBox.className = ""; 
+            resultBox.style.display = 'block';
+            resultBox.innerText = "Analyzing item properties with Gemini 3.5...";
+            
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 25000); 
+            
+            try {
+                const res = await fetch('/api/analyze', { 
+                    method: 'POST', 
+                    headers: {'Content-Type': 'application/json'}, 
+                    body: JSON.stringify({ imagesBase64: allImages }),
+                    signal: controller.signal
+                });
+                clearTimeout(timeoutId);
+                
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.error || "Server processing iteration fault.");
+                
+                const text = data.candidates[0].content.parts[0].text;
+                resultBox.innerText = text;
+                
+                const priceMatch = text.match(/\$?(\d+)/);
+                const estimatedSalePrice = priceMatch ? parseFloat(priceMatch[1]) : 0;
+                
+                const lines = text.split('\n');
+                const titleFallback = lines[0].replace(/[#*`]/g, '').trim() || "Analyzed Inventory Item";
+
+                let h = JSON.parse(localStorage.getItem('resaleHistory') || '[]');
+                h.unshift({ 
+                    id: Date.now().toString(),
+                    title: titleFallback,
+                    text, 
+                    cost: parseFloat(cost), 
+                    price: estimatedSalePrice, 
+                    timestamp: Date.now() 
+                });
+                localStorage.setItem('resaleHistory', JSON.stringify(h));
+                
+                calculateFinances();
+            } catch (err) {
+                clearTimeout(timeoutId);
+                if (err.name === 'AbortError') {
+                    displayErrorUI("Network timeout: The connection took too long to respond. Please check your signal strength and retry.");
+                } else {
+                    displayErrorUI(`Execution Error: ${err.message || "Failed to contact analysis server."}`);
+                }
+            }
+        }
+
+        function displayErrorUI(message) {
+            const resultBox = document.getElementById('result');
+            resultBox.style.display = 'block';
+            resultBox.className = "error-state";
+            resultBox.innerHTML = `⚠️ <b>Resale IQ Error Encountered</b><br>${message}<span class="retry-action-link" onclick="runAnalysis(currentSourcingCostCache)">🔄 Tap here to retry analysis</span>`;
+        }
+
+        function addExpense() {
+            const desc = document.getElementById('expDesc').value.trim();
+            const amt = parseFloat(document.getElementById('expAmt').value) || 0;
+            if (!desc || amt <= 0) return;
+
+            let exps = JSON.parse(localStorage.getItem('expenses') || '[]');
+            exps.push({ id: Date.now().toString(), desc, amt, timestamp: Date.now() });
+            localStorage.setItem('expenses', JSON.stringify(exps));
+            
+            document.getElementById('expDesc').value = "";
+            document.getElementById('expAmt').value = "";
+            
+            calculateFinances();
+        }
+
+        function deleteHistoryItem(id, type) {
+            if (!confirm("Are you sure you want to remove this log entry?")) return;
+            
+            const storageKey = type === 'item' ? 'resaleHistory' : 'expenses';
+            let dataset = JSON.parse(localStorage.getItem(storageKey) || '[]');
+            dataset = dataset.filter(entry => entry.id !== id);
+            localStorage.setItem(storageKey, JSON.stringify(dataset));
+            
+            calculateFinances();
+        }
+
+        function calculateFinances() {
+            const items = JSON.parse(localStorage.getItem('resaleHistory') || '[]');
+            const exps = JSON.parse(localStorage.getItem('expenses') || '[]');
+            
+            let accumulatedRevenue = 0;
+            let totalCogs = 0;
+            let operationalExpenses = 0;
+
+            const container = document.getElementById('historyContainer');
+            container.innerHTML = "";
+
+            items.forEach(item => {
+                accumulatedRevenue += item.price;
+                totalCogs += item.cost;
+
+                const card = document.createElement('div');
+                card.className = 'history-card';
+                card.innerHTML = `
+                    <div class="history-meta">
+                        <span>📦 ITEM SCAN</span>
+                        <span>${new Date(item.timestamp).toLocaleDateString()}</span>
+                    </div>
+                    <div class="history-title">${item.title}</div>
+                    <div class="history-metrics">
+                        <span class="metric-cogs">Sourced: $${item.cost.toFixed(2)}</span>
+                        <span class="metric-rev">Est Value: $${item.price.toFixed(2)}</span>
+                    </div>
+                    <button class="delete-log-btn" onclick="deleteHistoryItem('${item.id}', 'item')">✕</button>
+                `;
+                container.appendChild(card);
+            });
+
+            exps.forEach(e => {
+                operationalExpenses += e.amt;
+
+                const card = document.createElement('div');
+                card.className = 'history-card';
+                card.style.borderColor = '#3a2307';
+                card.innerHTML = `
+                    <div class="history-meta">
+                        <span style="color: #f39c12;">💸 EXPENSE LOG</span>
+                        <span>${new Date(e.timestamp).toLocaleDateString()}</span>
+                    </div>
+                    <div class="history-title">${e.desc}</div>
+                    <div class="history-metrics">
+                        <span class="metric-cogs" style="color: #f39c12;">Cost: $${e.amt.toFixed(2)}</span>
+                    </div>
+                    <button class="delete-log-btn" onclick="deleteHistoryItem('${e.id}', 'expense')">✕</button>
+                `;
+                container.appendChild(card);
+            });
+
+            if (items.length === 0 && exps.length === 0) {
+                container.innerHTML = '<div class="empty-history-text">No logged items or expenses found.</div>';
+            }
+
+            const trueNetProfit = accumulatedRevenue - totalCogs - operationalExpenses;
+            document.getElementById('netProfit').innerText = trueNetProfit.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
+        }
+
+        document.getElementById('fileInput').onchange = (e) => handleFiles(e.target.files);
+        document.getElementById('cameraInput').onchange = (e) => handleFiles(e.target.files);
+        window.onload = calculateFinances;
+    </script>
+</body>
+</html>
