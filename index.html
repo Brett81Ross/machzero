@@ -78,7 +78,6 @@
             if (!input.files || !input.files[0]) return;
             const file = input.files[0];
             
-            // Show modal immediately
             document.getElementById('modal-content-field').textContent = "Analyzing " + file.name + "...";
             document.getElementById('info-modal').classList.add('active');
 
@@ -87,7 +86,6 @@
             reader.onload = async () => {
                 const base64String = reader.result.split(',')[1];
                 
-                // Android-specific: Sending as JSON payload
                 try {
                     const response = await fetch('/api/analyze', { 
                         method: 'POST', 
@@ -96,13 +94,19 @@
                     });
                     
                     const data = await response.json();
+                    
                     if (response.ok) {
                         document.getElementById('modal-content-field').textContent = data.candidates[0].content.parts[0].text;
                     } else {
-                        document.getElementById('modal-content-field').textContent = "Server Error: " + (data.error || "Check backend.");
+                        // Intelligent error parsing
+                        let errorMessage = data.error || "Server error occurred.";
+                        if (errorMessage.includes("quota")) {
+                            errorMessage = "Rate limit reached. Please wait a moment and try again.";
+                        }
+                        document.getElementById('modal-content-field').textContent = "Error: " + errorMessage;
                     }
                 } catch (error) {
-                    document.getElementById('modal-content-field').textContent = "Android/Network Error. Ensure your API key is configured in Vercel environment variables.";
+                    document.getElementById('modal-content-field').textContent = "Connection error. Please check your internet.";
                 }
             };
         }
