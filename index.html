@@ -17,7 +17,25 @@
             flex-direction: column;
         }
 
-        /* App Wrapper */
+        /* Top Header Container - Stripped of padding/margins for edge-to-edge layout */
+        .brand-header {
+            width: 100%;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+        }
+
+        /* Full Screen Width Square Logo Styling */
+        .main-logo {
+            width: 100%;
+            height: auto;
+            aspect-ratio: 1 / 1; /* Forces a perfect square ratio */
+            display: block;
+            object-fit: contain;
+            background-color: #ffffff; /* Preserves your crisp white background */
+        }
+
+        /* Content Wrapper for the rest of the App UI */
         .app-wrapper {
             flex: 1;
             padding: 16px;
@@ -25,21 +43,6 @@
             width: 100%;
             margin: 0 auto;
             box-sizing: border-box;
-        }
-
-        /* Fixed Brand Logo Proportioning Header */
-        .brand-header {
-            text-align: left;
-            margin-bottom: 20px;
-            padding-top: 8px;
-        }
-
-        .main-logo {
-            max-height: 90px;
-            width: auto;
-            display: block;
-            border-radius: 12px; /* Smooths the stark white square bounding box */
-            object-fit: contain;
         }
 
         /* Cards & Panels */
@@ -225,11 +228,11 @@
 </head>
 <body>
 
+    <div class="brand-header">
+        <img src="logo1.png" alt="ResaleIQ" class="main-logo">
+    </div>
+
     <div class="app-wrapper">
-        
-        <div class="brand-header">
-            <img src="logo1.png" alt="ResaleIQ" class="main-logo">
-        </div>
 
         <div class="profit-card">
             <div class="card-title">Net Profit</div>
