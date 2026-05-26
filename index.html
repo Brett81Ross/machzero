@@ -3,35 +3,40 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Resale IQ - Inventory & Analytics</title>
+    <title>Resale IQ</title>
     <style>
         body { background: #000; color: #fff; font-family: sans-serif; padding: 20px; display: flex; flex-direction: column; align-items: center; }
         .container { width: 100%; max-width: 400px; text-align: center; }
         .logo { width: 250px; margin-bottom: 20px; }
         .dashboard { background: #222; padding: 15px; border-radius: 10px; margin-bottom: 20px; }
         .btn { width: 100%; padding: 15px; margin: 10px 0; border-radius: 10px; border: none; background: #333; color: #fff; font-size: 16px; cursor: pointer; }
-        input[type="number"] { width: 90%; padding: 10px; margin: 5px 0; border-radius: 5px; border: none; }
+        .analyze-btn { background: #0070f3; }
+        .expense-btn { background: #f39c12; }
+        input { width: 90%; padding: 10px; margin: 5px 0; border-radius: 5px; border: none; }
         #gallery { display: flex; flex-wrap: wrap; gap: 10px; margin: 15px 0; }
         #gallery img { width: 80px; height: 80px; object-fit: cover; border-radius: 5px; }
         #result { background: #1a1a1a; padding: 15px; border-radius: 10px; margin-top: 20px; text-align: left; font-size: 14px; }
-        .history-item { background: #222; padding: 12px; margin-top: 10px; border-radius: 8px; border-left: 4px solid #0070f3; text-align: left; }
     </style>
 </head>
 <body>
     <div class="container">
         <img src="logo1.png" class="logo" alt="Logo">
         
-        <div class="dashboard" id="dash">
-            <h3>Total Estimated Profit: $<span id="totalProfit">0</span></h3>
+        <div class="dashboard">
+            <h3>Net Profit: $<span id="netProfit">0</span></h3>
         </div>
 
         <input type="number" id="costInput" placeholder="Sourcing Cost ($)">
-        <button class="btn" onclick="document.getElementById('fileInput').click()">📁 Select Photos & Analyze</button>
+        <button class="btn analyze-btn" onclick="document.getElementById('fileInput').click()">📁 Select Photos & Analyze</button>
         <input type="file" id="fileInput" accept="image/*" multiple style="display:none;">
+
+        <h3>Add Expense</h3>
+        <input type="text" id="expDesc" placeholder="Description (e.g., Mileage)">
+        <input type="number" id="expAmt" placeholder="Amount ($)">
+        <button class="btn expense-btn" onclick="addExpense()">Add Expense</button>
         
         <div id="gallery"></div>
         <div id="result"></div>
-        <div id="historyContainer"></div>
     </div>
 
     <script>
@@ -39,9 +44,9 @@
 
         async function handleFiles(files) {
             const cost = document.getElementById('costInput').value || 0;
-            allImages = []; document.getElementById('gallery').innerHTML = "";
+            allImages = []; 
+            document.getElementById('gallery').innerHTML = "";
             
-            // Image processing logic...
             for (const file of Array.from(files)) {
                 const b64 = await new Promise(r => {
                     const reader = new FileReader();
@@ -63,46 +68,24 @@
         }
 
         async function runAnalysis(cost) {
+            document.getElementById('result').innerText = "Analyzing...";
             const res = await fetch('/api/analyze', { 
                 method: 'POST', headers: {'Content-Type': 'application/json'}, 
                 body: JSON.stringify({ imagesBase64: allImages }) 
             });
             const data = await res.json();
             const text = data.candidates[0].content.parts[0].text;
-            
-            // Extract price from AI text (basic regex)
-            const priceMatch = text.match(/\d+/);
-            const salePrice = priceMatch ? parseInt(priceMatch[0]) : 0;
-            
-            // Save to history with financial data
-            let h = JSON.parse(localStorage.getItem('resaleHistory') || '[]');
-            h.unshift({ text: text, cost: cost, price: salePrice, status: 'Active' });
-            localStorage.setItem('resaleHistory', JSON.stringify(h));
-            
             document.getElementById('result').innerText = text;
-            renderHistory();
         }
 
-        function renderHistory() {
-            const h = JSON.parse(localStorage.getItem('resaleHistory') || '[]');
-            let total = 0;
-            const hist = document.getElementById('historyContainer');
-            hist.innerHTML = "<h3>Inventory Log</h3>";
-            
-            h.forEach(item => {
-                const profit = item.status === 'Sold' ? (item.price - item.cost) : 0;
-                total += profit;
-                const div = document.createElement('div');
-                div.className = 'history-item';
-                div.innerHTML = `<div>${item.text.substring(0, 40)}...</div>
-                                 <small>Cost: $${item.cost} | Est. Price: $${item.price} | Status: ${item.status}</small>`;
-                hist.appendChild(div);
-            });
-            document.getElementById('totalProfit').innerText = total;
+        function addExpense() {
+            const desc = document.getElementById('expDesc').value;
+            const amt = parseFloat(document.getElementById('expAmt').value) || 0;
+            if (!desc || amt <= 0) return;
+            alert("Expense added: " + desc);
         }
 
         document.getElementById('fileInput').onchange = (e) => handleFiles(e.target.files);
-        window.onload = renderHistory;
     </script>
 </body>
 </html>
