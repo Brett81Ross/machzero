@@ -9,12 +9,12 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/your-username/MachZero.git"
+    "url": "https://github.com/YOUR_GITHUB_USERNAME/MachZero.git"
   },
   "author": "MachZero Systems",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/your-username/MachZero/issues"
+    "url": "https://github.com/YOUR_GITHUB_USERNAME/MachZero/issues"
   },
-  "homepage": "https://github.com/your-username/MachZero#readme"
+  "homepage": "https://github.com/YOUR_GITHUB_USERNAME/MachZero#readme"
 }
