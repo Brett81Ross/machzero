@@ -101,10 +101,9 @@
         async function startUpload(file) {
             if (!file) return;
             const statusDiv = document.getElementById('status-display');
-            const steps = ["Scanning image...", "Connecting to AI...", "Evaluating market data..."];
+            const steps = ["Compressing image...", "Connecting to AI...", "Evaluating market data..."];
             let stepIndex = 0;
 
-            const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
             const statusInterval = setInterval(() => {
                 statusDiv.textContent = steps[stepIndex % steps.length];
                 stepIndex++;
@@ -115,42 +114,52 @@
                 statusDiv.classList.add('pulsing');
                 statusDiv.style.borderColor = '#007aff';
                 
-                const reader = new FileReader();
-                reader.readAsDataURL(file);
-                reader.onload = async () => {
-                    const base64String = reader.result.split(',')[1];
-                    try {
-                        const response = await fetch('/api/analyze', { 
-                            method: 'POST', 
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ imagesBase64: [base64String] }) 
-                        });
-                        
-                        clearInterval(statusInterval);
-                        statusDiv.classList.remove('pulsing');
-                        
-                        if (response.ok) {
-                            const data = await response.json();
-                            statusDiv.style.borderColor = '#34c759';
-                            statusDiv.textContent = data.candidates[0].content.parts[0].text;
-                        } 
-                        else if (response.status === 429) {
-                            statusDiv.style.borderColor = '#ff9f0a';
-                            statusDiv.textContent = "Rate limit reached. Waiting 35s to auto-retry...";
-                            await sleep(35000); 
-                            process(); 
-                        } 
-                        else {
-                            statusDiv.style.borderColor = '#ff3b30';
-                            statusDiv.textContent = "Server Error (" + response.status + ").";
-                        }
-                    } catch (error) {
-                        clearInterval(statusInterval);
-                        statusDiv.classList.remove('pulsing');
+                // Compress image to max 800px width
+                const img = new Image();
+                img.src = URL.createObjectURL(file);
+                await img.decode();
+                const canvas = document.createElement('canvas');
+                const scale = Math.min(800 / img.width, 1);
+                canvas.width = img.width * scale;
+                canvas.height = img.height * scale;
+                canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
+                const base64String = canvas.toDataURL('image/jpeg', 0.7).split(',')[1];
+
+                try {
+                    const response = await fetch('/api/analyze', { 
+                        method: 'POST', 
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ imagesBase64: [base64String] }) 
+                    });
+                    
+                    clearInterval(statusInterval);
+                    statusDiv.classList.remove('pulsing');
+                    
+                    if (response.ok) {
+                        const data = await response.json();
+                        statusDiv.style.borderColor = '#34c759';
+                        statusDiv.textContent = data.candidates[0].content.parts[0].text;
+                    } 
+                    else if (response.status === 413) {
                         statusDiv.style.borderColor = '#ff3b30';
-                        statusDiv.textContent = "Connection failed. Please check your data connection.";
+                        statusDiv.textContent = "Error: Image still too large. Try a smaller photo.";
                     }
-                };
+                    else if (response.status === 429) {
+                        statusDiv.style.borderColor = '#ff9f0a';
+                        statusDiv.textContent = "Rate limit reached. Waiting 35s to auto-retry...";
+                        await new Promise(r => setTimeout(r, 35000)); 
+                        process(); 
+                    } 
+                    else {
+                        statusDiv.style.borderColor = '#ff3b30';
+                        statusDiv.textContent = "Server Error (" + response.status + ").";
+                    }
+                } catch (error) {
+                    clearInterval(statusInterval);
+                    statusDiv.classList.remove('pulsing');
+                    statusDiv.style.borderColor = '#ff3b30';
+                    statusDiv.textContent = "Connection failed.";
+                }
             };
             process();
         }
