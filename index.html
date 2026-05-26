@@ -3,57 +3,40 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Resale IQ</title>
+    <title>Resale IQ - Pro UX</title>
     <style>
-        body { background: #000; color: #fff; font-family: sans-serif; padding: 20px; display: flex; flex-direction: column; align-items: center; }
-        .container { width: 100%; max-width: 400px; text-align: center; }
-        .logo { width: 250px; margin-bottom: 20px; }
-        .dashboard { background: #222; padding: 15px; border-radius: 10px; margin-bottom: 20px; }
-        .btn { width: 100%; padding: 15px; margin: 10px 0; border-radius: 10px; border: none; background: #333; color: #fff; font-size: 16px; cursor: pointer; }
+        body { background: #000; color: #fff; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; padding: 20px; display: flex; flex-direction: column; align-items: center; }
+        .container { width: 100%; max-width: 400px; }
+        .logo { width: 200px; margin: 0 auto 20px; display: block; }
+        
+        /* One-Tap Grid Layout */
+        .action-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
+        .btn { padding: 20px; border-radius: 15px; border: none; color: #fff; font-weight: bold; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 5px; }
         .analyze-btn { background: #0070f3; }
         .camera-btn { background: #28a745; }
-        .expense-btn { background: #f39c12; }
-        input { width: 90%; padding: 10px; margin: 5px 0; border-radius: 5px; border: none; }
         
-        /* Help Section Styles */
-        .help-section { background: #1a1a1a; padding: 15px; border-radius: 10px; margin-top: 10px; text-align: left; font-size: 13px; color: #ccc; }
-        .help-section h4 { margin-top: 0; color: #0070f3; }
+        .card { background: #1a1a1a; padding: 15px; border-radius: 15px; margin-bottom: 15px; }
+        input { width: 90%; padding: 12px; margin: 5px 0; border-radius: 10px; border: 1px solid #333; background: #000; color: #fff; }
         
-        #gallery { display: flex; flex-wrap: wrap; gap: 10px; margin: 15px 0; }
-        #gallery img { width: 80px; height: 80px; object-fit: cover; border-radius: 5px; }
-        #result { background: #1a1a1a; padding: 15px; border-radius: 10px; margin-top: 20px; text-align: left; font-size: 14px; }
+        #result { background: #111; padding: 15px; border-radius: 15px; font-size: 14px; line-height: 1.6; border: 1px solid #333; }
     </style>
 </head>
 <body>
     <div class="container">
         <img src="logo1.png" class="logo" alt="Logo">
         
-        <div class="dashboard">
-            <h3>Net Profit: $<span id="netProfit">0</span></h3>
+        <div class="card">
+            <input type="number" id="costInput" placeholder="Sourcing Cost ($)">
         </div>
 
-        <input type="number" id="costInput" placeholder="Sourcing Cost ($)">
-        
-        <div class="help-section">
-            <h4>💡 How to calculate Source Cost</h4>
-            • <b>Thrift/Garage:</b> Total paid / Number of items.<br>
-            • <b>Auction/Bulk:</b> (Price + Fees + Shipping) / Total items.<br>
-            • <b>Found/Gift:</b> Use $0 (or cost of transport).
+        <div class="action-grid">
+            <button class="btn camera-btn" onclick="document.getElementById('cameraInput').click()">📷 Snap</button>
+            <button class="btn analyze-btn" onclick="document.getElementById('fileInput').click()">📁 Browse</button>
         </div>
-
-        <button class="btn analyze-btn" onclick="document.getElementById('fileInput').click()">📁 Select Photos</button>
-        <input type="file" id="fileInput" accept="image/*" multiple style="display:none;">
-
-        <button class="btn camera-btn" onclick="document.getElementById('cameraInput').click()">📷 Take Photo</button>
         <input type="file" id="cameraInput" accept="image/*" capture="environment" style="display:none;">
-
-        <h3>Add Expense</h3>
-        <input type="text" id="expDesc" placeholder="Description (e.g., Mileage)">
-        <input type="number" id="expAmt" placeholder="Amount ($)">
-        <button class="btn expense-btn" onclick="addExpense()">Add Expense</button>
+        <input type="file" id="fileInput" accept="image/*" multiple style="display:none;">
         
-        <div id="gallery"></div>
-        <div id="result"></div>
+        <div id="result">Waiting for input...</div>
     </div>
 
     <script>
@@ -62,7 +45,7 @@
         async function handleFiles(files) {
             const cost = document.getElementById('costInput').value || 0;
             allImages = []; 
-            document.getElementById('gallery').innerHTML = "";
+            document.getElementById('result').innerText = "Processing images and optimizing for market...";
             
             for (const file of Array.from(files)) {
                 const b64 = await new Promise(r => {
@@ -85,7 +68,6 @@
         }
 
         async function runAnalysis(cost) {
-            document.getElementById('result').innerText = "Analyzing...";
             const res = await fetch('/api/analyze', { 
                 method: 'POST', headers: {'Content-Type': 'application/json'}, 
                 body: JSON.stringify({ imagesBase64: allImages }) 
@@ -95,14 +77,6 @@
             document.getElementById('result').innerText = text;
         }
 
-        function addExpense() {
-            const desc = document.getElementById('expDesc').value;
-            const amt = parseFloat(document.getElementById('expAmt').value) || 0;
-            if (!desc || amt <= 0) return;
-            alert("Expense added: " + desc);
-        }
-
-        // Connect both inputs to the file handler
         document.getElementById('fileInput').onchange = (e) => handleFiles(e.target.files);
         document.getElementById('cameraInput').onchange = (e) => handleFiles(e.target.files);
     </script>
