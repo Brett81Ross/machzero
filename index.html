@@ -11,25 +11,13 @@
         /* Top Navigation Header Block */
         .app-header { 
             display: flex; 
-            justify-content: space-between; 
+            justify-content: center; 
             align-items: center; 
             width: 100%; 
             margin-bottom: 20px;
             padding: 5px 0;
         }
         .header-title { font-size: 20px; font-weight: 700; color: #fff; letter-spacing: 0.5px; }
-        .faq-top-btn { 
-            background: #111; 
-            border: 1px solid #2a2a2a; 
-            color: #ccc; 
-            padding: 8px 14px; 
-            border-radius: 20px; 
-            font-size: 13px; 
-            font-weight: 600; 
-            cursor: pointer; 
-            transition: all 0.2s;
-        }
-        .faq-top-btn:hover { background: #222; border-color: #0070f3; color: #fff; }
 
         /* Logo Alignment */
         .logo-container { width: 100%; overflow: hidden; margin-bottom: 20px; display: flex; justify-content: center; }
@@ -45,7 +33,6 @@
             box-sizing: border-box; 
             border: 1px solid #2a2a2a;
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
-            position: relative;
         }
         .dashboard-label {
             font-size: 13px;
@@ -53,104 +40,3 @@
             letter-spacing: 1.5px;
             color: #888;
             margin-bottom: 8px;
-            font-weight: 700;
-        }
-        .dashboard-value { 
-            margin: 0; 
-            font-size: 32px; 
-            font-weight: 700; 
-            letter-spacing: -0.5px;
-            color: #28a745; 
-            text-shadow: 0 0 10px rgba(40, 167, 69, 0.2);
-        }
-        
-        .section-title { font-size: 18px; font-weight: 600; margin: 30px 0 15px 0; text-align: center; color: #fff; }
-        
-        /* Input Field Design with Inline Info Accessors */
-        .input-wrapper { position: relative; width: 100%; margin-bottom: 15px; }
-        input { width: 100%; padding: 16px 50px 16px 16px; border-radius: 10px; border: 1px solid #2a2a2a; font-size: 16px; background: #111; color: #fff; box-sizing: border-box; outline: none; }
-        input::placeholder { color: #555; }
-        input:focus { border-color: #0070f3; }
-        
-        .info-toggle-btn { position: absolute; right: 16px; top: 50%; transform: translateY(-50%); background: transparent; color: #0070f3; border: none; font-size: 20px; cursor: pointer; padding: 0; display: flex; align-items: center; justify-content: center; }
-        .dashboard .info-toggle-btn { top: 25px; transform: none; }
-        
-        /* Standard Action Buttons */
-        .btn { width: 100%; padding: 16px; margin-bottom: 12px; border-radius: 10px; border: none; color: #fff; font-size: 16px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; box-sizing: border-box; }
-        .select-btn { background: #0070f3; }
-        .camera-btn { background: #28a745; }
-        .expense-btn { background: #f39c12; margin-top: 5px; }
-        
-        /* Interactive History Log Panels */
-        .history-list { width: 100%; display: flex; flex-direction: column; gap: 12px; margin-top: 15px; text-align: left; }
-        .history-card { background: #111; border: 1px solid #222; border-radius: 12px; padding: 14px; position: relative; }
-        .history-meta { display: flex; justify-content: space-between; font-size: 12px; color: #666; margin-bottom: 6px; }
-        .history-title { font-size: 15px; font-weight: 600; color: #fff; margin-bottom: 8px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 85%; }
-        .history-metrics { display: flex; gap: 15px; font-size: 13px; }
-        .metric-cogs { color: #ff808b; }
-        .metric-rev { color: #28a745; }
-        .delete-log-btn { position: absolute; right: 14px; top: 14px; background: transparent; border: none; color: #444; font-size: 16px; cursor: pointer; padding: 0; }
-        .delete-log-btn:hover { color: #dc3545; }
-        .empty-history-text { color: #444; font-size: 14px; font-style: italic; margin-top: 10px; }
-
-        #gallery { display: flex; flex-wrap: wrap; gap: 10px; margin: 15px 0; width: 100%; justify-content: center; }
-        #gallery img { width: 75px; height: 75px; object-fit: cover; border-radius: 8px; border: 1px solid #222; }
-        
-        #result { display: none; background: #111; padding: 16px; border-radius: 10px; margin-top: 20px; text-align: left; font-size: 14px; border: 1px solid #222; line-height: 1.6; width: 100%; box-sizing: border-box; white-space: pre-wrap; }
-        #result.error-state { border-color: #dc3545; background: rgba(220, 53, 69, 0.05); color: #ff808b; }
-        .retry-action-link { color: #0070f3; font-weight: bold; text-decoration: underline; cursor: pointer; display: block; margin-top: 8px; }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <div class="app-header">
-            <span class="header-title">Resale IQ</span>
-            <button class="faq-top-btn" onclick="openHelp('app')">❓ Help FAQ</button>
-        </div>
-
-        <div class="logo-container">
-            <img src="logo1.png" class="logo" alt="Resale IQ">
-        </div>
-        
-        <div class="dashboard">
-            <div class="dashboard-label">Net Profit</div>
-            <div class="dashboard-value">$<span id="netProfit">0.00</span></div>
-            <button class="info-toggle-btn" onclick="openHelp('profit')">ⓘ</button>
-        </div>
-
-        <div class="input-wrapper">
-            <input type="number" id="costInput" placeholder="Sourcing Cost ($)" inputmode="decimal">
-            <button class="info-toggle-btn" onclick="openHelp('sourcing')">ⓘ</button>
-        </div>
-
-        <button class="btn select-btn" onclick="document.getElementById('fileInput').click()">📁 Select Photos</button>
-        <input type="file" id="fileInput" accept="image/*" multiple style="display:none;">
-
-        <button class="btn camera-btn" onclick="document.getElementById('cameraInput').click()">📷 Take Photo</button>
-        <input type="file" id="cameraInput" accept="image/*" capture="environment" style="display:none;">
-
-        <div class="section-title">Add Expense</div>
-        
-        <div class="input-wrapper">
-            <input type="text" id="expDesc" placeholder="Description (e.g., Mileage)">
-        </div>
-        <div class="input-wrapper">
-            <input type="number" id="expAmt" placeholder="Amount ($)" inputmode="decimal">
-        </div>
-        <button class="btn expense-btn" onclick="addExpense()">Add Expense</button>
-        
-        <div id="gallery"></div>
-        <div id="result"></div>
-
-        <div class="section-title">Inventory Log</div>
-        <div class="history-list" id="historyContainer"></div>
-    </div>
-
-    <script>
-        let allImages = [];
-        let currentSourcingCostCache = 0;
-
-        // Native Alert Safe Documentation Strings
-        const guides = {
-            sourcing: "💡 MASTER SOURCING COST GUIDE\n\n" +
-                      "• Thrift & Garage Sales: Use the exact register price. If you bought a bundle, divide the total receipt cost
