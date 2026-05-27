@@ -5,222 +5,45 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MachZero</title>
     <style>
-        body { background-color: #000; color: #fff; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; }
-        .app-container { max-width: 400px; width: 100%; }
+        body { background-color: #000; color: #fff; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; margin: 0; padding: 20px; }
+        .app-container { max-width: 500px; margin: 0 auto; }
         
-        .logo-container { text-align: center; margin-bottom: 20px; }
-        .main-logo { width: 250px; height: auto; object-fit: contain; }
+        /* Android UI Cards */
+        .card { background: #1c1c1e; border-radius: 20px; padding: 20px; margin-bottom: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.5); }
         
-        .brand-text { color: #888; font-size: 0.9rem; margin-top: 5px; text-align: center; }
+        .main-logo { width: 150px; display: block; margin: 0 auto 20px; }
         
-        .profit-card { background: #1c1c1e; border-radius: 15px; padding: 20px; text-align: center; margin-bottom: 15px; border: 1px solid #333; position: relative; }
-        .profit-label { color: #888; font-size: 0.9rem; margin-bottom: 5px; }
-        .profit-amount { color: #34c759; font-size: 2.5rem; font-weight: bold; transition: color 0.3s; }
+        .btn-main { width: 100%; padding: 18px; border-radius: 15px; border: none; font-size: 1.1rem; font-weight: bold; margin-bottom: 10px; cursor: pointer; }
+        .bg-blue { background: #007aff; color: white; }
         
-        .input-group { position: relative; margin-bottom: 15px; }
-        input { width: 100%; padding: 15px; border-radius: 10px; border: 1px solid #333; background: #1c1c1e; color: #fff; box-sizing: border-box; margin-bottom: 10px; }
-        input.with-info { padding-right: 45px; margin-bottom: 0; }
+        /* Hide sections until needed */
+        #results-area { display: none; }
         
-        .embedded-info { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: #333; border: none; color: #fff; border-radius: 50%; width: 28px; height: 28px; cursor: pointer; font-size: 14px; display: flex; align-items: center; justify-content: center; }
-        
-        #info-box { background: #1c1c1e; border-radius: 10px; padding: 15px; margin-bottom: 15px; border: 1px solid #444; display: none; font-size: 1.1rem; line-height: 1.6; color: #eee; }
-        .info-header { color: #007aff; font-weight: bold; margin-bottom: 10px; font-size: 1.2rem; }
-        #info-box p { margin-top: 0; margin-bottom: 10px; }
-        #info-box ul { margin-top: 0; padding-left: 20px; margin-bottom: 10px; }
-        #info-box li { margin-bottom: 8px; }
-        
-        .btn { width: 100%; padding: 15px; border-radius: 10px; border: none; font-weight: bold; cursor: pointer; margin-bottom: 10px; font-size: 1rem; transition: background-color 0.2s; }
-        .btn-blue { background-color: #007aff; color: white; }
-        .btn-green { background-color: #34c759; color: white; }
-        .btn-orange { background-color: #ff9500; color: white; }
-        
-        .section-title { font-size: 1.2rem; margin: 20px 0 10px 0; font-weight: bold; display: flex; justify-content: space-between; align-items: center; }
-        .expense-total { font-size: 0.9rem; color: #ff9500; font-weight: normal; }
-        
-        .hidden-uploader { display: none; }
-        
-        #status-display { margin-top: 15px; background: #1c1c1e; padding: 15px; border-radius: 10px; white-space: pre-wrap; font-size: 1.1rem; border-left: 4px solid #007aff; line-height: 1.6; color: #eee; }
+        .result-val { font-size: 2rem; color: #34c759; font-weight: bold; text-align: center; margin: 10px 0; }
     </style>
 </head>
 <body>
     <div class="app-container">
-        <div class="logo-container">
-            <img src="logo1.jpg" alt="MachZero" class="main-logo">
-            <div class="brand-text">100% FREE for Early Testers • ⚡PRO Version Coming Soon</div>
+        <img src="logo1.jpg" alt="MachZero" class="main-logo">
+
+        <div class="card" id="input-area">
+            <button class="btn-main bg-blue" onclick="document.getElementById('camera-input').click()">START ANALYSIS</button>
+            <input type="file" id="camera-input" class="hidden-uploader" accept="image/*" capture="environment" style="display:none">
         </div>
 
-        <div class="profit-card">
-            <button class="embedded-info" onclick="showInfo('profit')">i</button>
-            <div class="profit-label">NET PROFIT (Est.)</div>
-            <div class="profit-amount" id="net-profit">$0.00</div>
+        <div class="card" id="results-area">
+            <div style="color: #888; text-align: center;">AI MARKET VALUE</div>
+            <div class="result-val" id="net-profit">$0.00</div>
+            <input type="number" id="sourcing-cost" placeholder="Enter Sourcing Cost ($)" style="width:100%; padding:15px; border-radius:10px; border:1px solid #333; background:#2c2c2e; color:#fff; box-sizing:border-box;">
         </div>
-
-        <div id="info-box"></div>
-
-        <div class="input-group">
-            <input type="number" id="sourcing-cost" class="with-info" placeholder="Sourcing Cost ($)">
-            <button class="embedded-info" onclick="showInfo('cost')">i</button>
-        </div>
-
-        <input type="file" id="gallery-input" class="hidden-uploader" accept="image/*">
-        <input type="file" id="camera-input" class="hidden-uploader" accept="image/*" capture="environment">
-        
-        <button class="btn btn-blue" id="gallery-btn">Select Photos</button>
-        <button class="btn btn-green" id="camera-btn">Take Photo</button>
-
-        <div class="section-title">
-            <span>Add Expense</span>
-            <span class="expense-total" id="expense-total-display">Total: $0.00</span>
-        </div>
-        <input type="text" id="expense-desc" placeholder="Description (e.g., Mileage)">
-        <input type="number" id="expense-amount" placeholder="Amount ($)">
-        <button class="btn btn-orange" id="add-expense-btn">Add Expense</button>
-
-        <div class="section-title">MachZero Inventory Log</div>
-        <div id="status-display">Waiting for analysis...</div>
     </div>
 
     <script>
-        let aiEstimatedValue = 0;
-        let totalExpenses = 0;
-
-        const netProfitDisplay = document.getElementById('net-profit');
-        const sourcingCostInput = document.getElementById('sourcing-cost');
-        const expenseAmountInput = document.getElementById('expense-amount');
-        const expenseDescInput = document.getElementById('expense-desc');
-        const expenseTotalDisplay = document.getElementById('expense-total-display');
-        const addExpenseBtn = document.getElementById('add-expense-btn');
-        const status = document.getElementById('status-display');
-
-        function calculateProfit() {
-            if (sourcingCostInput.value === '') {
-                netProfitDisplay.textContent = '$0.00';
-                netProfitDisplay.style.color = '#34c759';
-                return;
-            }
-
-            const sourcingCost = parseFloat(sourcingCostInput.value) || 0;
-            const netProfit = aiEstimatedValue - sourcingCost - totalExpenses;
-            
-            if (netProfit < 0) {
-                netProfitDisplay.textContent = '-$' + Math.abs(netProfit).toFixed(2);
-                netProfitDisplay.style.color = '#ff3b30';
-            } else {
-                netProfitDisplay.textContent = '$' + netProfit.toFixed(2);
-                netProfitDisplay.style.color = '#34c759';
-            }
-        }
-
-        sourcingCostInput.addEventListener('input', calculateProfit);
-
-        addExpenseBtn.addEventListener('click', () => {
-            const expense = parseFloat(expenseAmountInput.value) || 0;
-            if (expense > 0) {
-                totalExpenses += expense;
-                expenseTotalDisplay.textContent = `Total: $${totalExpenses.toFixed(2)}`;
-                expenseAmountInput.value = '';
-                expenseDescInput.value = '';
-                
-                const originalText = addExpenseBtn.textContent;
-                addExpenseBtn.textContent = 'Expense Added!';
-                addExpenseBtn.style.backgroundColor = '#34c759';
-                setTimeout(() => {
-                    addExpenseBtn.textContent = originalText;
-                    addExpenseBtn.style.backgroundColor = '#ff9500';
-                }, 1000);
-
-                calculateProfit();
-            }
+        // Simple logic to show results when file is picked
+        document.getElementById('camera-input').addEventListener('change', function() {
+            document.getElementById('results-area').style.display = 'block';
+            // Trigger your analysis function here
         });
-
-        function showInfo(type) {
-            const box = document.getElementById('info-box');
-            if (box.dataset.currentType === type && box.style.display === 'block') {
-                box.style.display = 'none';
-                box.dataset.currentType = '';
-                return;
-            }
-            box.style.display = 'block';
-            box.dataset.currentType = type;
-            
-            if (type === 'profit') {
-                box.innerHTML = `
-                    <div class="info-header">Understanding Net Profit</div>
-                    <p>Your Net Profit is the actual money you take home after all costs are deducted.</p>
-                    <ul>
-                        <li><strong>AI Estimated Value:</strong> Market value analysis.</li>
-                        <li><strong>Sourcing Cost:</strong> Initial purchase price.</li>
-                        <li><strong>Expenses:</strong> Additional costs like shipping or cleaning.</li>
-                    </ul>
-                `;
-            } else if (type === 'cost') {
-                box.innerHTML = `
-                    <div class="info-header">Cost Tracking</div>
-                    <p>Accurate tracking is key to MachZero precision.</p>
-                    <ul>
-                        <li><strong>Sourcing Cost:</strong> Include sales tax if applicable.</li>
-                        <li><strong>Expenses:</strong> Use the Add Expense section for overhead.</li>
-                    </ul>
-                `;
-            }
-        }
-
-        const galleryInput = document.getElementById('gallery-input');
-        const cameraInput = document.getElementById('camera-input');
-
-        document.getElementById('gallery-btn').addEventListener('click', () => galleryInput.click());
-        document.getElementById('camera-btn').addEventListener('click', () => cameraInput.click());
-        
-        galleryInput.addEventListener('change', (e) => handleFile(e.target.files[0]));
-        cameraInput.addEventListener('change', (e) => handleFile(e.target.files[0]));
-
-        function handleFile(file) {
-            if (!file) return;
-            status.textContent = "MachZero analyzing...";
-            
-            const reader = new FileReader();
-            reader.onload = (event) => {
-                const img = new Image();
-                img.onload = () => {
-                    const canvas = document.createElement('canvas');
-                    const MAX_WIDTH = 800;
-                    const scaleSize = MAX_WIDTH / img.width;
-                    canvas.width = MAX_WIDTH;
-                    canvas.height = img.height * scaleSize;
-                    
-                    const ctx = canvas.getContext('2d');
-                    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-                    
-                    const compressedBase64 = canvas.toDataURL('image/jpeg', 0.7).split(',')[1];
-                    sendToServer(compressedBase64);
-                };
-                img.src = event.target.result;
-            };
-            reader.readAsDataURL(file);
-        }
-
-        async function sendToServer(base64Data) {
-            try {
-                const response = await fetch('/api/analyze', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ imagesBase64: [base64Data] })
-                });
-                
-                const data = await response.json();
-                if (!response.ok) throw new Error(data.error || 'Server error');
-                
-                const rawText = data.candidates[0].content.parts[0].text;
-                const match = rawText.match(/Estimated Market Value:[^\d]*(\d+(\.\d+)?)/i);
-                if (match && match[1]) {
-                    aiEstimatedValue = parseFloat(match[1]);
-                    calculateProfit();
-                }
-                status.textContent = rawText.trim().split('\n').filter(line => line.trim() !== '').join('\n\n');
-            } catch (err) {
-                status.textContent = "Error: " + err.message;
-            }
-        }
     </script>
 </body>
 </html>
