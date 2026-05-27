@@ -67,6 +67,11 @@
             <div id="status-display">Analyzing...</div>
 
             <div id="extra-controls" class="card">
+                <div class="info-trigger" onclick="toggleInfo('info-expense')">i</div>
+                <div id="info-expense" class="info-box">
+                    <span class="info-title">Adding Expenses</span>
+                    Log costs incurred after the initial purchase, such as fuel, cleaning supplies, or shipping fees. These will be automatically deducted from your final Net Profit calculation.
+                </div>
                 <input type="number" id="expense-amount" placeholder="Add Expense Amount ($)">
                 <button class="btn btn-secondary" style="margin-top:10px;" id="add-expense-btn">LOG EXPENSE</button>
             </div>
@@ -113,51 +118,4 @@
                 const img = new Image();
                 img.onload = () => {
                     const canvas = document.createElement('canvas');
-                    const MAX_WIDTH = 800;
-                    const scaleSize = MAX_WIDTH / img.width;
-                    canvas.width = MAX_WIDTH;
-                    canvas.height = img.height * scaleSize;
-                    const ctx = canvas.getContext('2d');
-                    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-                    sendToServer(canvas.toDataURL('image/jpeg', 0.7).split(',')[1]);
-                };
-                img.src = event.target.result;
-            };
-            reader.readAsDataURL(file);
-        }
-
-        document.getElementById('gallery-input').addEventListener('change', (e) => handleFile(e.target.files[0]));
-        document.getElementById('camera-input').addEventListener('change', (e) => handleFile(e.target.files[0]));
-
-        async function sendToServer(base64Data) {
-            try {
-                const response = await fetch('/api/analyze', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ imagesBase64: [base64Data] })
-                });
-                const data = await response.json();
-                const rawText = data.candidates[0].content.parts[0].text;
-                
-                const match = rawText.match(/Estimated Market Value:[^\d]*(\d+(\.\d+)?)/i);
-                if (match && match[1]) {
-                    aiEstimatedValue = parseFloat(match[1]);
-                    calculateProfit();
-                }
-                
-                status.textContent = rawText;
-                extraControls.style.display = 'block';
-            } catch (err) {
-                status.textContent = "Error: " + err.message;
-            }
-        }
-
-        document.getElementById('add-expense-btn').addEventListener('click', () => {
-            const exp = parseFloat(document.getElementById('expense-amount').value) || 0;
-            totalExpenses += exp;
-            document.getElementById('expense-amount').value = '';
-            calculateProfit();
-        });
-    </script>
-</body>
-</html>
+                    const MAX_WIDTH = 800
