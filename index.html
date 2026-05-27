@@ -45,7 +45,7 @@
 <body>
     <div class="app-container">
         <div class="logo-container">
-            <img src="logo1.png" alt="MachZero" class="main-logo">
+            <img src="logo1.jpg" alt="MachZero" class="main-logo">
             <div class="brand-text">100% FREE for Early Testers • ⚡PRO Version Coming Soon</div>
         </div>
 
@@ -173,3 +173,54 @@
         
         galleryInput.addEventListener('change', (e) => handleFile(e.target.files[0]));
         cameraInput.addEventListener('change', (e) => handleFile(e.target.files[0]));
+
+        function handleFile(file) {
+            if (!file) return;
+            status.textContent = "MachZero analyzing...";
+            
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                const img = new Image();
+                img.onload = () => {
+                    const canvas = document.createElement('canvas');
+                    const MAX_WIDTH = 800;
+                    const scaleSize = MAX_WIDTH / img.width;
+                    canvas.width = MAX_WIDTH;
+                    canvas.height = img.height * scaleSize;
+                    
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                    
+                    const compressedBase64 = canvas.toDataURL('image/jpeg', 0.7).split(',')[1];
+                    sendToServer(compressedBase64);
+                };
+                img.src = event.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+
+        async function sendToServer(base64Data) {
+            try {
+                const response = await fetch('/api/analyze', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ imagesBase64: [base64Data] })
+                });
+                
+                const data = await response.json();
+                if (!response.ok) throw new Error(data.error || 'Server error');
+                
+                const rawText = data.candidates[0].content.parts[0].text;
+                const match = rawText.match(/Estimated Market Value:[^\d]*(\d+(\.\d+)?)/i);
+                if (match && match[1]) {
+                    aiEstimatedValue = parseFloat(match[1]);
+                    calculateProfit();
+                }
+                status.textContent = rawText.trim().split('\n').filter(line => line.trim() !== '').join('\n\n');
+            } catch (err) {
+                status.textContent = "Error: " + err.message;
+            }
+        }
+    </script>
+</body>
+</html>
