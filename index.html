@@ -37,11 +37,36 @@
             text-align: center;
         }
         
-        .card { background: #1c1c1e; border-radius: 20px; padding: 20px; margin-bottom: 15px; border: 1px solid #333; }
+        .card { 
+            background: #1c1c1e; 
+            border-radius: 20px; 
+            padding: 20px; 
+            margin-bottom: 15px; 
+            border: 1px solid #333; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            gap: 15px;
+        }
         
         #analysis-results { display: none; }
         
-        .btn { width: 100%; padding: 18px; border-radius: 12px; border: none; font-weight: bold; font-size: 1.1rem; cursor: pointer; margin-bottom: 10px; transition: opacity 0.2s; }
+        /* Round Buttons */
+        .btn { 
+            width: 120px; 
+            height: 120px; 
+            border-radius: 50%; 
+            border: none; 
+            font-weight: bold; 
+            font-size: 0.8rem; 
+            cursor: pointer; 
+            transition: opacity 0.2s; 
+            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 10px;
+        }
         .btn-primary { background-color: #007aff; color: white; }
         
         .hidden-uploader { position: absolute; top: 0; left: 0; opacity: 0; width: 0.1px; height: 0.1px; }
@@ -75,12 +100,12 @@
     <div class="app-container">
         <div class="logo-container">
             <img src="logo1.jpg" alt="MachZero" class="main-logo">
-            <div class="app-tagline">Snap a photo or upload an image to instantly estimate its resale market value.  Know what it's worth before you buy, sell, or pass it up.</div>
+            <div class="app-tagline">📷 Snap item. Calculate resale profit.</div>
         </div>
 
         <div class="card">
-            <button class="btn btn-primary" onclick="document.getElementById('gallery-input').click()">UPLOAD FILE</button>
             <button class="btn btn-primary" onclick="document.getElementById('camera-input').click()">TAKE PHOTO</button>
+            <button class="btn btn-primary" onclick="document.getElementById('gallery-input').click()">SELECT PHOTO</button>
         </div>
 
         <div id="analysis-results">
