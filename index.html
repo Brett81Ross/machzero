@@ -5,65 +5,29 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MachZero</title>
     <style>
-        body { 
-            background-color: #000; 
-            color: #fff; 
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
-            margin: 0; 
-            display: flex; 
-            flex-direction: column; 
-            min-height: 100vh; 
-            overflow-x: hidden; 
-        }
-        
-        .app-container { 
-            flex: 1; 
-            max-width: 400px; 
-            width: 100%; 
-            margin: 0 auto; 
-            padding: 20px; 
-            box-sizing: border-box;
-        }
-        
+        body { background-color: #000; color: #fff; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; margin: 0; display: flex; flex-direction: column; min-height: 100vh; overflow-x: hidden; }
+        .app-container { flex: 1; max-width: 400px; width: 100%; margin: 0 auto; padding: 20px; box-sizing: border-box; }
         .logo-container { text-align: center; margin-bottom: 20px; }
         .main-logo { width: 200px; height: auto; object-fit: contain; }
-        
-        .app-tagline { 
-            color: #888; 
-            font-size: 0.9rem; 
-            margin-top: -10px; 
-            margin-bottom: 20px; 
-            letter-spacing: 0.5px;
-        }
+        .app-tagline { color: #888; font-size: 0.9rem; margin-top: -10px; margin-bottom: 20px; text-align: center; }
         
         .card { background: #1c1c1e; border-radius: 20px; padding: 20px; margin-bottom: 15px; border: 1px solid #333; }
         
-        /* Modal Overlay */
-        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 1000; padding: 20px; box-sizing: border-box; overflow-y: auto; }
-        .close-btn { color: #007aff; font-size: 1rem; cursor: pointer; margin-bottom: 20px; display: block; font-weight: bold; }
-        
-        /* History Styling */
-        .history-item { background: #2c2c2e; padding: 15px; border-radius: 12px; margin-bottom: 10px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; border: 1px solid #444; }
-        
-        .btn { width: 100%; padding: 18px; border-radius: 12px; border: none; font-weight: bold; font-size: 1.1rem; cursor: pointer; margin-bottom: 10px; transition: opacity 0.2s; }
+        /* History List Styling */
+        .history-list { display: flex; flex-direction: column; gap: 10px; }
+        .history-item { background: #1c1c1e; padding: 15px; border-radius: 12px; cursor: pointer; border: 1px solid #333; display: flex; justify-content: space-between; align-items: center; }
+        .history-item strong { font-size: 1rem; color: #fff; }
+        .history-item span { font-size: 0.75rem; color: #666; }
+
+        /* Full View Section */
+        #full-view { display: none; margin-top: 20px; }
+        .back-btn { color: #007aff; cursor: pointer; margin-bottom: 10px; display: block; font-weight: bold; }
+
+        .btn { width: 100%; padding: 18px; border-radius: 12px; border: none; font-weight: bold; font-size: 1.1rem; cursor: pointer; margin-bottom: 10px; }
         .btn-primary { background-color: #007aff; color: white; }
-        
         .hidden-uploader { position: absolute; top: 0; left: 0; opacity: 0; width: 0.1px; height: 0.1px; }
 
-        /* Footer */
-        .footer {
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            gap: 5px;
-            color: rgba(255, 255, 255, 0.3);
-            font-size: 10px;
-            border-top: 1px solid #333;
-            width: 100%;
-            text-align: center;
-        }
+        .footer { padding: 20px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px; color: rgba(255, 255, 255, 0.3); font-size: 10px; border-top: 1px solid #333; width: 100%; text-align: center; }
         .footer-content { display: flex; align-items: center; justify-content: center; gap: 6px; }
         .footer img { height: 14px; width: 14px; object-fit: contain; }
     </style>
@@ -71,31 +35,32 @@
 <body>
     <div class="app-container">
         <div class="logo-container">
-            <img src="logo1.jpg" alt="MachZero" class="main-logo">
+            <img src="logo1.png" alt="MachZero" class="main-logo">
             <div class="app-tagline">Scan items. Calculate profit.</div>
         </div>
 
-        <div class="card">
-            <button class="btn btn-primary" onclick="document.getElementById('gallery-input').click()">SELECT PHOTOS</button>
-            <button class="btn btn-primary" onclick="document.getElementById('camera-input').click()">TAKE PHOTO</button>
+        <div id="main-ui">
+            <div class="card">
+                <button class="btn btn-primary" onclick="document.getElementById('gallery-input').click()">SELECT PHOTOS</button>
+                <button class="btn btn-primary" onclick="document.getElementById('camera-input').click()">TAKE PHOTO</button>
+            </div>
+
+            <h3 style="color: #888; font-size: 0.9rem; text-transform: uppercase;">Scan History</h3>
+            <div id="history-list" class="history-list"></div>
         </div>
 
-        <h3 style="color: #888; font-size: 0.9rem; text-transform: uppercase;">Scan History</h3>
-        <div id="history-list"></div>
+        <div id="full-view">
+            <span class="back-btn" onclick="showMain()">← BACK TO DASHBOARD</span>
+            <div id="full-content" class="card"></div>
+        </div>
 
         <input type="file" id="gallery-input" class="hidden-uploader" accept="image/*">
         <input type="file" id="camera-input" class="hidden-uploader" accept="image/*" capture="environment">
     </div>
 
-    <!-- Detail Modal -->
-    <div id="item-modal" class="modal">
-        <span class="close-btn" onclick="document.getElementById('item-modal').style.display='none'">← BACK TO DASHBOARD</span>
-        <div id="modal-content" style="color: #fff; line-height: 1.6; max-width: 400px; margin: 0 auto;"></div>
-    </div>
-
     <footer class="footer">
         <div class="footer-content">
-            <img src="logo1.jpg" alt="MachZero Logo">
+            <img src="logo1.png" alt="MachZero Logo">
             <span>© 2026 MachZero™</span>
         </div>
         <span>Powered by CactusByte</span>
@@ -104,28 +69,29 @@
 
     <script>
         const historyList = document.getElementById('history-list');
-        const modal = document.getElementById('item-modal');
-        const modalContent = document.getElementById('modal-content');
+        const mainUi = document.getElementById('main-ui');
+        const fullView = document.getElementById('full-view');
+        const fullContent = document.getElementById('full-content');
 
-        function addToHistory(itemName, analysisText) {
-            const div = document.createElement('div');
-            div.className = 'history-item';
-            div.innerHTML = `<span>${itemName}</span><span>›</span>`;
+        function showMain() {
+            fullView.style.display = 'none';
+            mainUi.style.display = 'block';
+        }
+
+        function addToHistory(title, analysis) {
+            const item = document.createElement('div');
+            item.className = 'history-item';
+            item.innerHTML = `<strong>${title}</strong><span>${new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>`;
             
-            div.onclick = () => {
-                modalContent.innerHTML = `
-                    <div class="card">
-                        <h3>Item Evaluation</h3>
-                        <p>${analysisText.replace(/\n/g, '<br>')}</p>
-                    </div>
-                `;
-                modal.style.display = 'block';
+            item.onclick = () => {
+                fullContent.innerHTML = `<h3>${title}</h3><p>${analysis.replace(/\n/g, '<br>')}</p>`;
+                mainUi.style.display = 'none';
+                fullView.style.display = 'block';
             };
-            historyList.prepend(div);
+            historyList.prepend(item);
         }
 
         async function sendToServer(base64Data) {
-            const itemName = "Scan: " + new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
             try {
                 const response = await fetch('/api/analyze', {
                     method: 'POST',
@@ -134,9 +100,15 @@
                 });
                 const data = await response.json();
                 const rawText = data.candidates[0].content.parts[0].text;
-                addToHistory(itemName, rawText);
+                
+                // Expects the AI to return text starting with "Title: [Name]"
+                const titleMatch = rawText.match(/Title:\s*(.*)/i);
+                const title = titleMatch ? titleMatch[1] : "Scanned Item";
+                const body = rawText.replace(/Title:.*\n?/i, "");
+                
+                addToHistory(title, body);
             } catch (err) {
-                alert("Error scanning item: " + err.message);
+                alert("Error: " + err.message);
             }
         }
 
