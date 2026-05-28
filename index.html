@@ -63,16 +63,11 @@
         }
 
         .footer-content {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 6px;
+            display: flex; align-items: center; justify-content: center; gap: 6px;
         }
 
         .footer img {
-            height: 14px; 
-            width: 14px;
-            object-fit: contain;
+            height: 14px; width: 14px; object-fit: contain;
         }
     </style>
 </head>
@@ -109,10 +104,26 @@
         const status = document.getElementById('status-display');
         const analysisResults = document.getElementById('analysis-results');
 
+        function updateStatusSequence() {
+            const messages = [
+                "Analyzing item for market value...",
+                "Comparing against active listings...",
+                "Finalizing profit potential..."
+            ];
+            let i = 0;
+            status.textContent = messages[i];
+            return setInterval(() => {
+                i++;
+                if (i < messages.length) {
+                    status.textContent = messages[i];
+                }
+            }, 1500);
+        }
+
         function handleFile(file) {
             if (!file) return;
             analysisResults.style.display = 'block';
-            status.textContent = "MachZero is scanning...";
+            const interval = updateStatusSequence();
             
             const reader = new FileReader();
             reader.onload = (event) => {
@@ -125,7 +136,8 @@
                     canvas.height = img.height * scaleSize;
                     const ctx = canvas.getContext('2d');
                     ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-                    sendToServer(canvas.toDataURL('image/jpeg', 0.7).split(',')[1]);
+                    
+                    sendToServer(canvas.toDataURL('image/jpeg', 0.7).split(',')[1], interval);
                 };
                 img.src = event.target.result;
             };
@@ -135,7 +147,7 @@
         document.getElementById('gallery-input').addEventListener('change', (e) => handleFile(e.target.files[0]));
         document.getElementById('camera-input').addEventListener('change', (e) => handleFile(e.target.files[0]));
 
-        async function sendToServer(base64Data) {
+        async function sendToServer(base64Data, interval) {
             try {
                 const response = await fetch('/api/analyze', {
                     method: 'POST',
@@ -143,8 +155,10 @@
                     body: JSON.stringify({ imagesBase64: [base64Data] })
                 });
                 const data = await response.json();
+                clearInterval(interval);
                 status.textContent = data.candidates[0].content.parts[0].text;
             } catch (err) {
+                clearInterval(interval);
                 status.textContent = "Error: " + err.message;
             }
         }
