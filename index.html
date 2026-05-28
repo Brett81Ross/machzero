@@ -13,7 +13,7 @@
             display: flex; 
             flex-direction: column; 
             min-height: 100vh; 
-            overflow-x: hidden; /* Prevents horizontal scroll */
+            overflow-x: hidden; 
         }
         
         .app-container { 
@@ -56,12 +56,13 @@
         #status-display { margin-top: 15px; padding: 15px; background: #1c1c1e; border-radius: 12px; border-left: 4px solid #007aff; font-size: 1rem; line-height: 1.5; color: #eee; white-space: pre-wrap; }
         .hidden-uploader { position: absolute; top: 0; left: 0; opacity: 0; width: 0.1px; height: 0.1px; }
 
-        /* Stacked Footer */
+        /* Centered Footer */
         .footer {
             padding: 20px;
             display: flex;
             flex-direction: column;
             align-items: center;
+            justify-content: center;
             gap: 5px;
             color: rgba(255, 255, 255, 0.3);
             font-size: 10px;
@@ -70,10 +71,11 @@
             text-align: center;
         }
 
-        .footer-logo-row {
+        .footer-content {
             display: flex;
             align-items: center;
-            gap: 8px;
+            justify-content: center;
+            gap: 6px;
         }
 
         .footer img {
@@ -133,7 +135,7 @@
     </div>
 
     <footer class="footer">
-        <div class="footer-logo-row">
+        <div class="footer-content">
             <img src="logo1.jpg" alt="MachZero Logo">
             <span>© 2026 MachZero™</span>
         </div>
