@@ -1,49 +1,56 @@
-export default async function handler(req, res) {
-    if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
+import { GoogleGenerativeAI } from "@google/generative-ai";
 
-    const API_KEY = process.env.GEMINI_API_KEY;
-    
-    if (!API_KEY) {
-        return res.status(500).json({ error: 'API Key is missing in server settings' });
+const genAI = new GoogleGenerativeAI(process.env.API_KEY);
+
+export default async function handler(req, res) {
+    if (req.method !== 'POST') {
+        return res.status(405).send('Method Not Allowed');
     }
 
     try {
         const { imagesBase64 } = req.body;
+
+        const systemInstruction = `
+        You are the MachZero AI resale expert. You have exhaustive knowledge of:
+        1. Numismatics: Global coins, historical currency, rare banknotes, and mint marks.
+        2. Sports Memorabilia: All major league trading cards (Baseball, Football, Basketball, Soccer, Hockey), rookie cards, and graded card value factors.
+        3. Trading Card Games (TCG): Pokémon, Magic: The Gathering, Yu-Gi-Oh!, and other collectible card games, including set variations, rarities, and condition grading.
         
-        if (!imagesBase64 || !Array.isArray(imagesBase64)) {
-            return res.status(400).json({ error: 'Invalid data format' });
-        }
+        When a user uploads an image, analyze it for identifying features like set codes, serial numbers, or grading markers. Provide:
+        - Precise identification of the item.
+        - An estimated resale value range based on current market trends.
+        - Essential tips on factors (condition, grading, scarcity) that impact its value.
+        Keep responses concise, professional, and actionable for resellers.
+        `;
 
-        // Clean, structured 6-point layout
-        const prompt = `Analyze this item and provide exactly these 6 points. Do not include introductory text.
-        1. Estimated Market Value: [Value]
-        2. Average Profit: [Amount]
-        3. Sell Speed: [Fast/Medium/Slow]
-        4. Confidence: [Percentage]
-        5. Description: [Thorough but brief description]
-        6. Listing Text: [A catchy title and short description ready to copy/paste into eBay, Mercari, Poshmark, Depop, and FB Marketplace]`;
-
-        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent?key=${API_KEY}`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                contents: [{
-                    parts: [
-                        { text: prompt },
-                        { inline_data: { mime_type: "image/jpeg", data: imagesBase64[0] } }
-                    ]
-                }]
-            })
+        const model = genAI.getGenerativeModel({ 
+            model: "gemini-3.5",
+            systemInstruction: systemInstruction
         });
 
-        const data = await response.json();
+        const imagePart = {
+            inlineData: {
+                data: imagesBase64[0],
+                mimeType: "image/jpeg"
+            }
+        };
 
-        if (!response.ok) {
-            return res.status(response.status).json({ error: data.error?.message || 'Gemini API error' });
-        }
+        const result = await model.generateContent([
+            "Analyze this item for market resale value.",
+            imagePart
+        ]);
 
-        res.status(200).json(data);
-    } catch (err) {
-        res.status(500).json({ error: err.message });
+        const responseText = result.response.text();
+        res.status(200).json({
+            candidates: [{
+                content: {
+                    parts: [{ text: responseText }]
+                }
+            }]
+        });
+
+    } catch (error) {
+        console.error("Analysis Error:", error);
+        res.status(500).send("An error occurred during analysis: " + error.message);
     }
 }
