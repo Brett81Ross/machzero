@@ -5,71 +5,20 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MachZero</title>
     <style>
-        body { 
-            background-color: #000; 
-            color: #fff; 
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
-            margin: 0; 
-            display: flex; 
-            flex-direction: column; 
-            min-height: 100vh; 
-            overflow-x: hidden; 
-        }
-        
-        .app-container { 
-            flex: 1; 
-            max-width: 400px; 
-            width: 100%; 
-            margin: 0 auto; 
-            padding: 20px; 
-            box-sizing: border-box;
-        }
-        
+        body { background-color: #000; color: #fff; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; margin: 0; display: flex; flex-direction: column; min-height: 100vh; overflow-x: hidden; }
+        .app-container { flex: 1; max-width: 400px; width: 100%; margin: 0 auto; padding: 20px; box-sizing: border-box; }
         .logo-container { text-align: center; margin-bottom: 20px; }
         .main-logo { width: 200px; height: auto; object-fit: contain; }
-        
-        .app-tagline { 
-            color: #888; 
-            font-size: 0.9rem; 
-            margin-top: -10px; 
-            margin-bottom: 20px; 
-            letter-spacing: 0.5px;
-            text-align: center;
-            line-height: 1.4;
-        }
-        
+        .app-tagline { color: #888; font-size: 0.9rem; margin-top: -10px; margin-bottom: 20px; letter-spacing: 0.5px; text-align: center; line-height: 1.4; }
         .card { background: #1c1c1e; border-radius: 20px; padding: 20px; margin-bottom: 15px; border: 1px solid #333; }
-        
         #analysis-results { display: none; }
-        
         .btn { width: 100%; padding: 18px; border-radius: 12px; border: none; font-weight: bold; font-size: 1.1rem; cursor: pointer; margin-bottom: 10px; transition: opacity 0.2s; }
         .btn-primary { background-color: #007aff; color: white; }
-        
         .hidden-uploader { position: absolute; top: 0; left: 0; opacity: 0; width: 0.1px; height: 0.1px; }
-
         #status-display { margin-top: 15px; padding: 15px; background: #1c1c1e; border-radius: 12px; border-left: 4px solid #007aff; font-size: 1rem; line-height: 1.5; color: #eee; white-space: pre-wrap; }
-
-        .footer {
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            gap: 5px;
-            color: rgba(255, 255, 255, 0.3);
-            font-size: 10px;
-            border-top: 1px solid #333;
-            width: 100%;
-            text-align: center;
-        }
-
-        .footer-content {
-            display: flex; align-items: center; justify-content: center; gap: 6px;
-        }
-
-        .footer img {
-            height: 14px; width: 14px; object-fit: contain;
-        }
+        .footer { padding: 20px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px; color: rgba(255, 255, 255, 0.3); font-size: 10px; border-top: 1px solid #333; width: 100%; text-align: center; }
+        .footer-content { display: flex; align-items: center; justify-content: center; gap: 6px; }
+        .footer img { height: 14px; width: 14px; object-fit: contain; }
     </style>
 </head>
 <body>
@@ -78,20 +27,16 @@
             <img src="logo1.jpg" alt="MachZero" class="main-logo">
             <div class="app-tagline">Snap a photo or upload an image to instantly estimate its resale market value. Know what it's worth before you buy, sell, or pass it up.</div>
         </div>
-
         <div class="card">
             <button class="btn btn-primary" onclick="document.getElementById('camera-input').click()">TAKE PHOTO</button>
             <button class="btn btn-primary" onclick="document.getElementById('gallery-input').click()">UPLOAD IMAGE</button>
         </div>
-
         <div id="analysis-results">
             <div id="status-display">Analyzing item for market value...</div>
         </div>
-
         <input type="file" id="gallery-input" class="hidden-uploader" accept="image/*">
         <input type="file" id="camera-input" class="hidden-uploader" accept="image/*" capture="environment">
     </div>
-
     <footer class="footer">
         <div class="footer-content">
             <img src="logo1.jpg" alt="MachZero Logo">
@@ -100,8 +45,14 @@
         <span>Powered by CactusByte</span>
         <span>All Rights Reserved</span>
     </footer>
-
     <script>
+        // Unique User Identity
+        let userId = localStorage.getItem('machzero_user_id');
+        if (!userId) {
+            userId = 'user_' + Math.random().toString(36).substr(2, 9);
+            localStorage.setItem('machzero_user_id', userId);
+        }
+
         const status = document.getElementById('status-display');
         const analysisResults = document.getElementById('analysis-results');
 
@@ -109,13 +60,12 @@
             if (!file) return;
             analysisResults.style.display = 'block';
             status.textContent = "Analyzing item for market value...";
-            
             const reader = new FileReader();
             reader.onload = (event) => {
                 const img = new Image();
                 img.onload = () => {
                     const canvas = document.createElement('canvas');
-                    const MAX_WIDTH = 600; // Optimized size
+                    const MAX_WIDTH = 600;
                     const scaleSize = MAX_WIDTH / img.width;
                     canvas.width = MAX_WIDTH;
                     canvas.height = img.height * scaleSize;
@@ -136,16 +86,13 @@
                 const response = await fetch('/api/analyze', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ imagesBase64: [base64Data] })
+                    body: JSON.stringify({ imagesBase64: [base64Data], userId: userId })
                 });
-
                 const rawText = await response.text();
-                
                 try {
                     const data = JSON.parse(rawText);
                     status.textContent = data.candidates[0].content.parts[0].text;
                 } catch (e) {
-                    // Check for high demand error
                     if (rawText.includes("high demand") && !isRetry) {
                         status.textContent = "Server busy, retrying in 2 seconds...";
                         setTimeout(() => sendToServer(base64Data, true), 2000);
