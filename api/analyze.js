@@ -1,6 +1,7 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { Redis } from "@upstash/redis";
 
+// Initialize with the correct API_KEY variable
 const genAI = new GoogleGenerativeAI(process.env.API_KEY || "");
 const redis = new Redis({
   url: process.env.UPSTASH_REDIS_REST_URL || "",
@@ -17,11 +18,11 @@ export default async function handler(req, res) {
             return res.status(400).send("No image provided.");
         }
 
-        const systemInstruction = "You are the MachZero AI resale expert. Analyze coins, currency, and trading cards. Provide identification, value ranges, and tips.";
-        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash", systemInstruction });
+        // Updated to use the 3.5 model identifier as you specified
+        const model = genAI.getGenerativeModel({ model: "gemini-3.5" });
 
         const result = await model.generateContent([
-            "Analyze this item for market resale value.",
+            "Analyze this item for market resale value. Provide identification, estimated value, and condition factors.",
             { inlineData: { data: imagesBase64[0], mimeType: "image/jpeg" } }
         ]);
 
