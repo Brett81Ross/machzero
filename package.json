@@ -1,20 +1,11 @@
 {
   "name": "machzero",
   "version": "1.0.0",
-  "description": "High-performance inventory analysis tool for resellers.",
-  "main": "index.js",
-  "scripts": {
-    "start": "node server.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+  "dependencies": {
+    "@google/generative-ai": "^0.11.1",
+    "@upstash/redis": "^1.30.0"
   },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/YOUR_GITHUB_USERNAME/MachZero.git"
-  },
-  "author": "MachZero Systems",
-  "license": "ISC",
-  "bugs": {
-    "url": "https://github.com/YOUR_GITHUB_USERNAME/MachZero/issues"
-  },
-  "homepage": "https://github.com/YOUR_GITHUB_USERNAME/MachZero#readme"
+  "engines": {
+    "node": "20.x"
+  }
 }
