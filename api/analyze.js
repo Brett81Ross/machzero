@@ -7,7 +7,6 @@ const redis = new Redis({
   token: process.env.UPSTASH_REDIS_REST_TOKEN || "",
 });
 
-// Helper function to wait before retrying
 const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
 export default async function handler(req, res) {
@@ -17,25 +16,27 @@ export default async function handler(req, res) {
         const { imagesBase64, userId } = req.body;
         if (!imagesBase64 || !imagesBase64[0]) return res.status(400).json({ error: "No image" });
 
-        const model = genAI.getGenerativeModel({ model: "gemini-3.5-flash" });
+        // Switched to gemini-3-flash for higher stability during peak demand
+        const model = genAI.getGenerativeModel({ model: "gemini-3-flash" });
 
-        // Attempt the call, if it fails with 503, wait 2 seconds and try once more
         let result;
-        try {
-            result = await model.generateContent([
-                "Analyze this item for market resale value.",
-                { inlineData: { data: imagesBase64[0], mimeType: "image/jpeg" } }
-            ]);
-        } catch (err) {
-            if (err.message.includes('503')) {
-                console.log("503 detected, retrying...");
-                await delay(2000);
+        let attempts = 0;
+        const maxAttempts = 3;
+
+        while (attempts < maxAttempts) {
+            try {
                 result = await model.generateContent([
                     "Analyze this item for market resale value.",
                     { inlineData: { data: imagesBase64[0], mimeType: "image/jpeg" } }
                 ]);
-            } else {
-                throw err;
+                break; // Success!
+            } catch (err) {
+                attempts++;
+                if (err.message.includes('503') && attempts < maxAttempts) {
+                    await delay(2000 * attempts); // Exponential backoff
+                } else {
+                    throw err;
+                }
             }
         }
 
@@ -46,12 +47,12 @@ export default async function handler(req, res) {
                 const historyKey = `history:${userId}`;
                 await redis.lpush(historyKey, JSON.stringify({ timestamp: new Date().toISOString(), result: responseText }));
                 await redis.ltrim(historyKey, 0, 49);
-            } catch (e) { console.error("Redis fail:", e); }
+            } catch (e) { console.error("Redis log failed:", e); }
         }
 
         res.status(200).json({ candidates: [{ content: { parts: [{ text: responseText }] } }] });
     } catch (error) {
         console.error("Critical Error:", error);
-        res.status(500).json({ error: "Server Error: " + error.message });
+        res.status(500).json({ error: "Service currently overloaded. Please try again in a moment." });
     }
 }
