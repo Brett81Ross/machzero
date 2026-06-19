@@ -7,7 +7,6 @@ const redis = new Redis({
   token: process.env.UPSTASH_REDIS_REST_TOKEN || "",
 });
 
-// Helper for timing
 const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
 export default async function handler(req, res) {
@@ -23,7 +22,6 @@ export default async function handler(req, res) {
         let attempts = 0;
         const maxAttempts = 3;
 
-        // Exponential Backoff with Jitter
         while (attempts < maxAttempts) {
             try {
                 result = await model.generateContent([
@@ -34,9 +32,7 @@ export default async function handler(req, res) {
             } catch (err) {
                 attempts++;
                 if (err.message.includes('503') && attempts < maxAttempts) {
-                    // (2000ms * attempt) + random jitter (0-1000ms)
                     const waitTime = (2000 * attempts) + (Math.random() * 1000);
-                    console.log(`Busy, retry ${attempts} in ${Math.round(waitTime)}ms`);
                     await delay(waitTime);
                 } else {
                     throw err;
@@ -46,7 +42,6 @@ export default async function handler(req, res) {
 
         const responseText = result.response.text();
 
-        // Save history
         if (userId) {
             try {
                 await redis.lpush(`history:${userId}`, JSON.stringify({ 
@@ -58,16 +53,11 @@ export default async function handler(req, res) {
         }
 
         res.status(200).json({ candidates: [{ content: { parts: [{ text: responseText }] } }] });
-
     } catch (error) {
         console.error("Critical Error:", error);
-        
-        // GRACEFUL DEGRADATION:
-        // Instead of a scary server crash message, we provide a clear, 
-        // helpful message that the app can display to the user.
         res.status(503).json({ 
             error: "The analysis engine is currently at peak capacity.",
-            suggestion: "Our servers are busy processing a high volume of items. Please wait a moment and try your analysis again." 
+            suggestion: "Our servers are busy. Please wait a moment and try your analysis again." 
         });
     }
 }
