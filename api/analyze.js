@@ -12,52 +12,59 @@ const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 export default async function handler(req, res) {
     if (req.method !== 'POST') return res.status(405).send('Method Not Allowed');
 
-    try {
-        const { imagesBase64, userId } = req.body;
-        if (!imagesBase64 || !imagesBase64[0]) return res.status(400).json({ error: "No image provided" });
+    const { imagesBase64, userId } = req.body;
+    if (!imagesBase64 || !imagesBase64[0]) return res.status(400).json({ error: "No image provided" });
 
-        const model = genAI.getGenerativeModel({ model: "gemini-3-flash" });
+    // Define model chain for fallback strategy
+    const modelChain = ["gemini-3-flash", "gemini-1.5-flash"];
+    let lastError;
 
-        let result;
+    for (const modelName of modelChain) {
         let attempts = 0;
         const maxAttempts = 3;
 
         while (attempts < maxAttempts) {
             try {
-                result = await model.generateContent([
+                const model = genAI.getGenerativeModel({ model: modelName });
+                const result = await model.generateContent([
                     "Analyze this item for market resale value. Provide identification, estimated value, and condition factors.",
                     { inlineData: { data: imagesBase64[0], mimeType: "image/jpeg" } }
                 ]);
-                break; 
+
+                const responseText = result.response.text();
+
+                // Save to history on success
+                if (userId) {
+                    try {
+                        await redis.lpush(`history:${userId}`, JSON.stringify({ 
+                            timestamp: new Date().toISOString(), 
+                            result: responseText 
+                        }));
+                        await redis.ltrim(`history:${userId}`, 0, 49);
+                    } catch (e) { console.error("Redis fail:", e); }
+                }
+
+                return res.status(200).json({ content: responseText });
             } catch (err) {
+                lastError = err;
                 attempts++;
+                
+                // Only retry on 503 (High Demand/Overloaded)
                 if (err.message.includes('503') && attempts < maxAttempts) {
-                    const waitTime = (2000 * attempts) + (Math.random() * 1000);
+                    const waitTime = (2000 * attempts) + (Math.[span_2](start_span)random() * 1000); // Exponential backoff + Jitter[span_2](end_span)
                     await delay(waitTime);
                 } else {
-                    throw err;
+                    // Break the retry loop and try the next model in the chain
+                    break;
                 }
             }
         }
-
-        const responseText = result.response.text();
-
-        if (userId) {
-            try {
-                await redis.lpush(`history:${userId}`, JSON.stringify({ 
-                    timestamp: new Date().toISOString(), 
-                    result: responseText 
-                }));
-                await redis.ltrim(`history:${userId}`, 0, 49);
-            } catch (e) { console.error("Redis fail:", e); }
-        }
-
-        res.status(200).json({ candidates: [{ content: { parts: [{ text: responseText }] } }] });
-    } catch (error) {
-        console.error("Critical Error:", error);
-        res.status(503).json({ 
-            error: "The analysis engine is currently at peak capacity.",
-            suggestion: "Our servers are busy. Please wait a moment and try your analysis again." 
-        });
     }
+
+    // If we reach here, all retries and fallback models failed
+    console.error("Critical Error after fallback:", lastError);
+    res.status(503).json({ 
+        error: "The analysis engine is currently at peak capacity.",
+        suggestion: "Our servers are busy processing a high volume of items. Please wait a moment and try your analysis again." 
+    });
 }
