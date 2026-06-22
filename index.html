@@ -21,11 +21,16 @@
         }
         .logo-container {
             margin-top: 20px;
-            margin-bottom: 10px;
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100px;
         }
         .logo-container img {
-            max-width: 160px;
+            max-width: 180px;
             height: auto;
+            display: block;
         }
         .brand-title {
             font-size: 28px;
@@ -136,11 +141,11 @@
 
     <div class="app-container">
         <div class="logo-container">
-            <img src="logo1.png" alt="MachZero Logo">
+            <img src="logo1.jpg" alt="MachZero Logo">
         </div>
         <div class="brand-title">Mach<span>zero</span></div>
         <div class="tagline">
-            Snap a photo or upload an image to instantly estimate its resale market value.
+            Snap a photo or upload an image to instantly estimate its resale market value. Know what it's worth before you buy, sell, or pass it up.
         </div>
 
         <div class="action-card">
@@ -161,7 +166,7 @@
 
         <div class="footer">
             &copy; 2026 MachZero&trade;<br>
-            Powered by CactusByte Studios
+            Powered by CactusByte Studios &bull; All Rights Reserved
         </div>
     </div>
 
@@ -195,7 +200,7 @@
             copyBtn.style.display = 'none';
             statusHeader.innerText = "System Status";
             statusHeader.style.color = "#38bdf8";
-            textOutput.innerText = "Preparing mobile file upload...";
+            textOutput.innerText = "Preparing photo optimization streams...";
 
             const reader = new FileReader();
             reader.readAsDataURL(file);
@@ -219,4 +224,40 @@
                     }
                     
                     canvas.width = width;
-                    canvas
+                    canvas.height = height;
+                    ctx.drawImage(img, 0, 0, width, height);
+                    
+                    const compressedBase64 = canvas.toDataURL('image/jpeg', 0.7);
+                    
+                    textOutput.innerText = "Analyzing item value with Gemini 3.5...";
+
+                    try {
+                        const response = await fetch('/api/analyze', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ image: compressedBase64 })
+                        });
+                        
+                        const data = await response.json();
+                        
+                        if (!response.ok || data.error) {
+                            throw new Error(data.error || 'Server parsing exception.');
+                        }
+                        
+                        statusHeader.innerText = "Analysis Report";
+                        statusHeader.style.color = "#4ade80";
+                        textOutput.innerText = data.result;
+                        copyBtn.style.display = 'block';
+
+                    } catch (err) {
+                        statusHeader.innerText = "System Error";
+                        statusHeader.style.color = "#ef4444";
+                        textOutput.innerText = err.message + "\n\nVerify that your GEMINI_API_KEY environment variable is live on the Vercel project settings panel.";
+                        copyBtn.style.display = 'none';
+                    }
+                };
+            };
+        }
+    </script>
+</body>
+</html>
