@@ -25,11 +25,12 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            min-height: 100px;
+            min-height: 120px;
         }
         .logo-container img {
-            max-width: 180px;
+            max-width: 100%;
             height: auto;
+            max-height: 120px;
             display: block;
         }
         .brand-title {
@@ -200,7 +201,7 @@
             copyBtn.style.display = 'none';
             statusHeader.innerText = "System Status";
             statusHeader.style.color = "#38bdf8";
-            textOutput.innerText = "Preparing photo optimization streams...";
+            textOutput.innerText = "Scaling image layout constraints...";
 
             const reader = new FileReader();
             reader.readAsDataURL(file);
@@ -229,7 +230,7 @@
                     
                     const compressedBase64 = canvas.toDataURL('image/jpeg', 0.7);
                     
-                    textOutput.innerText = "Analyzing item value with Gemini 3.5...";
+                    textOutput.innerText = "Querying item values on Gemini 3.5 Engine...";
 
                     try {
                         const response = await fetch('/api/analyze', {
@@ -238,10 +239,15 @@
                             body: JSON.stringify({ image: compressedBase64 })
                         });
                         
+                        const contentType = response.headers.get("content-type");
+                        if (!contentType || !contentType.includes("application/json")) {
+                            throw new Error("Vercel routing fault. Make sure your GitHub folders are flattened completely.");
+                        }
+
                         const data = await response.json();
                         
                         if (!response.ok || data.error) {
-                            throw new Error(data.error || 'Server parsing exception.');
+                            throw new Error(data.error || 'API execution crash.');
                         }
                         
                         statusHeader.innerText = "Analysis Report";
@@ -250,9 +256,9 @@
                         copyBtn.style.display = 'block';
 
                     } catch (err) {
-                        statusHeader.innerText = "System Error";
+                        statusHeader.innerText = "Error Status";
                         statusHeader.style.color = "#ef4444";
-                        textOutput.innerText = err.message + "\n\nVerify that your GEMINI_API_KEY environment variable is live on the Vercel project settings panel.";
+                        textOutput.innerText = err.message + "\n\nVerify that analyze.js sits directly within the root api/ directory.";
                         copyBtn.style.display = 'none';
                     }
                 };
