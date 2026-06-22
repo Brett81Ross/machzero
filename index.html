@@ -2,107 +2,216 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>MachZero</title>
     <style>
-        body { background-color: #000; color: #fff; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; margin: 0; display: flex; flex-direction: column; min-height: 100vh; overflow-x: hidden; }
-        .app-container { flex: 1; max-width: 400px; width: 100%; margin: 0 auto; padding: 20px; box-sizing: border-box; }
-        .logo-container { text-align: center; margin-bottom: 20px; }
-        .main-logo { width: 200px; height: auto; object-fit: contain; }
-        .app-tagline { color: #888; font-size: 0.9rem; margin-top: -10px; margin-bottom: 20px; letter-spacing: 0.5px; text-align: center; line-height: 1.4; }
-        .card { background: #1c1c1e; border-radius: 20px; padding: 20px; margin-bottom: 15px; border: 1px solid #333; }
-        #analysis-results { display: none; }
-        .btn { width: 100%; padding: 18px; border-radius: 12px; border: none; font-weight: bold; font-size: 1.1rem; cursor: pointer; margin-bottom: 10px; transition: opacity 0.2s; }
-        .btn-primary { background-color: #007aff; color: white; }
-        .hidden-uploader { position: absolute; top: 0; left: 0; opacity: 0; width: 0.1px; height: 0.1px; }
-        #status-display { margin-top: 15px; padding: 15px; background: #1c1c1e; border-radius: 12px; border-left: 4px solid #007aff; font-size: 1rem; line-height: 1.5; color: #eee; white-space: pre-wrap; }
-        .footer { padding: 20px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px; color: rgba(255, 255, 255, 0.3); font-size: 10px; border-top: 1px solid #333; width: 100%; text-align: center; }
-        .footer-content { display: flex; align-items: center; justify-content: center; gap: 6px; }
-        .footer img { height: 14px; width: 14px; object-fit: contain; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #0b0f19;
+            color: #ffffff;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+        }
+        .app-container {
+            width: 100%;
+            max-width: 480px;
+            text-align: center;
+        }
+        .logo-container {
+            margin-top: 20px;
+            margin-bottom: 10px;
+        }
+        .logo-container img {
+            max-width: 160px;
+            height: auto;
+        }
+        .brand-title {
+            font-size: 28px;
+            font-weight: 800;
+            letter-spacing: 4px;
+            margin: 10px 0;
+            text-transform: uppercase;
+        }
+        .brand-title span {
+            color: #38bdf8;
+        }
+        .tagline {
+            font-size: 14px;
+            color: #94a3b8;
+            line-height: 1.5;
+            padding: 0 20px;
+            margin-bottom: 30px;
+        }
+        .action-card {
+            background-color: #1e293b;
+            padding: 25px;
+            border-radius: 16px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+            margin-bottom: 20px;
+        }
+        .btn {
+            display: block;
+            width: 100%;
+            background-color: #38bdf8;
+            color: #0b0f19;
+            border: none;
+            padding: 16px;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 15px;
+            cursor: pointer;
+            box-sizing: border-box;
+        }
+        .btn:active {
+            background-color: #0ea5e9;
+        }
+        .btn-secondary {
+            background-color: #2563eb;
+            color: #ffffff;
+            margin-bottom: 0;
+        }
+        .btn-secondary:active {
+            background-color: #1d4ed8;
+        }
+        .hidden-input {
+            display: none;
+        }
+        .result-card {
+            background-color: #1e293b;
+            border-left: 4px solid #38bdf8;
+            padding: 20px;
+            border-radius: 12px;
+            text-align: left;
+            margin-top: 20px;
+        }
+        .result-title {
+            font-size: 14px;
+            color: #94a3b8;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin: 0 0 10px 0;
+            font-weight: bold;
+        }
+        .result-text {
+            font-size: 15px;
+            line-height: 1.6;
+            margin: 0;
+            white-space: pre-wrap;
+        }
+        .footer {
+            margin-top: 40px;
+            font-size: 11px;
+            color: #64748b;
+            letter-spacing: 0.5px;
+        }
     </style>
 </head>
 <body>
+
     <div class="app-container">
         <div class="logo-container">
-            <img src="logo1.jpg" alt="MachZero" class="main-logo">
-            <div class="app-tagline">Snap a photo or upload an image to instantly estimate its resale market value. Know what it's worth before you buy, sell, or pass it up.</div>
+            <img src="logo1.png" alt="MachZero Logo">
         </div>
-        <div class="card">
-            <button class="btn btn-primary" onclick="document.getElementById('camera-input').click()">TAKE PHOTO</button>
-            <button class="btn btn-primary" onclick="document.getElementById('gallery-input').click()">UPLOAD IMAGE</button>
+        <div class="brand-title">Mach<span>zero</span></div>
+        <div class="tagline">
+            Snap a photo or upload an image to instantly estimate its resale market value. Know what it's worth before you buy, sell, or pass it up.
         </div>
-        <div id="analysis-results">
-            <div id="status-display">Analyzing item for market value...</div>
+
+        <div class="action-card">
+            <input type="file" id="cameraInput" accept="image/*" capture="environment" class="hidden-input" onchange="handleFileSelect(this)">
+            <input type="file" id="fileInput" accept="image/*" class="hidden-input" onchange="handleFileSelect(this)">
+
+            <button class="btn" onclick="document.getElementById('cameraInput').click()">Take Photo</button>
+            <button class="btn btn-secondary" onclick="document.getElementById('fileInput').click()">Upload Image</button>
         </div>
-        <input type="file" id="gallery-input" class="hidden-uploader" accept="image/*">
-        <input type="file" id="camera-input" class="hidden-uploader" accept="image/*" capture="environment">
+
+        <div class="result-card" id="outputCard" style="display: none;">
+            <p class="result-title" id="statusHeader">Analysis Report</p>
+            <div class="result-text" id="analysisResult">Processing your asset diagnostics...</div>
+        </div>
+
+        <div class="footer">
+            &copy; 2026 MachZero&trade;<br>
+            Powered by CactusByte Studios &bull; All Rights Reserved
+        </div>
     </div>
-    <footer class="footer">
-        <div class="footer-content">
-            <img src="logo1.jpg" alt="MachZero Logo">
-            <span>© 2026 MachZero™</span>
-        </div>
-        <span>Powered by CactusByte🌵Studios</span>
-        <span>All Rights Reserved</span>
-    </footer>
+
     <script>
-        // Unique User Identity
-        let userId = localStorage.getItem('machzero_user_id');
-        if (!userId) {
-            userId = 'user_' + Math.random().toString(36).substr(2, 9);
-            localStorage.setItem('machzero_user_id', userId);
-        }
+        function handleFileSelect(input) {
+            if (!input.files || !input.files[0]) return;
+            
+            const file = input.files[0];
+            const resultCard = document.getElementById('outputCard');
+            const statusHeader = document.getElementById('statusHeader');
+            const textOutput = document.getElementById('analysisResult');
 
-        const status = document.getElementById('status-display');
-        const analysisResults = document.getElementById('analysis-results');
+            // Show loading status immediately
+            resultCard.style.display = 'block';
+            statusHeader.innerText = "System Status";
+            statusHeader.style.color = "#38bdf8";
+            textOutput.innerText = "Compressing and packaging image for safe transmission...";
 
-        function handleFile(file) {
-            if (!file) return;
-            analysisResults.style.display = 'block';
-            status.textContent = "Analyzing item for market value...";
             const reader = new FileReader();
-            reader.onload = (event) => {
-                const img = new Image();
-                img.onload = () => {
-                    const canvas = document.createElement('canvas');
-                    const MAX_WIDTH = 600;
-                    const scaleSize = MAX_WIDTH / img.width;
-                    canvas.width = MAX_WIDTH;
-                    canvas.height = img.height * scaleSize;
-                    const ctx = canvas.getContext('2d');
-                    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-                    sendToServer(canvas.toDataURL('image/jpeg', 0.7).split(',')[1]);
-                };
-                img.src = event.target.result;
-            };
             reader.readAsDataURL(file);
-        }
-
-        document.getElementById('gallery-input').addEventListener('change', (e) => handleFile(e.target.files[0]));
-        document.getElementById('camera-input').addEventListener('change', (e) => handleFile(e.target.files[0]));
-
-        async function sendToServer(base64Data, isRetry = false) {
-            try {
-                const response = await fetch('/api/analyze', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ imagesBase64: [base64Data], userId: userId })
-                });
-                const rawText = await response.text();
-                try {
-                    const data = JSON.parse(rawText);
-                    status.textContent = data.candidates[0].content.parts[0].text;
-                } catch (e) {
-                    if (rawText.includes("high demand") && !isRetry) {
-                        status.textContent = "Server busy, retrying in 2 seconds...";
-                        setTimeout(() => sendToServer(base64Data, true), 2000);
-                    } else {
-                        status.textContent = "Server Error: " + rawText;
+            reader.onload = function (event) {
+                const img = new Image();
+                img.src = event.target.result;
+                img.onload = async function () {
+                    // HTML5 Canvas downsizing pipeline
+                    const canvas = document.createElement('canvas');
+                    const ctx = canvas.getContext('2d');
+                    
+                    const maxDimension = 1024;
+                    let width = img.width;
+                    let height = img.height;
+                    
+                    if (width > height && width > maxDimension) {
+                        height *= maxDimension / width;
+                        width = maxDimension;
+                    } else if (height > maxDimension) {
+                        width *= maxDimension / height;
+                        height = maxDimension;
                     }
-                }
-            } catch (err) {
-                status.textContent = "Fetch Error: " + err.message;
-            }
+                    
+                    canvas.width = width;
+                    canvas.height = height;
+                    ctx.drawImage(img, 0, 0, width, height);
+                    
+                    // Compress image data straight to 70% quality JPEG string to prevent function memory timeout crashes
+                    const compressedBase64 = canvas.toDataURL('image/jpeg', 0.7);
+                    
+                    textOutput.innerText = "Contacting valuation database engines using Gemini 3.5...";
+
+                    try {
+                        const response = await fetch('/api/analyze', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ image: compressedBase64, mimeType: 'image/jpeg' })
+                        });
+                        
+                        const data = await response.json();
+                        
+                        if (!response.ok || data.error) {
+                            throw new Error(data.error || 'Server processing error occurred.');
+                        }
+                        
+                        statusHeader.innerText = "Analysis Report";
+                        statusHeader.style.color = "#4ade80"; // Turn green on success
+                        textOutput.innerText = data.result;
+
+                    } catch (err) {
+                        console.error("Transmission error details:", err.message);
+                        statusHeader.innerText = "Server Error";
+                        statusHeader.style.color = "#ef4444"; // Turn red on error
+                        textOutput.innerText = "Analysis failed. Reason: " + err.message + "\n\nPlease try clean screenshot profiles or check your Vercel Dashboard logs.";
+                    }
+                };
+            };
         }
     </script>
 </body>
