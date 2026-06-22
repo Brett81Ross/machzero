@@ -1,5 +1,3 @@
-const { GoogleGenAI } = require('@google/genai');
-
 module.exports = async function handler(req, res) {
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Methods', 'POST,OPTIONS');
@@ -16,38 +14,50 @@ module.exports = async function handler(req, res) {
     try {
         const apiKey = process.env.GEMINI_API_KEY;
         if (!apiKey) {
-            return res.status(500).json({ error: 'System config error: Missing GEMINI_API_KEY environment variable.' });
+            return res.status(500).json({ error: 'Backend setup error: GEMINI_API_KEY environment token missing.' });
         }
 
         const { image } = req.body;
         if (!image) {
-            return res.status(400).json({ error: 'No image data payload received.' });
+            return res.status(400).json({ error: 'Missing target data payload asset.' });
         }
 
         const cleanBase64 = image.replace(/^data:image\/\w+;base64,/, "");
 
-        const ai = new GoogleGenAI({ apiKey: apiKey });
+        const targetUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
 
-        const response = await ai.models.generateContent({
-            model: 'gemini-3.5-flash',
-            contents: [
-                {
-                    inlineData: {
-                        data: cleanBase64,
-                        mimeType: 'image/jpeg'
+        const apiPayload = {
+            contents: [{
+                parts: [
+                    { text: "You are an expert appraiser tool named MachZero. Analyze the provided image of the item and generate a concise breakdown detailing its estimated resale market value, condition indicators, and whether it is a buy, sell, or pass." },
+                    {
+                        inlineData: {
+                            mimeType: "image/jpeg",
+                            data: cleanBase64
+                        }
                     }
-                },
-                'You are an expert appraiser tool named MachZero. Analyze the provided image of the item and generate a concise breakdown detailing its estimated resale market value, condition indicators, and whether it is a buy, sell, or pass.'
-            ]
+                ]
+            }]
+        };
+
+        const aiResponse = await fetch(targetUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(apiPayload)
         });
 
-        if (!response || !response.text) {
-            throw new Error('AI Engine returned an empty evaluation response stream.');
+        const aiData = await aiResponse.json();
+
+        if (!aiResponse.ok || !aiData.candidates || aiData.candidates.length === 0) {
+            return res.status(aiResponse.status).json({ 
+                error: aiData.error?.message || 'The Gemini engine failed to process this specific image matrix.' 
+            });
         }
 
-        return res.status(200).json({ result: response.text });
+        const evaluationText = aiData.candidates[0].content.parts[0].text;
+        return res.status(200).json({ result: evaluationText });
 
     } catch (error) {
-        return res.status(500).json({ error: 'Backend Server Exception: ' + error.message });
+        return res.status(500).json({ error: 'Core server exception handler tripped: ' + error.message });
     }
 };
