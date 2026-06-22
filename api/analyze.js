@@ -1,7 +1,6 @@
 const { GoogleGenAI } = require('@google/genai');
 
 module.exports = async function handler(req, res) {
-    // Set headers so your phone can talk to the server safely
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Methods', 'POST,OPTIONS');
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
@@ -17,20 +16,18 @@ module.exports = async function handler(req, res) {
     try {
         const apiKey = process.env.GEMINI_API_KEY;
         if (!apiKey) {
-            return res.status(500).json({ error: 'Configuration Error: Missing API Key.' });
+            return res.status(500).json({ error: 'System config error: Missing GEMINI_API_KEY environment variable.' });
         }
 
         const { image } = req.body;
         if (!image) {
-            return res.status(400).json({ error: 'No image data sent.' });
+            return res.status(400).json({ error: 'No image data payload received.' });
         }
 
-        // Clean up the image data string format
         const cleanBase64 = image.replace(/^data:image\/\w+;base64,/, "");
 
         const ai = new GoogleGenAI({ apiKey: apiKey });
 
-        // Direct, uncomplicated call to the live Gemini 3.5 engine
         const response = await ai.models.generateContent({
             model: 'gemini-3.5-flash',
             contents: [
@@ -44,9 +41,13 @@ module.exports = async function handler(req, res) {
             ]
         });
 
+        if (!response || !response.text) {
+            throw new Error('AI Engine returned an empty evaluation response stream.');
+        }
+
         return res.status(200).json({ result: response.text });
 
     } catch (error) {
-        return res.status(500).json({ error: 'Server crashed: ' + error.message });
+        return res.status(500).json({ error: 'Backend Server Exception: ' + error.message });
     }
 };
