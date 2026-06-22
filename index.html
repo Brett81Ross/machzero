@@ -201,7 +201,7 @@
             copyBtn.style.display = 'none';
             statusHeader.innerText = "System Status";
             statusHeader.style.color = "#38bdf8";
-            textOutput.innerText = "Scaling image layout constraints...";
+            textOutput.innerText = "Compressing photo array fields...";
 
             const reader = new FileReader();
             reader.readAsDataURL(file);
@@ -230,7 +230,7 @@
                     
                     const compressedBase64 = canvas.toDataURL('image/jpeg', 0.7);
                     
-                    textOutput.innerText = "Querying item values on Gemini 3.5 Engine...";
+                    textOutput.innerText = "Connecting to Gemini 3.5 appraisal matrix...";
 
                     try {
                         const response = await fetch('/api/analyze', {
@@ -239,15 +239,16 @@
                             body: JSON.stringify({ image: compressedBase64 })
                         });
                         
+                        let data;
                         const contentType = response.headers.get("content-type");
-                        if (!contentType || !contentType.includes("application/json")) {
-                            throw new Error("Vercel routing fault. Make sure your GitHub folders are flattened completely.");
+                        if (contentType && contentType.includes("application/json")) {
+                            data = await response.json();
+                        } else {
+                            throw new Error("Server routing mismatch. Trigger a manual deployment rebuild from your Vercel panel.");
                         }
-
-                        const data = await response.json();
                         
                         if (!response.ok || data.error) {
-                            throw new Error(data.error || 'API execution crash.');
+                            throw new Error(data.error || 'Server endpoint response error.');
                         }
                         
                         statusHeader.innerText = "Analysis Report";
@@ -256,9 +257,9 @@
                         copyBtn.style.display = 'block';
 
                     } catch (err) {
-                        statusHeader.innerText = "Error Status";
+                        statusHeader.innerText = "Network Fault";
                         statusHeader.style.color = "#ef4444";
-                        textOutput.innerText = err.message + "\n\nVerify that analyze.js sits directly within the root api/ directory.";
+                        textOutput.innerText = err.message;
                         copyBtn.style.display = 'none';
                     }
                 };
