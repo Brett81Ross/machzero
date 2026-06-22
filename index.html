@@ -88,14 +88,35 @@
             border-radius: 12px;
             text-align: left;
             margin-top: 20px;
+            position: relative;
+        }
+        .result-title-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
         }
         .result-title {
             font-size: 14px;
             color: #94a3b8;
             text-transform: uppercase;
             letter-spacing: 1px;
-            margin: 0 0 10px 0;
+            margin: 0;
             font-weight: bold;
+        }
+        .copy-btn {
+            background-color: #334155;
+            color: #38bdf8;
+            border: 1px solid #475569;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: bold;
+            cursor: pointer;
+            text-transform: uppercase;
+        }
+        .copy-btn:active {
+            background-color: #475569;
         }
         .result-text {
             font-size: 15px;
@@ -119,7 +140,7 @@
         </div>
         <div class="brand-title">Mach<span>zero</span></div>
         <div class="tagline">
-            Snap a photo or upload an image to instantly estimate its resale market value. Know what it's worth before you buy, sell, or pass it up.
+            Snap a photo or upload an image to instantly estimate its resale market value.
         </div>
 
         <div class="action-card">
@@ -131,17 +152,36 @@
         </div>
 
         <div class="result-card" id="outputCard" style="display: none;">
-            <p class="result-title" id="statusHeader">Analysis Report</p>
-            <div class="result-text" id="analysisResult">Processing your asset diagnostics...</div>
+            <div class="result-title-row">
+                <p class="result-title" id="statusHeader">Analysis Report</p>
+                <button class="copy-btn" id="copyButton" onclick="copyToClipboard()">Copy</button>
+            </div>
+            <div class="result-text" id="analysisResult">Processing...</div>
         </div>
 
         <div class="footer">
             &copy; 2026 MachZero&trade;<br>
-            Powered by CactusByte Studios &bull; All Rights Reserved
+            Powered by CactusByte Studios
         </div>
     </div>
 
     <script>
+        function copyToClipboard() {
+            const textToCopy = document.getElementById('analysisResult').innerText;
+            const copyBtn = document.getElementById('copyButton');
+            
+            navigator.clipboard.writeText(textToCopy).then(() => {
+                copyBtn.innerText = "Copied!";
+                copyBtn.style.color = "#4ade80";
+                setTimeout(() => {
+                    copyBtn.innerText = "Copy";
+                    copyBtn.style.color = "#38bdf8";
+                }, 2000);
+            }).catch(err => {
+                console.error('Failed to copy text: ', err);
+            });
+        }
+
         function handleFileSelect(input) {
             if (!input.files || !input.files[0]) return;
             
@@ -149,12 +189,13 @@
             const resultCard = document.getElementById('outputCard');
             const statusHeader = document.getElementById('statusHeader');
             const textOutput = document.getElementById('analysisResult');
+            const copyBtn = document.getElementById('copyButton');
 
-            // Show loading status immediately
             resultCard.style.display = 'block';
+            copyBtn.style.display = 'none'; // Hide copy button while loading
             statusHeader.innerText = "System Status";
             statusHeader.style.color = "#38bdf8";
-            textOutput.innerText = "Compressing and packaging image for safe transmission...";
+            textOutput.innerText = "Resizing photo so the server doesn't crash...";
 
             const reader = new FileReader();
             reader.readAsDataURL(file);
@@ -162,7 +203,6 @@
                 const img = new Image();
                 img.src = event.target.result;
                 img.onload = async function () {
-                    // HTML5 Canvas downsizing pipeline
                     const canvas = document.createElement('canvas');
                     const ctx = canvas.getContext('2d');
                     
@@ -182,33 +222,33 @@
                     canvas.height = height;
                     ctx.drawImage(img, 0, 0, width, height);
                     
-                    // Compress image data straight to 70% quality JPEG string to prevent function memory timeout crashes
                     const compressedBase64 = canvas.toDataURL('image/jpeg', 0.7);
                     
-                    textOutput.innerText = "Contacting valuation database engines using Gemini 3.5...";
+                    textOutput.innerText = "Analyzing item value with Gemini 3.5...";
 
                     try {
                         const response = await fetch('/api/analyze', {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ image: compressedBase64, mimeType: 'image/jpeg' })
+                            body: JSON.stringify({ image: compressedBase64 })
                         });
                         
                         const data = await response.json();
                         
                         if (!response.ok || data.error) {
-                            throw new Error(data.error || 'Server processing error occurred.');
+                            throw new Error(data.error || 'Server processing issue.');
                         }
                         
                         statusHeader.innerText = "Analysis Report";
-                        statusHeader.style.color = "#4ade80"; // Turn green on success
+                        statusHeader.style.color = "#4ade80";
                         textOutput.innerText = data.result;
+                        copyBtn.style.display = 'block'; // Show copy button when result arrives
 
                     } catch (err) {
-                        console.error("Transmission error details:", err.message);
-                        statusHeader.innerText = "Server Error";
-                        statusHeader.style.color = "#ef4444"; // Turn red on error
-                        textOutput.innerText = "Analysis failed. Reason: " + err.message + "\n\nPlease try clean screenshot profiles or check your Vercel Dashboard logs.";
+                        statusHeader.innerText = "Error";
+                        statusHeader.style.color = "#ef4444";
+                        textOutput.innerText = err.message;
+                        copyBtn.style.display = 'none';
                     }
                 };
             };
