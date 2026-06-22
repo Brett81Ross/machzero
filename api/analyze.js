@@ -1,31 +1,48 @@
-import { GoogleGenerativeAI } from "@google/generative-ai";
+import { GoogleGenAI } from '@google/genai';
 
-const genAI = new GoogleGenerativeAI(process.env.API_KEY || "");
+// Initialize the Google Gen AI SDK using your environment API key
+const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 
+// Vercel serverless functions require a default exported handler function
 export default async function handler(req, res) {
-    if (req.method !== 'POST') return res.status(405).send('Method Not Allowed');
+    // Ensure we are only accepting POST requests for the analysis
+    if (req.method !== 'POST') {
+        return res.status(405).json({ error: 'Method not allowed. Use POST.' });
+    }
 
     try {
-        const { imagesBase64 } = req.body;
-        if (!imagesBase64 || !imagesBase64[0]) {
-            return res.status(400).json({ error: "No image provided" });
+        const { image, mimeType } = req.body;
+
+        if (!image) {
+            return res.status(400).json({ error: 'No image data found in request payload.' });
         }
 
-        // Use the most stable model directly
-        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+        // Clean up the base64 string if the frontend sends the data URL prefix
+        const base64Data = image.replace(/^data:image\/\w+;base64,/, "");
 
-        const result = await model.generateContent([
-            "Analyze this item for market resale value. Provide identification, estimated value, and condition factors.",
-            { inlineData: { data: imagesBase64[0], mimeType: "image/jpeg" } }
-        ]);
+        const imagePart = {
+            inlineData: {
+                data: base64Data,
+                mimeType: mimeType || 'image/jpeg'
+            },
+        };
 
-        const responseText = result.response.text();
+        const systemPrompt = `You are an expert appraiser tool named MachZero. Analyze the provided image of the item and generate a concise breakdown detailing its estimated resale market value, condition indicators, and whether it is a buy, sell, or pass.`;
 
-        // Return the data directly. We removed Redis for a moment to ensure the core works.
-        res.status(200).json({ candidates: [{ content: { parts: [{ text: responseText }] } }] });
+        // Explicitly targeting the live stable Gemini 3.5 Flash production model
+        const response = await ai.models.generateContent({
+            model: 'gemini-3.5-flash',
+            contents: [systemPrompt, imagePart]
+        });
+
+        if (!response || !response.text) {
+            throw new Error('Empty response payload returned from Gemini API.');
+        }
+
+        return res.status(200).json({ result: response.text });
 
     } catch (error) {
-        console.error("Function Error:", error);
-        res.status(500).json({ error: "Analysis failed. Please try again." });
+        console.error('Serverless Analysis Error:', error.message);
+        return res.status(500).json({ error: 'Analysis failed. Please try again.' });
     }
 }
