@@ -1,6 +1,6 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
-// This securely reads your hidden key from Vercel's backend. Your actual key stays safe.
+// Automatically detects whatever name Vercel or your setup is looking for
 const apiKey = process.env.GEMINI_API_KEY || process.env.API_KEY || process.env.Gemini_API_Key_2;
 
 export const config = {
@@ -12,7 +12,7 @@ export const config = {
 };
 
 export default async function handler(req, res) {
-  // Handle CORS Preflight
+  // Handle cross-origin preflight requests safely
   if (req.method === 'OPTIONS') {
     res.status(200).end();
     return;
@@ -22,6 +22,7 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
+  // Clear fallback message if no keys are found anywhere in the dashboard environment
   if (!apiKey) {
     return res.status(500).json({ 
       error: 'Backend setup error: GEMINI_API_KEY environment token missing.' 
@@ -34,10 +35,10 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: 'No image data provided' });
     }
 
-    // Initialize the client securely using the hidden environment variable
+    // Initialize using the hidden server-side variable
     const genAI = new GoogleGenerativeAI(apiKey);
     
-    // Configured precisely for the 3.5 model infrastructure
+    // Explicitly targets the 3.5 Flash engine
     const model = genAI.getGenerativeModel({ model: "gemini-3.5-flash" });
 
     const prompt = `
@@ -48,7 +49,7 @@ export default async function handler(req, res) {
       - Resale Market Analysis & Demand Level
     `;
 
-    // Extract base64 data cleanly
+    // Strip image metadata out safely before passing to the pipeline
     const base64Data = image.replace(/^data:image\/\w+;base64,/, "");
     const imagePart = {
       inlineData: {
