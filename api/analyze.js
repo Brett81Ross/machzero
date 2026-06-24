@@ -12,13 +12,12 @@ module.exports = async function handler(req, res) {
     }
 
     try {
-        // Restored back to your original paid API key variable name
         const apiKey = process.env.GEMINI_API_KEY;
         if (!apiKey) {
             return res.status(500).json({ error: 'Backend setup error: GEMINI_API_KEY environment token missing.' });
         }
 
-        const { image } = req.body;
+        const { image, metrics } = req.body;
         if (!image) {
             return res.status(400).json({ error: 'Missing target data payload asset.' });
         }
@@ -27,10 +26,17 @@ module.exports = async function handler(req, res) {
 
         const targetUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
 
+        // Dynamic prompt construction based on whether they supplied extra information
+        let promptText = "You are an expert appraiser tool named MachZero. Analyze the provided image of the item and generate a concise breakdown detailing its estimated resale market value, condition indicators, and whether it is a buy, sell, or pass.";
+        
+        if (metrics && metrics.trim() !== "") {
+            promptText += ` Explicit asset operational wear parameters provided by the user: ${metrics}. Factor this usage metric heavily into your condition adjustments and valuation calculation.`;
+        }
+
         const apiPayload = {
             contents: [{
                 parts: [
-                    { text: "You are an expert appraiser tool named MachZero. Analyze the provided image of the item and generate a concise breakdown detailing its estimated resale market value, condition indicators, and whether it is a buy, sell, or pass." },
+                    { text: promptText },
                     {
                         inlineData: {
                             mimeType: "image/jpeg",
