@@ -3,80 +3,29 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>MachZero Hub - Unified Suite</title>
+    <title>MachZero - AI Asset Appraiser</title><!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>MachZero - AI Asset Appraiser</title>
     <style>
-        :root {
-            --bg-color: #0d1117;
-            --card-color: #161b22;
-            --accent-color: #58a6ff;
-            --text-main: #f0f6fc;
-            --text-muted: #8b949e;
-            --border-color: #30363d;
-        }
-
-        /* Power Washing Solutions Estimator IQ Theme Modifiers */
-        .theme-pws {
-            --bg-color: #0b132b;
-            --card-color: #1c2541;
-            --accent-color: #00b4d8;
-            --text-main: #ffffff;
-            --text-muted: #94a3b8;
-            --border-color: #3a506b;
-        }
-
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            background-color: var(--bg-color);
-            color: var(--text-main);
+            background-color: #0d1117;
+            color: #f0f6fc;
             margin: 0;
             padding: 20px;
             display: flex;
             justify-content: center;
-            transition: background-color 0.3s ease;
         }
         .app-container {
             width: 100%;
             max-width: 480px;
             text-align: center;
         }
-        
-        /* Premium Mode Selector Toggle */
-        .mode-selector {
-            display: flex;
-            background-color: rgba(0,0,0,0.2);
-            border: 1px solid var(--border-color);
-            padding: 4px;
-            border-radius: 12px;
-            margin-bottom: 25px;
-        }
-        .mode-btn {
-            flex: 1;
-            background: none;
-            border: none;
-            color: var(--text-muted);
-            padding: 10px;
-            font-size: 13px;
-            font-weight: bold;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            cursor: pointer;
-            border-radius: 8px;
-            transition: all 0.2s ease;
-        }
-        .mode-btn.active {
-            background-color: var(--accent-color);
-            color: #0b132b;
-        }
-
-        /* Brand Headers */
-        .brand-header {
-            display: none;
-        }
-        .brand-header.active {
-            display: block;
-        }
         .logo-container {
-            margin-top: 10px;
+            margin-top: 30px;
             margin-bottom: 15px;
             display: flex;
             justify-content: center;
@@ -94,45 +43,38 @@
             font-size: 28px;
             color: #ffffff;
         }
-        .theme-pws .brand-badge {
-            background: linear-gradient(135deg, #00b4d8, #0077b6);
-            color: #0b132b;
-            box-shadow: 0 8px 20px rgba(0, 180, 216, 0.2);
-        }
         .brand-title {
-            font-size: 22px;
+            font-size: 24px;
             font-weight: 800;
-            letter-spacing: 1.5px;
-            margin: 15px 0 5px 0;
+            letter-spacing: 2px;
+            margin: 10px 0;
             text-transform: uppercase;
+            color: #ffffff;
         }
         .brand-title span {
-            color: var(--accent-color);
+            color: #58a6ff;
         }
         .tagline {
             font-size: 14px;
-            color: var(--text-muted);
+            color: #8b949e;
             line-height: 1.5;
             padding: 0 10px;
-            margin-bottom: 25px;
+            margin-bottom: 30px;
         }
-
-        /* Input Interaction Card */
         .action-card {
-            background-color: var(--card-color);
+            background-color: #161b22;
             padding: 25px;
             border-radius: 16px;
             box-shadow: 0 10px 25px rgba(0,0,0,0.3);
             margin-bottom: 20px;
             text-align: left;
-            border: 1px solid var(--border-color);
-            transition: background-color 0.3s ease, border-color 0.3s ease;
+            border: 1px solid #30363d;
         }
         .btn {
             display: block;
             width: 100%;
-            background-color: var(--accent-color);
-            color: #0b132b;
+            background-color: #58a6ff;
+            color: #0d1117;
             border: none;
             padding: 16px;
             border-radius: 12px;
@@ -144,29 +86,32 @@
             cursor: pointer;
             box-sizing: border-box;
             text-align: center;
-            transition: background-color 0.2s ease;
         }
         .btn:last-child {
             margin-bottom: 0;
         }
+        .btn:active {
+            background-color: #1f6feb;
+        }
         .btn-secondary {
             background-color: transparent;
-            color: var(--text-main);
-            border: 1px solid var(--border-color);
+            color: #f0f6fc;
+            border: 1px solid #30363d;
+        }
+        .btn-secondary:active {
+            background-color: #161b22;
         }
         .hidden-input {
             display: none;
         }
-
-        /* Engine Output Cards */
         .result-card {
-            background-color: var(--card-color);
-            border-left: 4px solid var(--accent-color);
+            background-color: #161b22;
+            border-left: 4px solid #58a6ff;
             padding: 20px;
             border-radius: 12px;
             text-align: left;
             margin-top: 20px;
-            display: none;
+            position: relative;
         }
         .result-title-row {
             display: flex;
@@ -176,16 +121,16 @@
         }
         .result-title {
             font-size: 13px;
-            color: var(--text-muted);
+            color: #8b949e;
             text-transform: uppercase;
             letter-spacing: 1px;
             margin: 0;
             font-weight: bold;
         }
         .copy-btn {
-            background-color: rgba(0,0,0,0.3);
-            color: var(--accent-color);
-            border: 1px solid var(--border-color);
+            background-color: #0d1117;
+            color: #58a6ff;
+            border: 1px solid #30363d;
             padding: 6px 12px;
             border-radius: 6px;
             font-size: 12px;
@@ -198,36 +143,26 @@
             line-height: 1.6;
             margin: 0;
             white-space: pre-wrap;
-            color: var(--text-main);
+            color: #c9d1d9;
         }
         .footer {
             margin-top: 40px;
             font-size: 11px;
-            color: #64748b;
+            color: #8b949e;
             letter-spacing: 0.5px;
             text-align: center;
         }
     </style>
 </head>
-<body id="bodyContext">
+<body>
 
     <div class="app-container">
-        
-        <div class="mode-selector">
-            <button class="mode-btn active" id="btnAppraise" onclick="switchMode('appraisal')">MachZero</button>
-            <button class="mode-btn" id="btnPWS" onclick="switchMode('powerwashing')">PWS Estimator IQ</button>
+        <div class="logo-container">
+            <div class="brand-badge">MZ</div>
         </div>
-
-        <div id="headerAppraisal" class="brand-header active">
-            <div class="logo-container"><div class="brand-badge">MZ</div></div>
-            <div class="brand-title">Mach<span>Zero</span></div>
-            <div class="tagline">Instant industrial asset valuation tool. Upload photos of equipment, tools, or electronics to extract accurate resale value pricing data immediately.</div>
-        </div>
-
-        <div id="headerPowerWashing" class="brand-header">
-            <div class="logo-container"><div class="brand-badge">NP</div></div>
-            <div class="brand-title">Solutions <span>Estimator IQ</span></div>
-            <div class="tagline">No Problem Power Washing automated bidding system. Snap site snapshots to detect cleaning parameters, target materials, and produce client quotes.</div>
+        <div class="brand-title">Mach<span>Zero</span></div>
+        <div class="tagline">
+            Instant industrial asset valuation tool. Upload photos of equipment, tools, or electronics to extract accurate resale value pricing data immediately.
         </div>
 
         <div class="action-card">
@@ -238,7 +173,7 @@
             <button class="btn btn-secondary" onclick="document.getElementById('fileInput').click()">Upload Local Image</button>
         </div>
 
-        <div class="result-card" id="outputCard">
+        <div class="result-card" id="outputCard" style="display: none;">
             <div class="result-title-row">
                 <p class="result-title" id="statusHeader">Analysis Output</p>
                 <button class="copy-btn" id="copyButton" onclick="copyToClipboard()">Copy</button>
@@ -253,34 +188,6 @@
     </div>
 
     <script>
-        let currentMode = "appraisal";
-
-        function switchMode(selectedMode) {
-            currentMode = selectedMode;
-            const body = document.getElementById('bodyContext');
-            const btnAppraise = document.getElementById('btnAppraise');
-            const btnPWS = document.getElementById('btnPWS');
-            const headAppraisal = document.getElementById('headerAppraisal');
-            const headPWS = document.getElementById('headerPowerWashing');
-            const resultCard = document.getElementById('outputCard');
-
-            resultCard.style.display = 'none';
-
-            if (selectedMode === 'powerwashing') {
-                body.classList.add('theme-pws');
-                btnPWS.classList.add('active');
-                btnAppraise.classList.remove('active');
-                headPWS.classList.add('active');
-                headAppraisal.classList.remove('active');
-            } else {
-                body.classList.remove('theme-pws');
-                btnAppraise.classList.add('active');
-                btnPWS.classList.remove('active');
-                headAppraisal.classList.add('active');
-                headPWS.classList.remove('active');
-            }
-        }
-
         function copyToClipboard() {
             const textToCopy = document.getElementById('analysisResult').innerText;
             const copyBtn = document.getElementById('copyButton');
@@ -299,17 +206,335 @@
 
             resultCard.style.display = 'block';
             statusHeader.innerText = "System Status";
-            statusHeader.style.color = "var(--accent-color)";
+            statusHeader.style.color = "#58a6ff";
             textOutput.innerText = "Compressing high-resolution asset framework...";
 
             try {
                 const base64Str = await resizeAndCompressImage(files[0]);
 
-                textOutput.innerText = currentMode === "powerwashing" 
-                    ? "Evaluating surfaces and generating power washing quote matrix..." 
-                    : "Pinging valuation index matrices...";
+                textOutput.innerText = "Pinging valuation index matrices...";
 
-                // Sends the image along with the mode flag to your unified backend
                 const response = await fetch('/api/analyze', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ image: base64Str })
+                });
+
+                const data = await response.json();
+
+                if (!response.ok || data.error) {
+                    throw new Error(data.error || 'Server endpoint execution anomaly.');
+                }
+
+                statusHeader.innerText = "MachZero Valuation Report";
+                statusHeader.style.color = "#4ade80";
+                textOutput.innerText = data.result;
+
+            } catch (err) {
+                statusHeader.innerText = "Processing Fault";
+                statusHeader.style.color = "#ef4444";
+                textOutput.innerText = err.message;
+            }
+        }
+
+        function resizeAndCompressImage(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.readAsDataURL(file);
+                reader.onload = function (event) {
+                    const img = new Image();
+                    img.src = event.target.result;
+                    img.onload = function () {
+                        const canvas = document.createElement('canvas');
+                        const ctx = canvas.getContext('2d');
+                        
+                        const maxDimension = 1024;
+                        let width = img.width;
+                        let height = img.height;
+                        
+                        if (width > height && width > maxDimension) {
+                            height *= maxDimension / width;
+                            width = maxDimension;
+                        } else if (height > maxDimension) {
+                            width *= maxDimension / height;
+                            height = maxDimension;
+                        }
+                        
+                        canvas.width = width;
+                        canvas.height = height;
+                        ctx.drawImage(img, 0, 0, width, height);
+                        resolve(canvas.toDataURL('image/jpeg', 0.6));
+                    };
+                    img.onerror = (err) => reject(err);
+                };
+                reader.onerror = (err) => reject(err);
+            });
+        }
+    </script>
+</body>
+</html>
+
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #0d1117;
+            color: #f0f6fc;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+        }
+        .app-container {
+            width: 100%;
+            max-width: 480px;
+            text-align: center;
+        }
+        .logo-container {
+            margin-top: 30px;
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .brand-badge {
+            width: 65px;
+            height: 65px;
+            background: linear-gradient(135deg, #58a6ff, #1f6feb);
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 900;
+            font-size: 28px;
+            color: #ffffff;
+        }
+        .brand-title {
+            font-size: 24px;
+            font-weight: 800;
+            letter-spacing: 2px;
+            margin: 10px 0;
+            text-transform: uppercase;
+            color: #ffffff;
+        }
+        .brand-title span {
+            color: #58a6ff;
+        }
+        .tagline {
+            font-size: 14px;
+            color: #8b949e;
+            line-height: 1.5;
+            padding: 0 10px;
+            margin-bottom: 30px;
+        }
+        .action-card {
+            background-color: #161b22;
+            padding: 25px;
+            border-radius: 16px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+            margin-bottom: 20px;
+            text-align: left;
+            border: 1px solid #30363d;
+        }
+        .btn {
+            display: block;
+            width: 100%;
+            background-color: #58a6ff;
+            color: #0d1117;
+            border: none;
+            padding: 16px;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 15px;
+            cursor: pointer;
+            box-sizing: border-box;
+            text-align: center;
+        }
+        .btn:last-child {
+            margin-bottom: 0;
+        }
+        .btn:active {
+            background-color: #1f6feb;
+        }
+        .btn-secondary {
+            background-color: transparent;
+            color: #f0f6fc;
+            border: 1px solid #30363d;
+        }
+        .btn-secondary:active {
+            background-color: #161b22;
+        }
+        .hidden-input {
+            display: none;
+        }
+        .result-card {
+            background-color: #161b22;
+            border-left: 4px solid #58a6ff;
+            padding: 20px;
+            border-radius: 12px;
+            text-align: left;
+            margin-top: 20px;
+            position: relative;
+        }
+        .result-title-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        .result-title {
+            font-size: 13px;
+            color: #8b949e;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin: 0;
+            font-weight: bold;
+        }
+        .copy-btn {
+            background-color: #0d1117;
+            color: #58a6ff;
+            border: 1px solid #30363d;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: bold;
+            cursor: pointer;
+            text-transform: uppercase;
+        }
+        .result-text {
+            font-size: 15px;
+            line-height: 1.6;
+            margin: 0;
+            white-space: pre-wrap;
+            color: #c9d1d9;
+        }
+        .footer {
+            margin-top: 40px;
+            font-size: 11px;
+            color: #8b949e;
+            letter-spacing: 0.5px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="app-container">
+        <div class="logo-container">
+            <div class="brand-badge">MZ</div>
+        </div>
+        <div class="brand-title">Mach<span>Zero</span></div>
+        <div class="tagline">
+            Instant industrial asset valuation tool. Upload photos of equipment, tools, or electronics to extract accurate resale value pricing data immediately.
+        </div>
+
+        <div class="action-card">
+            <input type="file" id="cameraInput" accept="image/*" capture="environment" class="hidden-input" onchange="handleFiles(this.files)">
+            <input type="file" id="fileInput" accept="image/*" class="hidden-input" onchange="handleFiles(this.files)">
+
+            <button class="btn" onclick="document.getElementById('cameraInput').click()">Take Field Photo</button>
+            <button class="btn btn-secondary" onclick="document.getElementById('fileInput').click()">Upload Local Image</button>
+        </div>
+
+        <div class="result-card" id="outputCard" style="display: none;">
+            <div class="result-title-row">
+                <p class="result-title" id="statusHeader">Analysis Output</p>
+                <button class="copy-btn" id="copyButton" onclick="copyToClipboard()">Copy</button>
+            </div>
+            <div class="result-text" id="analysisResult">Processing Matrix Data...</div>
+        </div>
+
+        <div class="footer">
+            &copy; 2026 MachZero App Suite&trade;<br>
+            Powered by CactusByte Studios &bull; All Rights Reserved
+        </div>
+    </div>
+
+    <script>
+        function copyToClipboard() {
+            const textToCopy = document.getElementById('analysisResult').innerText;
+            const copyBtn = document.getElementById('copyButton');
+            navigator.clipboard.writeText(textToCopy).then(() => {
+                copyBtn.innerText = "Copied!";
+                setTimeout(() => { copyBtn.innerText = "Copy"; }, 2000);
+            });
+        }
+
+        async function handleFiles(files) {
+            if (!files || files.length === 0) return;
+
+            const resultCard = document.getElementById('outputCard');
+            const statusHeader = document.getElementById('statusHeader');
+            const textOutput = document.getElementById('analysisResult');
+
+            resultCard.style.display = 'block';
+            statusHeader.innerText = "System Status";
+            statusHeader.style.color = "#58a6ff";
+            textOutput.innerText = "Compressing high-resolution asset framework...";
+
+            try {
+                const base64Str = await resizeAndCompressImage(files[0]);
+
+                textOutput.innerText = "Pinging valuation index matrices...";
+
+                const response = await fetch('/api/analyze', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ image: base64Str })
+                });
+
+                const data = await response.json();
+
+                if (!response.ok || data.error) {
+                    throw new Error(data.error || 'Server endpoint execution anomaly.');
+                }
+
+                statusHeader.innerText = "MachZero Valuation Report";
+                statusHeader.style.color = "#4ade80";
+                textOutput.innerText = data.result;
+
+            } catch (err) {
+                statusHeader.innerText = "Processing Fault";
+                statusHeader.style.color = "#ef4444";
+                textOutput.innerText = err.message;
+            }
+        }
+
+        function resizeAndCompressImage(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.readAsDataURL(file);
+                reader.onload = function (event) {
+                    const img = new Image();
+                    img.src = event.target.result;
+                    img.onload = function () {
+                        const canvas = document.createElement('canvas');
+                        const ctx = canvas.getContext('2d');
+                        
+                        const maxDimension = 1024;
+                        let width = img.width;
+                        let height = img.height;
+                        
+                        if (width > height && width > maxDimension) {
+                            height *= maxDimension / width;
+                            width = maxDimension;
+                        } else if (height > maxDimension) {
+                            width *= maxDimension / height;
+                            height = maxDimension;
+                        }
+                        
+                        canvas.width = width;
+                        canvas.height = height;
+                        ctx.drawImage(img, 0, 0, width, height);
+                        resolve(canvas.toDataURL('image/jpeg', 0.6));
+                    };
+                    img.onerror = (err) => reject(err);
+                };
+                reader.onerror = (err) => reject(err);
+            });
+        }
+    </script>
+</body>
+</html>
