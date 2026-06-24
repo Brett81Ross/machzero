@@ -12,9 +12,10 @@ module.exports = async function handler(req, res) {
     }
 
     try {
-        const apiKey = process.env.GEMINI_API_KEY;
+        // Pointing directly to your corrected environment variable name
+        const apiKey = process.env.Gemini_API_Key_2;
         if (!apiKey) {
-            return res.status(500).json({ error: 'Backend setup error: GEMINI_API_KEY environment token missing.' });
+            return res.status(500).json({ error: 'Backend setup error: Gemini_API_Key_2 environment token missing.' });
         }
 
         const { image } = req.body;
