@@ -1,7 +1,7 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
-// Automatically detects whatever name Vercel or your setup is looking for
-const apiKey = process.env.GEMINI_API_KEY || process.env.API_KEY || process.env.Gemini_API_Key_2;
+// Securely reads the hidden key from your Vercel environment variables
+const apiKey = process.env.GEMINI_API_KEY || process.env.API_KEY;
 
 export const config = {
   api: {
@@ -22,7 +22,7 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  // Clear fallback message if no keys are found anywhere in the dashboard environment
+  // Verifies that Vercel is feeding the token to the application backend
   if (!apiKey) {
     return res.status(500).json({ 
       error: 'Backend setup error: GEMINI_API_KEY environment token missing.' 
@@ -38,7 +38,7 @@ export default async function handler(req, res) {
     // Initialize using the hidden server-side variable
     const genAI = new GoogleGenerativeAI(apiKey);
     
-    // Explicitly targets the 3.5 Flash engine
+    // Configured precisely for your gemini-3.5-flash engine
     const model = genAI.getGenerativeModel({ model: "gemini-3.5-flash" });
 
     const prompt = `
