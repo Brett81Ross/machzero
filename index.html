@@ -26,20 +26,13 @@
             justify-content: center;
             align-items: center;
         }
-        .brand-badge {
-            width: 65px;
-            height: 65px;
-            background: linear-gradient(135deg, #58a6ff, #1f6feb);
-            border-radius: 16px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 900;
-            font-size: 28px;
-            color: #ffffff;
+        .brand-logo {
+            width: 120px;
+            height: auto;
+            margin-bottom: 10px;
         }
         .brand-title {
-            font-size: 24px;
+            font-size: 28px;
             font-weight: 800;
             letter-spacing: 2px;
             margin: 10px 0;
@@ -53,7 +46,7 @@
             font-size: 14px;
             color: #8b949e;
             line-height: 1.5;
-            padding: 0 10px;
+            padding: 0 15px;
             margin-bottom: 30px;
         }
         .action-card {
@@ -85,16 +78,10 @@
         .btn:last-child {
             margin-bottom: 0;
         }
-        .btn:active {
-            background-color: #1f6feb;
-        }
         .btn-secondary {
-            background-color: transparent;
-            color: #f0f6fc;
+            background-color: #21262d;
+            color: #c9d1d9;
             border: 1px solid #30363d;
-        }
-        .btn-secondary:active {
-            background-color: #161b22;
         }
         .hidden-input {
             display: none;
@@ -106,7 +93,6 @@
             border-radius: 12px;
             text-align: left;
             margin-top: 20px;
-            position: relative;
         }
         .result-title-row {
             display: flex;
@@ -153,19 +139,19 @@
 
     <div class="app-container">
         <div class="logo-container">
-            <div class="brand-badge">MZ</div>
+            <img src="logo1.png" alt="MachZero Logo" class="brand-logo">
         </div>
         <div class="brand-title">Mach<span>Zero</span></div>
         <div class="tagline">
-            Instant industrial asset valuation tool. Upload photos of equipment, tools, or electronics to extract accurate resale value pricing data immediately.
+            Snap a photo or upload an image to instantly estimate its resale market value. Know what it's worth before you buy, sell, or pass it up.
         </div>
 
         <div class="action-card">
             <input type="file" id="cameraInput" accept="image/*" capture="environment" class="hidden-input" onchange="handleFiles(this.files)">
             <input type="file" id="fileInput" accept="image/*" class="hidden-input" onchange="handleFiles(this.files)">
 
-            <button class="btn" onclick="document.getElementById('cameraInput').click()">Take Field Photo</button>
-            <button class="btn btn-secondary" onclick="document.getElementById('fileInput').click()">Upload Local Image</button>
+            <button class="btn" onclick="document.getElementById('cameraInput').click()">Take Photo</button>
+            <button class="btn btn-secondary" onclick="document.getElementById('fileInput').click()">Upload Image</button>
         </div>
 
         <div class="result-card" id="outputCard" style="display: none;">
@@ -177,7 +163,7 @@
         </div>
 
         <div class="footer">
-            &copy; 2026 MachZero App Suite&trade;<br>
+            &copy; 2026 MachZero&trade;<br>
             Powered by CactusByte Studios &bull; All Rights Reserved
         </div>
     </div>
@@ -200,7 +186,7 @@
             const textOutput = document.getElementById('analysisResult');
 
             resultCard.style.display = 'block';
-            statusHeader.innerText = "System Status";
+            statusHeader.innerText = "Network Status";
             statusHeader.style.color = "#58a6ff";
             textOutput.innerText = "Compressing high-resolution asset framework...";
 
@@ -226,7 +212,7 @@
                 textOutput.innerText = data.result;
 
             } catch (err) {
-                statusHeader.innerText = "Processing Fault";
+                statusHeader.innerText = "Network Fault";
                 statusHeader.style.color = "#ef4444";
                 textOutput.innerText = err.message;
             }
