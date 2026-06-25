@@ -26,8 +26,8 @@ const handler = async function (req, res) {
 
     const genAI = new GoogleGenerativeAI(apiKey);
     
-    // Explicitly uses your active 3.5 flash engine
-    const model = genAI.getGenerativeModel({ model: "gemini-3.5-flash" });
+    // Routing through the stable 2.5 flash engine to bypass the 3.5 outage
+    const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 
     const prompt = `
       You are an expert appraiser and resale specialist. Analyze this image and provide a highly accurate market value estimation.
