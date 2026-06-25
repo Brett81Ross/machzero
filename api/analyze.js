@@ -25,7 +25,9 @@ const handler = async function (req, res) {
     }
 
     const genAI = new GoogleGenerativeAI(apiKey);
-    const model = genAI.getGenerativeModel({ model: "gemini-3.5-flash" });
+    
+    // Swapping to the production-stable pro engine to bypass the 3.5 capacity spike
+    const model = genAI.getGenerativeModel({ model: "gemini-1.5-pro" });
 
     const prompt = `
       You are an expert appraiser and resale specialist. Analyze this image and provide a highly accurate market value estimation.
@@ -37,7 +39,6 @@ const handler = async function (req, res) {
 
     const base64Data = image.replace(/^data:image\/\w+;base64,/, "");
     
-    // Explicit format structured for thinking/multimodal requests
     const imagePart = {
       inlineData: {
         data: base64Data,
@@ -52,7 +53,6 @@ const handler = async function (req, res) {
     return res.status(200).json({ analysis: text });
   } catch (error) {
     console.error("Analysis error:", error);
-    // Sends the real Google API error string directly back to the app UI
     return res.status(500).json({ 
       error: error.message || 'Analysis failed'
     });
