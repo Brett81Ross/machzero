@@ -1,6 +1,5 @@
-import { GoogleGenerativeAI } from "@google/generative-ai";
+const { GoogleGenerativeAI } = require("@google/generative-ai");
 
-// Securely reads the hidden key from your Vercel environment variables
 const apiKey = process.env.GEMINI_API_KEY || process.env.API_KEY;
 
 export const config = {
@@ -38,7 +37,7 @@ export default async function handler(req, res) {
     // Initialize using the hidden server-side variable
     const genAI = new GoogleGenerativeAI(apiKey);
     
-    // Configured precisely for your gemini-3.5-flash engine
+    // Explicitly runs on your Gemini 3.5 setup
     const model = genAI.getGenerativeModel({ model: "gemini-3.5-flash" });
 
     const prompt = `
