@@ -1,191 +1,305 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>MachZero - AI Asset Appraiser</title>
-    <style>
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            background-color: #0d1117;
-            color: #f0f6fc;
-            margin: 0;
-            padding: 20px;
-            display: flex;
-            justify-content: center;
-        }
-        .app-container {
-            width: 100%;
-            max-width: 480px;
-            text-align: center;
-        }
-        .logo-container {
-            margin-top: 30px;
-            margin-bottom: 15px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-        .brand-logo {
-            width: 120px;
-            height: auto;
-            display: block;
-        }
-        .brand-title {
-            font-size: 28px;
-            font-weight: 800;
-            letter-spacing: 2px;
-            margin: 10px 0;
-            text-transform: uppercase;
-            color: #ffffff;
-        }
-        .brand-title span {
-            color: #58a6ff;
-        }
-        .tagline {
-            font-size: 14px;
-            color: #8b949e;
-            line-height: 1.5;
-            padding: 0 15px;
-            margin-bottom: 30px;
-        }
-        .action-card {
-            background-color: #161b22;
-            padding: 25px;
-            border-radius: 16px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
-            margin-bottom: 20px;
-            text-align: left;
-            border: 1px solid #30363d;
-        }
-        .input-group {
-            margin-bottom: 20px;
-        }
-        .input-label {
-            display: block;
-            font-size: 12px;
-            font-weight: bold;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            color: #8b949e;
-            margin-bottom: 8px;
-        }
-        .text-input {
-            width: 100%;
-            background-color: #0d1117;
-            border: 1px solid #30363d;
-            border-radius: 8px;
-            padding: 12px;
-            font-size: 15px;
-            color: #f0f6fc;
-            box-sizing: border-box;
-        }
-        .text-input:focus {
-            outline: none;
-            border-color: #58a6ff;
-        }
-        .btn {
-            display: block;
-            width: 100%;
-            background-color: #58a6ff;
-            color: #0d1117;
-            border: none;
-            padding: 16px;
-            border-radius: 12px;
-            font-size: 16px;
-            font-weight: bold;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            margin-bottom: 15px;
-            cursor: pointer;
-            box-sizing: border-box;
-            text-align: center;
-        }
-        .btn:last-child {
-            margin-bottom: 0;
-        }
-        .btn-secondary {
-            background-color: #21262d;
-            color: #c9d1d9;
-            border: 1px solid #30363d;
-        }
-        .hidden-input {
-            display: none;
-        }
-        .result-card {
-            background-color: #161b22;
-            border-left: 4px solid #58a6ff;
-            padding: 20px;
-            border-radius: 12px;
-            text-align: left;
-            margin-top: 20px;
-        }
-        .result-title-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 15px;
-        }
-        .result-title {
-            font-size: 13px;
-            color: #8b949e;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            margin: 0;
-            font-weight: bold;
-        }
-        .copy-btn {
-            background-color: #0d1117;
-            color: #58a6ff;
-            border: 1px solid #30363d;
-            padding: 6px 12px;
-            border-radius: 6px;
-            font-size: 12px;
-            font-weight: bold;
-            cursor: pointer;
-            text-transform: uppercase;
-        }
-        .result-text {
-            font-size: 15px;
-            line-height: 1.6;
-            margin: 0;
-            white-space: pre-wrap;
-            color: #c9d1d9;
-        }
-        .footer {
-            margin-top: 40px;
-            font-size: 11px;
-            color: #8b949e;
-            letter-spacing: 0.5px;
-            text-align: center;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MachZero - Ai Resale Estimator</title>
+  <style>
+    body {
+      background-color: #0a1128;
+      color: #ffffff;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: '20px';
+      margin: 0;
+      font-family: sans-serif;
+      box-sizing: border-box;
+    }
+    .container {
+      width: 100%;
+      max-width: 400px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 20px;
+    }
+    .header {
+      text-align: center;
+      margin-top: 40px;
+      margin-bottom: 30px;
+    }
+    .logo {
+      width: 120px;
+      height: auto;
+      margin-bottom: 15px;
+    }
+    .title {
+      font-size: 2.5rem;
+      font-weight: bold;
+      margin: 0 0 10px 0;
+    }
+    .title span {
+      color: #38bdf8;
+    }
+    .description {
+      color: #94a3b8;
+      max-width: 400px;
+      margin: 0 auto;
+      font-size: 0.95rem;
+      line-height: 1.5;
+    }
+    .button-group {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
+    .btn {
+      border: 'none';
+      border-style: none;
+      padding: 16px;
+      border-radius: 12px;
+      font-size: 1.1rem;
+      font-weight: bold;
+      cursor: pointer;
+      transition: opacity 0.2s;
+    }
+    .btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+    .btn-camera {
+      background-color: #38bdf8;
+      color: #000000;
+    }
+    .btn-upload {
+      background-color: #2563eb;
+      color: #ffffff;
+    }
+    .status-area {
+      width: 100%;
+      margin-top: 30px;
+    }
+    .loading-card {
+      background-color: #1e293b;
+      border-left: 4px solid #38bdf8;
+      border-radius: 8px;
+      padding: 15px;
+      text-align: center;
+    }
+    .loading-card p {
+      margin: 0;
+      font-weight: bold;
+      color: #38bdf8;
+    }
+    .error-card {
+      background-color: #1e293b;
+      border-left: 4px solid #ef4444;
+      border-radius: 8px;
+      padding: 15px;
+    }
+    .error-card h4 {
+      margin: 0 0 5px 0;
+      color: #ef4444;
+      text-transform: uppercase;
+      font-size: 0.85rem;
+    }
+    .error-card p {
+      margin: 0;
+      font-size: 0.9rem;
+      color: #cbd5e1;
+    }
+    .preview-card {
+      border-radius: 12px;
+      overflow: hidden;
+      margin-bottom: 20px;
+      border: 1px solid #334155;
+      width: 100%;
+    }
+    .preview-card img {
+      width: 100%;
+      height: auto;
+      display: block;
+    }
+    .result-card {
+      background-color: #111827;
+      border: 1px solid #1e293b;
+      border-radius: 12px;
+      padding: 20px;
+    }
+    .result-text {
+      color: #e2e8f0;
+      white-space: pre-wrap;
+      line-height: 1.6;
+      font-size: 0.95rem;
+    }
+    footer {
+      margin-top: auto;
+      padding-top: 40px;
+      padding-bottom: 10px;
+      text-align: center;
+      font-size: 0.8rem;
+      color: #64748b;
+      width: 100%;
+    }
+    footer p {
+      margin: 0;
+    }
+    footer p:first-child {
+      margin-bottom: 4px;
+    }
+    #fileInput {
+      display: none;
+    }
+  </style>
 </head>
 <body>
 
-    <div class="app-container">
-        <div class="logo-container">
-            <img src="logo1.jpg" alt="MachZero Logo" class="brand-logo">
-        </div>
-        <div class="brand-title">MACH<span>ZERO</span></div>
-        <div class="tagline">
-            Snap a photo or upload an image to instantly estimate its resale market value. Know what it's worth before you buy, sell, or pass it up.
-        </div>
+  <div class="container">
+    <div class="header">
+      <img src="/logo1.png" alt="MachZero Logo" class="logo" id="brandLogo">
+      <h1 class="title">MACH<span>ZERO</span></h1>
+      <p class="description">
+        Snap a photo or upload an image to instantly estimate its resale market value. Know what it's worth before you buy, sell, or pass it up.
+      </p>
+    </div>
 
-        <div class="action-card">
-            <div class="input-group">
-                <label class="input-label" for="usageMetrics">Hours / Mileage (Optional)</label>
-                <input type="text" id="usageMetrics" class="text-input" placeholder="e.g. 1500 hrs or 125k miles">
-            </div>
+    <div class="button-group">
+      <button class="btn btn-camera" id="cameraBtn">TAKE PHOTO</button>
+      <button class="btn btn-upload" id="uploadBtn">UPLOAD IMAGE</button>
+      <input type="file" id="fileInput" accept="image/*">
+    </div>
 
-            <input type="file" id="cameraInput" accept="image/*" capture="environment" class="hidden-input" onchange="handleFiles(this.files)">
-            <input type="file" id="fileInput" accept="image/*" class="hidden-input" onchange="handleFiles(this.files)">
+    <div class="status-area" id="statusArea">
+      <div id="loadingState" class="loading-card" style="display: none;">
+        <p>Analyzing...</p>
+      </div>
 
-            <button class="btn" onclick="document.getElementById('cameraInput').click()">Take Photo</button>
-            <button class="btn btn-secondary" onclick="document.getElementById('fileInput').click()">Upload Image</button>
-        </div>
+      <div id="errorState" class="error-card" style="display: none;">
+        <h4>Network Fault</h4>
+        <p id="errorText"></p>
+      </div>
 
-        <div class="result-card" id="outputCard" style="display: none;">
-            <div class="result-title-row">
-                <p class="result-title" id="statusHeader">Analysis Output</p>
-                <button class="copy-btn" id="copyButton" onclick="copyToClipboard()">Copy</button>
+      <div id="previewState" class="preview-card" style="display: none;">
+        <img id="previewImg" src="" alt="Preview">
+      </div>
+
+      <div id="resultState" class="result-card" style="display: none;">
+        <div id="resultText" class="result-text"></div>
+      </div>
+    </div>
+
+    <footer>
+      <p>&copy; 2026 MachZero&trade;</p>
+      <p>Powered by CactusByte Studios &bull; All Rights Reserved</p>
+    </footer>
+  </div>
+
+  <script>
+    const fileInput = document.getElementById('fileInput');
+    const cameraBtn = document.getElementById('cameraBtn');
+    const uploadBtn = document.getElementById('uploadBtn');
+    
+    const loadingState = document.getElementById('loadingState');
+    const errorState = document.getElementById('errorState');
+    const errorText = document.getElementById('errorText');
+    const previewState = document.getElementById('previewState');
+    const previewImg = document.getElementById('previewImg');
+    const resultState = document.getElementById('resultState');
+    const resultText = document.getElementById('resultText');
+    const brandLogo = document.getElementById('brandLogo');
+
+    // Safe logo fallback in case file format mismatches
+    brandLogo.onerror = () => { brandLogo.style.display = 'none'; };
+
+    // Handle Camera Button click
+    cameraBtn.addEventListener('click', () => {
+      resetUI();
+      fileInput.setAttribute('capture', 'environment');
+      fileInput.click();
+    });
+
+    // Handle Upload Button click
+    uploadBtn.addEventListener('click', () => {
+      resetUI();
+      fileInput.removeAttribute('capture');
+      fileInput.click();
+    });
+
+    // Capture and handle the image input selection
+    fileInput.addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      setLoading(true);
+
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        previewImg.src = reader.result;
+        previewState.style.display = 'block';
+        sendToBackend(reader.result);
+      };
+      reader.onerror = () => {
+        showError("Failed to process the chosen image file.");
+        setLoading(false);
+      };
+      reader.readAsDataURL(file);
+    });
+
+    // Direct interface handler to your secure api deployment
+    async function sendToBackend(base64Image) {
+      try {
+        const response = await fetch('/api/analyze', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ image: base64Image }),
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data.error || data.details || 'Server error processing request');
+        }
+
+        resultText.textContent = data.analysis;
+        resultState.style.display = 'block';
+      } catch (err) {
+        console.error(err);
+        showError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    function setLoading(isLoading) {
+      if (isLoading) {
+        loadingState.style.display = 'block';
+        cameraBtn.disabled = true;
+        uploadBtn.disabled = true;
+      } else {
+        loadingState.style.display = 'none';
+        cameraBtn.disabled = false;
+        uploadBtn.disabled = false;
+      }
+    }
+
+    function showError(message) {
+      errorText.textContent = message;
+      errorState.style.display = 'block';
+    }
+
+    function resetUI() {
+      errorState.style.display = 'none';
+      previewState.style.display = 'none';
+      resultState.style.display = 'none';
+      previewImg.src = '';
+      resultText.textContent = '';
+      errorText.textContent = '';
+    }
+  </script>
+</body>
+</html>
