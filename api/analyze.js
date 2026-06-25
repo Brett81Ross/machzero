@@ -2,6 +2,15 @@ const { GoogleGenerativeAI } = require("@google/generative-ai");
 
 const apiKey = process.env.GEMINI_API_KEY || process.env.API_KEY;
 
+// Explicitly overrides Vercel's default limits for raw serverless functions
+export const config = {
+  api: {
+    bodyParser: {
+      sizeLimit: '10mb'
+    }
+  }
+};
+
 module.exports = async function handler(req, res) {
   // Handle cross-origin preflight requests safely
   if (req.method === 'OPTIONS') {
