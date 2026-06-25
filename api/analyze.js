@@ -2,9 +2,7 @@ const { GoogleGenerativeAI } = require("@google/generative-ai");
 
 const apiKey = process.env.GEMINI_API_KEY || process.env.API_KEY;
 
-// Pure CommonJS layout for Vercel's handler configurations
 const handler = async function (req, res) {
-  // Handle cross-origin preflight requests safely
   if (req.method === 'OPTIONS') {
     res.status(200).end();
     return;
@@ -14,7 +12,6 @@ const handler = async function (req, res) {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  // Verifies that Vercel is feeding the token to the application backend
   if (!apiKey) {
     return res.status(500).json({ 
       error: 'Backend setup error: GEMINI_API_KEY environment token missing.' 
@@ -27,10 +24,7 @@ const handler = async function (req, res) {
       return res.status(400).json({ error: 'No image data provided' });
     }
 
-    // Initialize using the hidden server-side variable
     const genAI = new GoogleGenerativeAI(apiKey);
-    
-    // Explicitly runs on your Gemini 3.5 setup
     const model = genAI.getGenerativeModel({ model: "gemini-3.5-flash" });
 
     const prompt = `
@@ -41,8 +35,9 @@ const handler = async function (req, res) {
       - Resale Market Analysis & Demand Level
     `;
 
-    // Strip image metadata out safely before passing to the pipeline
     const base64Data = image.replace(/^data:image\/\w+;base64,/, "");
+    
+    // Explicit format structured for thinking/multimodal requests
     const imagePart = {
       inlineData: {
         data: base64Data,
@@ -57,14 +52,13 @@ const handler = async function (req, res) {
     return res.status(200).json({ analysis: text });
   } catch (error) {
     console.error("Analysis error:", error);
+    // Sends the real Google API error string directly back to the app UI
     return res.status(500).json({ 
-      error: 'Analysis failed', 
-      details: error.message 
+      error: error.message || 'Analysis failed'
     });
   }
 };
 
-// Export both the handler and the configuration using standard CommonJS
 module.exports = handler;
 module.exports.config = {
   api: {
