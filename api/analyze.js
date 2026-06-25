@@ -2,7 +2,8 @@ const { GoogleGenerativeAI } = require("@google/generative-ai");
 
 const apiKey = process.env.GEMINI_API_KEY || process.env.API_KEY;
 
-const handler = async function (req, res) {
+module.exports = async function handler(req, res) {
+  // Handle cross-origin preflight requests safely
   if (req.method === 'OPTIONS') {
     res.status(200).end();
     return;
@@ -12,6 +13,7 @@ const handler = async function (req, res) {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
+  // Verifies that Vercel is feeding the token to the application backend
   if (!apiKey) {
     return res.status(500).json({ 
       error: 'Backend setup error: GEMINI_API_KEY environment token missing.' 
@@ -26,8 +28,8 @@ const handler = async function (req, res) {
 
     const genAI = new GoogleGenerativeAI(apiKey);
     
-    // Routing through the stable 2.5 flash engine to bypass the 3.5 outage
-    const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+    // Explicitly runs on your Gemini 3.5 setup
+    const model = genAI.getGenerativeModel({ model: "gemini-3.5-flash" });
 
     const prompt = `
       You are an expert appraiser and resale specialist. Analyze this image and provide a highly accurate market value estimation.
@@ -37,8 +39,8 @@ const handler = async function (req, res) {
       - Resale Market Analysis & Demand Level
     `;
 
+    // Strip image metadata out safely before passing to the pipeline
     const base64Data = image.replace(/^data:image\/\w+;base64,/, "");
-    
     const imagePart = {
       inlineData: {
         data: base64Data,
@@ -56,14 +58,5 @@ const handler = async function (req, res) {
     return res.status(500).json({ 
       error: error.message || 'Analysis failed'
     });
-  }
-};
-
-module.exports = handler;
-module.exports.config = {
-  api: {
-    bodyParser: {
-      sizeLimit: '10mb'
-    }
   }
 };
