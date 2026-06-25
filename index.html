@@ -33,10 +33,10 @@
       align-items: center;
     }
     .logo {
-      width: 180px; /* Scaled up from 120px for high impact */
+      width: 180px;
       height: auto;
       margin-bottom: 20px;
-      border-radius: 8px; /* Smooth edge mapping for the dark square layout */
+      border-radius: 8px;
     }
     .title {
       font-size: 2.5rem;
@@ -86,7 +86,6 @@
       margin-top: 30px;
     }
     
-    /* Animated Loading Card */
     .loading-card {
       background-color: #1e293b;
       border-left: 4px solid #38bdf8;
@@ -106,7 +105,6 @@
       animation: pulseText 1.5s ease-in-out infinite;
     }
     
-    /* Spinning Visual Ring Loader */
     .spinner {
       width: 28px;
       height: 28px;
@@ -116,7 +114,6 @@
       animation: spin 0.8s linear infinite;
     }
 
-    /* Animation Keyframes */
     @keyframes spin {
       to { transform: rotate(360deg); }
     }
@@ -244,7 +241,7 @@
     const resultText = document.getElementById('resultText');
     const brandLogo = document.getElementById('brandLogo');
 
-    brandLogo.onerror = () => { console.error("Logo asset logo1.jpg could not be loaded from root directory."); };
+    brandLogo.onerror = () => { console.error("Logo asset logo1.jpg could not be loaded."); };
 
     cameraBtn.addEventListener('click', () => {
       resetUI();
@@ -266,9 +263,8 @@
 
       const reader = new FileReader();
       reader.onloadend = () => {
-        previewImg.src = reader.result;
-        previewState.style.display = 'block';
-        sendToBackend(reader.result);
+        // Pass image data to compression pipeline before loading preview or sending
+        compressAndProcessImage(reader.result);
       };
       reader.onerror = () => {
         showError("Failed to process the chosen image file.");
@@ -276,6 +272,42 @@
       };
       reader.readAsDataURL(file);
     });
+
+    // In-memory HTML5 canvas resizer to strip excessive smartphone camera megapixels
+    function compressAndProcessImage(base64Str) {
+      const img = new Image();
+      img.src = base64Str;
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        let width = img.width;
+        let height = img.height;
+        const max_size = 1200; // Optimal scale bound for fast AI processing values
+
+        if (width > height) {
+          if (width > max_size) {
+            height *= max_size / width;
+            width = max_size;
+          }
+        } else {
+          if (height > max_size) {
+            width *= max_size / height;
+            height = max_size;
+          }
+        }
+
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, width, height);
+
+        // Convert to a clean JPEG at 85% visual compression ratio
+        const optimizedBase64 = canvas.toDataURL('image/jpeg', 0.85);
+        
+        previewImg.src = optimizedBase64;
+        previewState.style.display = 'block';
+        sendToBackend(optimizedBase64);
+      };
+    }
 
     async function sendToBackend(base64Image) {
       try {
