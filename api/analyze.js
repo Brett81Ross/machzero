@@ -28,8 +28,8 @@ module.exports = async function handler(req, res) {
 
     const genAI = new GoogleGenerativeAI(apiKey);
     
-    // Explicitly runs on your Gemini 3.5 setup
-    const model = genAI.getGenerativeModel({ model: "gemini-3.5-flash" });
+    // Switched to 2.5-flash to completely bypass the dead 3.5 gateway path
+    const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 
     const prompt = `
       You are an expert appraiser and resale specialist. Analyze this image and provide a highly accurate market value estimation.
