@@ -183,6 +183,8 @@
       display: none;
     }
   </style>
+  
+  <script defer src="/_vercel/insights/script.js"></script>
 </head>
 <body>
 
@@ -261,7 +263,6 @@
 
       setLoading(true);
 
-      // Speed Optimization: Render preview immediately via Object URL to eliminate browser freeze
       previewImg.src = URL.createObjectURL(file);
       previewState.style.display = 'block';
 
@@ -276,7 +277,6 @@
       reader.readAsDataURL(file);
     });
 
-    // High-Speed Canvas Compression Pipeline
     function compressAndProcessImage(base64Str) {
       const img = new Image();
       img.src = base64Str;
@@ -284,8 +284,6 @@
         const canvas = document.createElement('canvas');
         let width = img.width;
         let height = img.height;
-        
-        // Dropped from 1200 to 800 for instant transmission speed
         const max_size = 800; 
 
         if (width > height) {
@@ -305,7 +303,6 @@
         const ctx = canvas.getContext('2d');
         ctx.drawImage(img, 0, 0, width, height);
 
-        // Quality adjusted to 0.70 for ultra-lean payload delivery
         const optimizedBase64 = canvas.toDataURL('image/jpeg', 0.70);
         sendToBackend(optimizedBase64);
       };
@@ -359,7 +356,6 @@
       previewState.style.display = 'none';
       resultState.style.display = 'none';
       
-      // Revoke older object URLs safely to avoid memory leakage
       if (previewImg.src.startsWith('blob:')) {
         URL.revokeObjectURL(previewImg.src);
       }
