@@ -261,9 +261,12 @@
 
       setLoading(true);
 
+      // Speed Optimization: Render preview immediately via Object URL to eliminate browser freeze
+      previewImg.src = URL.createObjectURL(file);
+      previewState.style.display = 'block';
+
       const reader = new FileReader();
       reader.onloadend = () => {
-        // Pass image data to compression pipeline before loading preview or sending
         compressAndProcessImage(reader.result);
       };
       reader.onerror = () => {
@@ -273,7 +276,7 @@
       reader.readAsDataURL(file);
     });
 
-    // In-memory HTML5 canvas resizer to strip excessive smartphone camera megapixels
+    // High-Speed Canvas Compression Pipeline
     function compressAndProcessImage(base64Str) {
       const img = new Image();
       img.src = base64Str;
@@ -281,7 +284,9 @@
         const canvas = document.createElement('canvas');
         let width = img.width;
         let height = img.height;
-        const max_size = 1200; // Optimal scale bound for fast AI processing values
+        
+        // Dropped from 1200 to 800 for instant transmission speed
+        const max_size = 800; 
 
         if (width > height) {
           if (width > max_size) {
@@ -300,11 +305,8 @@
         const ctx = canvas.getContext('2d');
         ctx.drawImage(img, 0, 0, width, height);
 
-        // Convert to a clean JPEG at 85% visual compression ratio
-        const optimizedBase64 = canvas.toDataURL('image/jpeg', 0.85);
-        
-        previewImg.src = optimizedBase64;
-        previewState.style.display = 'block';
+        // Quality adjusted to 0.70 for ultra-lean payload delivery
+        const optimizedBase64 = canvas.toDataURL('image/jpeg', 0.70);
         sendToBackend(optimizedBase64);
       };
     }
@@ -356,6 +358,12 @@
       errorState.style.display = 'none';
       previewState.style.display = 'none';
       resultState.style.display = 'none';
+      
+      // Revoke older object URLs safely to avoid memory leakage
+      if (previewImg.src.startsWith('blob:')) {
+        URL.revokeObjectURL(previewImg.src);
+      }
+      
       previewImg.src = '';
       resultText.textContent = '';
       errorText.textContent = '';
