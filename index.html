@@ -67,11 +67,15 @@
       font-size: 1.1rem;
       font-weight: bold;
       cursor: pointer;
-      transition: opacity 0.2s;
+      transition: opacity 0.2s, transform 0.1s;
+    }
+    .btn:active {
+      transform: scale(0.98);
     }
     .btn:disabled {
       opacity: 0.6;
       cursor: not-allowed;
+      transform: none;
     }
     .btn-camera {
       background-color: #38bdf8;
@@ -81,9 +85,14 @@
       background-color: #2563eb;
       color: #ffffff;
     }
+    .btn-submit {
+      background-color: #10b981;
+      color: #ffffff;
+      margin-top: 10px;
+    }
     .status-area {
       width: 100%;
-      margin-top: 30px;
+      margin-top: 25px;
     }
     
     .loading-card {
@@ -127,6 +136,7 @@
       border-left: 4px solid #ef4444;
       border-radius: 8px;
       padding: 15px;
+      margin-bottom: 15px;
     }
     .error-card h4 {
       margin: 0 0 5px 0;
@@ -141,25 +151,44 @@
       word-break: break-word;
     }
     
-    /* Grid layout for multiple preview images */
     .preview-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+      grid-template-columns: repeat(3, 1fr);
       gap: 10px;
       margin-bottom: 20px;
       width: 100%;
     }
     .preview-item {
+      position: relative;
       border-radius: 8px;
       overflow: hidden;
-      border: 1px solid #334155;
+      border: 2px solid #334155;
       aspect-ratio: 1 / 1;
+      background-color: #111827;
     }
     .preview-item img {
       width: 100%;
       height: 100%;
       object-fit: cover;
       display: block;
+    }
+    .remove-btn {
+      position: absolute;
+      top: 4px;
+      right: 4px;
+      background: rgba(239, 68, 68, 0.9);
+      color: white;
+      border: none;
+      border-radius: 50%;
+      width: 20px;
+      height: 20px;
+      font-size: 12px;
+      font-weight: bold;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
     }
 
     .result-card {
@@ -203,18 +232,19 @@
       <img src="logo1.png" alt="MachZero Logo" class="logo" id="brandLogo">
       <h1 class="title">MACH<span>ZERO</span></h1>
       <p class="description">
-        Snap or upload multiple photos to instantly estimate its resale market value. Capture multiple angles, item condition, or maker signatures for the most accurate appraisal.
+        Add multiple pictures to your batch to get a precise appraisal. Capture different details, close-ups of signatures, or angles of your item before analyzing.
       </p>
     </div>
 
     <div class="button-group">
-      <button class="btn btn-camera" id="cameraBtn">ADD PHOTOS VIA CAMERA</button>
-      <button class="btn btn-upload" id="uploadBtn">UPLOAD MULTIPLE IMAGES</button>
+      <button class="btn btn-camera" id="cameraBtn">TAKE A PHOTO</button>
+      <button class="btn btn-upload" id="uploadBtn">CHOOSE IMAGES</button>
+      <button class="btn btn-submit" id="submitBtn" style="display: none;">ANALYZE BATCH (0)</button>
       <input type="file" id="fileInput" accept="image/*" multiple>
     </div>
 
     <div class="status-area" id="statusArea">
-      <div id="loadingState" class="loading-card" style="display: none;">
+      <div id="loadingState" class="loading-card" style="display: none; margin-bottom: 20px;">
         <div class="spinner"></div>
         <p>Analyzing Images...</p>
       </div>
@@ -241,6 +271,7 @@
     const fileInput = document.getElementById('fileInput');
     const cameraBtn = document.getElementById('cameraBtn');
     const uploadBtn = document.getElementById('uploadBtn');
+    const submitBtn = document.getElementById('submitBtn');
     
     const loadingState = document.getElementById('loadingState');
     const errorState = document.getElementById('errorState');
@@ -252,17 +283,17 @@
 
     brandLogo.onerror = () => { console.error("Logo asset logo1.png could not be loaded."); };
 
-    // Holds our processing target batch arrays
-    let selectedFilesBlobUrls = [];
+    // Persistent storage for queue state across camera shots
+    let imageQueue = [];
 
     cameraBtn.addEventListener('click', () => {
-      resetUI();
+      errorState.style.display = 'none';
       fileInput.setAttribute('capture', 'environment');
       fileInput.click();
     });
 
     uploadBtn.addEventListener('click', () => {
-      resetUI();
+      errorState.style.display = 'none';
       fileInput.removeAttribute('capture');
       fileInput.click();
     });
@@ -271,42 +302,48 @@
       const files = Array.from(e.target.files);
       if (files.length === 0) return;
 
-      setLoading(true);
-
-      // Render thumbnails dynamically using Blob URLs instantly
-      files.forEach(file => {
+      for (const file of files) {
         const blobUrl = URL.createObjectURL(file);
-        selectedFilesBlobUrls.push(blobUrl);
+        
+        // Setup runtime item state tracker object
+        const queueItem = {
+          id: Date.now() + Math.random().toString(36).substr(2, 5),
+          blobUrl: blobUrl,
+          base64: null
+        };
 
+        // Render runtime HTML layout node elements dynamically
         const gridItem = document.createElement('div');
         gridItem.className = 'preview-item';
+        gridItem.dataset.id = queueItem.id;
         
         const imgNode = document.createElement('img');
         imgNode.src = blobUrl;
         
+        const removeBtn = document.createElement('button');
+        removeBtn.className = 'remove-btn';
+        removeBtn.innerText = '×';
+        removeBtn.onclick = () => removeImageFromBatch(queueItem.id);
+
         gridItem.appendChild(imgNode);
+        gridItem.appendChild(removeBtn);
         previewGrid.appendChild(gridItem);
-      });
 
-      try {
-        // Run optimization processing down the stack concurrently
-        const compressionPromises = files.map(file => {
-          return new Promise((resolve, reject) => {
-            const reader = new FileReader();
-            reader.onloadend = () => {
-              compressImage(reader.result, resolve);
-            };
-            reader.onerror = () => reject(new Error("Failed reading file bitstreams"));
-            reader.readAsDataURL(file);
+        imageQueue.push(queueItem);
+
+        // Compress file in background execution worker loop
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          compressImage(reader.result, (optimizedBase64) => {
+            queueItem.base64 = optimizedBase64;
           });
-        });
-
-        const compressedBase64Payloads = await Promise.all(compressionPromises);
-        await sendToBackend(compressedBase64Payloads);
-      } catch (err) {
-        showError(err.message);
-        setLoading(false);
+        };
+        reader.readAsDataURL(file);
       }
+
+      // Sync and render the multi-image selection button execution frame
+      updateSubmitButtonState();
+      fileInput.value = ''; // Flush selection stream container
     });
 
     function compressImage(base64Str, callback) {
@@ -340,6 +377,42 @@
       };
     }
 
+    function removeImageFromBatch(id) {
+      const index = imageQueue.findIndex(item => item.id === id);
+      if (index !== -1) {
+        URL.revokeObjectURL(imageQueue[index].blobUrl);
+        imageQueue.splice(index, 1);
+      }
+      const element = previewGrid.querySelector(`[data-id="${id}"]`);
+      if (element) element.remove();
+      updateSubmitButtonState();
+    }
+
+    function updateSubmitButtonState() {
+      if (imageQueue.length > 0) {
+        submitBtn.style.display = 'block';
+        submitBtn.innerText = `ANALYZE BATCH (${imageQueue.length})`;
+      } else {
+        submitBtn.style.display = 'none';
+      }
+    }
+
+    submitBtn.addEventListener('click', async () => {
+      // Confirm all queued records completely loaded base64 conversions
+      const uncompleted = imageQueue.some(item => !item.base64);
+      if (uncompleted) {
+        showError("Images are still optimizing. Please press analyze again in a second.");
+        return;
+      }
+
+      setLoading(true);
+      errorState.style.display = 'none';
+      resultState.style.display = 'none';
+
+      const payloads = imageQueue.map(item => item.base64);
+      await sendToBackend(payloads);
+    });
+
     async function sendToBackend(imagesArray) {
       try {
         const response = await fetch('/api/analyze', {
@@ -350,10 +423,16 @@
           body: JSON.stringify({ images: imagesArray }),
         });
 
-        const data = await response.json();
+        let data;
+        const textResponse = await response.text();
+        try {
+          data = JSON.parse(textResponse);
+        } catch (jsonErr) {
+          throw new Error(`Server returned plain text instead of JSON structure. Raw response: ${textResponse.substring(0, 80)}`);
+        }
 
         if (!response.ok) {
-          throw new Error(data.error || data.details || 'Server error processing batch requests');
+          throw new Error(data.error || data.details || 'Server error processing request');
         }
 
         resultText.textContent = data.analysis;
@@ -371,10 +450,12 @@
         loadingState.style.display = 'flex';
         cameraBtn.disabled = true;
         uploadBtn.disabled = true;
+        submitBtn.disabled = true;
       } else {
         loadingState.style.display = 'none';
         cameraBtn.disabled = false;
         uploadBtn.disabled = false;
+        submitBtn.disabled = false;
       }
     }
 
@@ -383,16 +464,11 @@
       errorState.style.display = 'block';
     }
 
-    function resetUI() {
-      errorState.style.display = 'none';
-      resultState.style.display = 'none';
-      resultText.textContent = '';
-      errorText.textContent = '';
-      
-      // Clean memory loops
-      selectedFilesBlobUrls.forEach(url => URL.revokeObjectURL(url));
-      selectedFilesBlobUrls = [];
+    function clearQueue() {
+      imageQueue.forEach(item => URL.revokeObjectURL(item.blobUrl));
+      imageQueue = [];
       previewGrid.innerHTML = '';
+      updateSubmitButtonState();
     }
   </script>
 </body>
