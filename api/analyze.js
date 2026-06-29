@@ -22,7 +22,8 @@ export default async function handler(req, res) {
     }
 
     const contentParts = imagesToProcess.map(imgBase64 => {
-      const matches = imgBase64.match(/^data:(image\/[a-z]+);base64,(.+)$/);
+      // Dynamic pattern matcher updated to catch modern webp raw format strings safely
+      const matches = imgBase64.match(/^data:(image\/[a-z0-9]+);base64,(.+)$/);
       if (!matches) {
         throw new Error('Malformed image transmission layout format');
       }
@@ -38,18 +39,16 @@ export default async function handler(req, res) {
 Analyze the provided image configurations carefully. Use these multiple angles to check frame details, signature details, canvas texture, condition details, and overall scale.
 
 Provide a definitive appraisal structure:
-
 1. Estimated Resale Market Value Range ($ Min - Max Value)
 2. Identified Item Title & Era/Year
 3. Valuation Factors (Why it's worth this price point based on details or visible indicators)
 4. Recommended Marketplace Channels (e.g., eBay, Mercari, specialty forums)
-5. Exactly What To Copy And Paste (into a sale add/post)
 
 Be thorough, precise, and direct. If you cannot definitively authenticate the object from the snapshots, offer your best educated estimate based on visual marks.`;
 
     contentParts.push({ text: appraisalPrompt });
 
-    // Restored back to stable gemini-2.5-flash
+    // Explicit execution utilizing gemini-2.5-flash
     const response = await ai.models.generateContent({
       model: 'gemini-2.5-flash',
       contents: contentParts,
