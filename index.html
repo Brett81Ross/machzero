@@ -270,7 +270,7 @@
 
     <footer>
       <p>&copy; 2026 MachZero&trade;</p>
-      <p>Powered by Cactus🌵Byte👾Studios™ &bull; All Rights Reserved</p>
+      <p>Powered by CactusByte Studios &bull; All Rights Reserved</p>
     </footer>
   </div>
 
@@ -357,7 +357,6 @@
         const canvas = document.createElement('canvas');
         let width = img.width;
         let height = img.height;
-        // High quality threshold to maintain text/signature legibility
         const max_size = 800; 
 
         if (width > height) {
@@ -426,7 +425,6 @@
 
     async function sendDirectToGemini(contentPartsArray) {
       try {
-        // Hits your exact existing API file to securely pull your environment key
         const keyFetch = await fetch('/api/analyze');
         if (!keyFetch.ok) {
           throw new Error("Could not retrieve secure credentials from backend handoff.");
@@ -440,15 +438,16 @@
         const appraisalPrompt = `You are an expert appraiser and high-end resale evaluator. 
 Analyze the provided image configurations carefully. Use these multiple angles to check frame details, signature details, canvas texture, condition details, and overall scale.
 
-Provide a definitive appraisal structure:
+Proactively calculate and deduce the estimated physical dimensions of the object based on contextual clues, perspective, aspect ratio, and object classification. Do not prompt the user for sizing information.
 
+Provide your output using this exact numbered structure:
 1. Estimated Resale Market Value Range ($ Min - Max Value)
 2. Identified Item Title & Era/Year
 3. Valuation Factors (Why it's worth this price point based on details or visible indicators)
 4. Recommended Marketplace Channels (e.g., eBay, Mercari, specialty forums)
-5. Exactly What To Copy And Paste into a sale add/post
+5. Exactly What To Copy And Paste into a sale add/post (Generate a polished, clean item description optimized for rapid resale, featuring calculated measurements, condition specifics, and target keywords)
 
-Be thorough, precise, and direct. If you cannot definitively authenticate the object from the snapshots, offer your best educated estimate based on visual marks.`;
+Be thorough, precise, and direct.`;
 
         contentPartsArray.push(appraisalPrompt);
 
