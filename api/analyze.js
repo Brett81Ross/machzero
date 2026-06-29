@@ -1,6 +1,5 @@
 import { GoogleGenAI } from '@google/genai';
 
-// Instantiates the core client setup mapping standard Vercel ENV options safely
 const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 
 export default async function handler(req, res) {
@@ -22,7 +21,6 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: 'Missing images data field payload' });
     }
 
-    // Map content layouts explicitly to structural specifications
     const contentParts = imagesToProcess.map(imgBase64 => {
       const matches = imgBase64.match(/^data:(image\/[a-z]+);base64,(.+)$/);
       if (!matches) {
@@ -40,17 +38,18 @@ export default async function handler(req, res) {
 Analyze the provided image configurations carefully. Use these multiple angles to check frame details, signature details, canvas texture, condition details, and overall scale.
 
 Provide a definitive appraisal structure:
+
 1. Estimated Resale Market Value Range ($ Min - Max Value)
 2. Identified Item Title & Era/Year
 3. Valuation Factors (Why it's worth this price point based on details or visible indicators)
 4. Recommended Marketplace Channels (e.g., eBay, Mercari, specialty forums)
-5. Exactly What To Copy And Paste into a sale add/post
+5. Exactly What To Copy And Paste (into a sale add/post)
 
 Be thorough, precise, and direct. If you cannot definitively authenticate the object from the snapshots, offer your best educated estimate based on visual marks.`;
 
     contentParts.push({ text: appraisalPrompt });
 
-    // Enforces the core model deployment engine
+    // Restored back to stable gemini-2.5-flash
     const response = await ai.models.generateContent({
       model: 'gemini-2.5-flash',
       contents: contentParts,
