@@ -229,7 +229,7 @@
 
   <div class="container">
     <div class="header">
-      <img src="logo1.png" alt="MachZero Logo" class="logo" id="brandLogo">
+      <img src="logo1.jpg" alt="MachZero Logo" class="logo" id="brandLogo">
       <h1 class="title">MACH<span>ZERO</span></h1>
       <p class="description">
         Add multiple pictures to your batch to get a precise appraisal. Capture different details, close-ups of signatures, or angles of your item before analyzing.
@@ -281,9 +281,8 @@
     const resultText = document.getElementById('resultText');
     const brandLogo = document.getElementById('brandLogo');
 
-    brandLogo.onerror = () => { console.error("Logo asset logo1.png could not be loaded."); };
+    brandLogo.onerror = () => { console.error("Logo asset logo1.jpg could not be loaded."); };
 
-    // Persistent storage for queue state across camera shots
     let imageQueue = [];
 
     cameraBtn.addEventListener('click', () => {
@@ -305,14 +304,12 @@
       for (const file of files) {
         const blobUrl = URL.createObjectURL(file);
         
-        // Setup runtime item state tracker object
         const queueItem = {
           id: Date.now() + Math.random().toString(36).substr(2, 5),
           blobUrl: blobUrl,
           base64: null
         };
 
-        // Render runtime HTML layout node elements dynamically
         const gridItem = document.createElement('div');
         gridItem.className = 'preview-item';
         gridItem.dataset.id = queueItem.id;
@@ -331,7 +328,6 @@
 
         imageQueue.push(queueItem);
 
-        // Compress file in background execution worker loop
         const reader = new FileReader();
         reader.onloadend = () => {
           compressImage(reader.result, (optimizedBase64) => {
@@ -341,9 +337,8 @@
         reader.readAsDataURL(file);
       }
 
-      // Sync and render the multi-image selection button execution frame
       updateSubmitButtonState();
-      fileInput.value = ''; // Flush selection stream container
+      fileInput.value = ''; 
     });
 
     function compressImage(base64Str, callback) {
@@ -353,7 +348,8 @@
         const canvas = document.createElement('canvas');
         let width = img.width;
         let height = img.height;
-        const max_size = 800; 
+        // Reduced to 600px to ensure multi-photo batches fit in Vercel payload limits
+        const max_size = 600; 
 
         if (width > height) {
           if (width > max_size) {
@@ -372,7 +368,8 @@
         const ctx = canvas.getContext('2d');
         ctx.drawImage(img, 0, 0, width, height);
 
-        const optimizedBase64 = canvas.toDataURL('image/jpeg', 0.70);
+        // Lowered quality to 0.65 for extra safety when sending 5+ images
+        const optimizedBase64 = canvas.toDataURL('image/jpeg', 0.65);
         callback(optimizedBase64);
       };
     }
@@ -398,7 +395,6 @@
     }
 
     submitBtn.addEventListener('click', async () => {
-      // Confirm all queued records completely loaded base64 conversions
       const uncompleted = imageQueue.some(item => !item.base64);
       if (uncompleted) {
         showError("Images are still optimizing. Please press analyze again in a second.");
