@@ -223,7 +223,14 @@
     }
   </style>
   
-  <script defer src="/_vercel/insights/script.js"></script>
+  <!-- Modern secure ES Modules mapping for front-end Google SDK deployment -->
+  <script type="importmap">
+    {
+      "imports": {
+        "@google/generative-ai": "https://esm.run/@google/generative-ai"
+      }
+    }
+  </script>
 </head>
 <body>
 
@@ -267,7 +274,9 @@
     </footer>
   </div>
 
-  <script>
+  <script type="module">
+    import { GoogleGenerativeAI } from "@google/generative-ai";
+
     const fileInput = document.getElementById('fileInput');
     const cameraBtn = document.getElementById('cameraBtn');
     const uploadBtn = document.getElementById('uploadBtn');
@@ -307,7 +316,7 @@
         const queueItem = {
           id: Date.now() + Math.random().toString(36).substr(2, 5),
           blobUrl: blobUrl,
-          base64: null
+          rawParts: null
         };
 
         const gridItem = document.createElement('div');
@@ -330,8 +339,8 @@
 
         const reader = new FileReader();
         reader.onloadend = () => {
-          compressImage(reader.result, (optimizedBase64) => {
-            queueItem.base64 = optimizedBase64;
+          compressAndPrepImage(reader.result, (genAIPart) => {
+            queueItem.rawParts = genAIPart;
           });
         };
         reader.readAsDataURL(file);
@@ -341,15 +350,15 @@
       fileInput.value = ''; 
     });
 
-    function compressImage(base64Str, callback) {
+    function compressAndPrepImage(base64Str, callback) {
       const img = new Image();
       img.src = base64Str;
       img.onload = () => {
         const canvas = document.createElement('canvas');
         let width = img.width;
         let height = img.height;
-        // Strict downscaling threshold limit to avoid hitting gateway bounds
-        const max_size = 500; 
+        // High quality threshold to maintain text/signature legibility
+        const max_size = 800; 
 
         if (width > height) {
           if (width > max_size) {
@@ -368,9 +377,15 @@
         const ctx = canvas.getContext('2d');
         ctx.drawImage(img, 0, 0, width, height);
 
-        // Uses a tight WebP frame configuration to heavily drop payload transmission weight
-        const optimizedBase64 = canvas.toDataURL('image/webp', 0.65);
-        callback(optimizedBase64);
+        const optimizedBase64 = canvas.toDataURL('image/jpeg', 0.78);
+        const splitData = optimizedBase64.split(',');
+        
+        callback({
+          inlineData: {
+            data: splitData[1],
+            mimeType: "image/jpeg"
+          }
+        });
       };
     }
 
@@ -395,9 +410,9 @@
     }
 
     submitBtn.addEventListener('click', async () => {
-      const uncompleted = imageQueue.some(item => !item.base64);
+      const uncompleted = imageQueue.some(item => !item.rawParts);
       if (uncompleted) {
-        showError("Images are still optimizing. Please press analyze again in a second.");
+        showError("Images are still processing. Please press analyze again.");
         return;
       }
 
@@ -405,37 +420,45 @@
       errorState.style.display = 'none';
       resultState.style.display = 'none';
 
-      const payloads = imageQueue.map(item => item.base64);
-      await sendToBackend(payloads);
+      const contentPayload = imageQueue.map(item => item.rawParts);
+      await sendDirectToGemini(contentPayload);
     });
 
-    async function sendToBackend(imagesArray) {
+    async function sendDirectToGemini(contentPartsArray) {
       try {
-        const response = await fetch('/api/analyze', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ images: imagesArray }),
-        });
-
-        let data;
-        const textResponse = await response.text();
-        try {
-          data = JSON.parse(textResponse);
-        } catch (jsonErr) {
-          throw new Error(`Server returned plain text instead of JSON structure. Raw response: ${textResponse.substring(0, 80)}`);
+        // Hits your exact existing API file to securely pull your environment key
+        const keyFetch = await fetch('/api/analyze');
+        if (!keyFetch.ok) {
+          throw new Error("Could not retrieve secure credentials from backend handoff.");
         }
+        const keyData = await keyFetch.json();
+        const activeKey = keyData.key;
 
-        if (!response.ok) {
-          throw new Error(data.error || data.details || 'Server error processing request');
-        }
+        const genAI = new GoogleGenerativeAI(activeKey);
+        const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 
-        resultText.textContent = data.analysis;
+        const appraisalPrompt = `You are an expert appraiser and high-end resale evaluator. 
+Analyze the provided image configurations carefully. Use these multiple angles to check frame details, signature details, canvas texture, condition details, and overall scale.
+
+Provide a definitive appraisal structure:
+1. Identified Item Title & Era/Year
+2. Estimated Resale Market Value Range ($ Min - Max Value)
+3. Valuation Factors (Why it's worth this price point based on details or visible indicators)
+4. Recommended Marketplace Channels (e.g., eBay, Mercari, specialty forums)
+
+Be thorough, precise, and direct. If you cannot definitively authenticate the object from the snapshots, offer your best educated estimate based on visual marks.`;
+
+        contentPartsArray.push(appraisalPrompt);
+
+        const result = await model.generateContent(contentPartsArray);
+        const response = await result.response;
+        const text = response.text();
+
+        resultText.textContent = text;
         resultState.style.display = 'block';
       } catch (err) {
         console.error(err);
-        showError(err.message);
+        showError(`Analysis Error: ${err.message}`);
       } finally {
         setLoading(false);
       }
@@ -458,13 +481,6 @@
     function showError(message) {
       errorText.textContent = message;
       errorState.style.display = 'block';
-    }
-
-    function clearQueue() {
-      imageQueue.forEach(item => URL.revokeObjectURL(item.blobUrl));
-      imageQueue = [];
-      previewGrid.innerHTML = '';
-      updateSubmitButtonState();
     }
   </script>
 </body>
