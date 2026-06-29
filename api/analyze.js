@@ -1,6 +1,7 @@
 import { GoogleGenAI } from '@google/genai';
 
-const ai = new GoogleGenAI();
+// Instantiates the core client setup mapping standard Vercel ENV options safely
+const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
@@ -8,7 +9,6 @@ export default async function handler(req, res) {
   }
 
   try {
-    // Gracefully handle both legacy single strings and arrays
     const { image, images } = req.body;
     let imagesToProcess = [];
 
@@ -19,14 +19,14 @@ export default async function handler(req, res) {
     }
 
     if (imagesToProcess.length === 0) {
-      return res.status(400).json({ error: 'Missing image assets payload array' });
+      return res.status(400).json({ error: 'Missing images data field payload' });
     }
 
-    // Convert data URLs into pure format structures acceptable by the API SDK
+    // Map content layouts explicitly to structural specifications
     const contentParts = imagesToProcess.map(imgBase64 => {
       const matches = imgBase64.match(/^data:(image\/[a-z]+);base64,(.+)$/);
       if (!matches) {
-        throw new Error('Malformed base64 transmission layout detected');
+        throw new Error('Malformed image transmission layout format');
       }
       return {
         inlineData: {
@@ -37,19 +37,20 @@ export default async function handler(req, res) {
     });
 
     const appraisalPrompt = `You are an expert appraiser and high-end resale evaluator. 
-Analyze the provided image context configurations carefully. If multiple images are presented, use them to inspect different details, labels, condition details, or angles of the same item.
+Analyze the provided image configurations carefully. Use these multiple angles to check frame details, signature details, canvas texture, condition details, and overall scale.
 
 Provide a definitive appraisal structure:
-1. Identified Item Title & Era/Year
-2. Estimated Resale Market Value Range ($ Min - Max Value)
+1. Estimated Resale Market Value Range ($ Min - Max Value)
+2. Identified Item Title & Era/Year
 3. Valuation Factors (Why it's worth this price point based on details or visible indicators)
 4. Recommended Marketplace Channels (e.g., eBay, Mercari, specialty forums)
+5. Exactly What To Copy And Paste into a sale add/post
 
 Be thorough, precise, and direct. If you cannot definitively authenticate the object from the snapshots, offer your best educated estimate based on visual marks.`;
 
-    // Append instructions right inside the model array loop
     contentParts.push({ text: appraisalPrompt });
 
+    // Enforces the core model deployment engine
     const response = await ai.models.generateContent({
       model: 'gemini-2.5-flash',
       contents: contentParts,
