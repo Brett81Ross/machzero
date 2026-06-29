@@ -8,7 +8,7 @@
   <!-- iOS Link Preview & Open Graph Optimization -->
   <meta property="og:title" content="MachZero - AI Resale Estimator">
   <meta property="og:description" content="Add multiple snapshots to a single batch for immediate, expert resale values and optimized marketplace descriptions.">
-  <meta id="ogImageTag" property="og:image" content="">
+  <meta property="og:image" content="https://mach-zero.vercel.app/logo1.jpg">
   <meta property="og:image:type" content="image/jpeg">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
@@ -54,6 +54,7 @@
       display: flex;
       flex-direction: column;
       align-items: center;
+      width: 100%;
     }
     
     .logo {
@@ -63,7 +64,7 @@
       border-radius: 12px;
       box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
       object-fit: cover;
-      aspect-ratio: 1 / 1;
+      display: block;
     }
     
     .title {
@@ -284,16 +285,6 @@
       display: none;
     }
   </style>
-  
-  <script>
-    // Dynamically ensures an absolute metadata address context is present for strict iOS message preview configurations
-    document.addEventListener("DOMContentLoaded", () => {
-      const ogImg = document.getElementById("ogImageTag");
-      if (ogImg) {
-        ogImg.setAttribute("content", window.location.origin + "/logo1.jpg");
-      }
-    });
-  </script>
 
   <!-- Modern secure ES Modules mapping for front-end Google SDK deployment -->
   <script type="importmap">
@@ -318,7 +309,7 @@
     <div class="button-group">
       <button class="btn btn-camera" id="cameraBtn">TAKE A PHOTO</button>
       <button class="btn btn-upload" id="uploadBtn">CHOOSE IMAGES</button>
-      <button class="btn btn-submit" id="submitBtn" style="display: none;">ANALYZE BATCH (0)</button>
+      <button class="btn btn-submit" id="submitBtn" style="display: none;">ANALYZE PHOTO/IMAGE (0)</button>
       <input type="file" id="fileInput" accept="image/*" multiple>
     </div>
 
@@ -474,7 +465,7 @@
     function updateSubmitButtonState() {
       if (imageQueue.length > 0) {
         submitBtn.style.display = 'block';
-        submitBtn.innerText = `ANALYZE BATCH (${imageQueue.length})`;
+        submitBtn.innerText = `ANALYZE PHOTO/IMAGE (${imageQueue.length})`;
       } else {
         submitBtn.style.display = 'none';
       }
