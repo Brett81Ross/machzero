@@ -348,8 +348,8 @@
         const canvas = document.createElement('canvas');
         let width = img.width;
         let height = img.height;
-        // Reduced to 600px to ensure multi-photo batches fit in Vercel payload limits
-        const max_size = 600; 
+        // Strict downscaling threshold limit to avoid hitting gateway bounds
+        const max_size = 500; 
 
         if (width > height) {
           if (width > max_size) {
@@ -368,8 +368,8 @@
         const ctx = canvas.getContext('2d');
         ctx.drawImage(img, 0, 0, width, height);
 
-        // Lowered quality to 0.65 for extra safety when sending 5+ images
-        const optimizedBase64 = canvas.toDataURL('image/jpeg', 0.65);
+        // Uses a tight WebP frame configuration to heavily drop payload transmission weight
+        const optimizedBase64 = canvas.toDataURL('image/webp', 0.65);
         callback(optimizedBase64);
       };
     }
