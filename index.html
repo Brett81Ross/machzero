@@ -140,18 +140,28 @@
       color: #cbd5e1;
       word-break: break-word;
     }
-    .preview-card {
-      border-radius: 12px;
-      overflow: hidden;
+    
+    /* Grid layout for multiple preview images */
+    .preview-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+      gap: 10px;
       margin-bottom: 20px;
-      border: 1px solid #334155;
       width: 100%;
     }
-    .preview-card img {
+    .preview-item {
+      border-radius: 8px;
+      overflow: hidden;
+      border: 1px solid #334155;
+      aspect-ratio: 1 / 1;
+    }
+    .preview-item img {
       width: 100%;
-      height: auto;
+      height: 100%;
+      object-fit: cover;
       display: block;
     }
+
     .result-card {
       background-color: #111827;
       border: 1px solid #1e293b;
@@ -190,23 +200,23 @@
 
   <div class="container">
     <div class="header">
-      <img src="logo1.jpg" alt="MachZero Logo" class="logo" id="brandLogo">
+      <img src="logo1.png" alt="MachZero Logo" class="logo" id="brandLogo">
       <h1 class="title">MACH<span>ZERO</span></h1>
       <p class="description">
-        Snap a photo or upload an image to instantly estimate its resale market value. Know what it's worth before you buy, sell, or pass it up.
+        Snap or upload multiple photos to instantly estimate its resale market value. Capture multiple angles, item condition, or maker signatures for the most accurate appraisal.
       </p>
     </div>
 
     <div class="button-group">
-      <button class="btn btn-camera" id="cameraBtn">TAKE PHOTO</button>
-      <button class="btn btn-upload" id="uploadBtn">UPLOAD IMAGE</button>
-      <input type="file" id="fileInput" accept="image/*">
+      <button class="btn btn-camera" id="cameraBtn">ADD PHOTOS VIA CAMERA</button>
+      <button class="btn btn-upload" id="uploadBtn">UPLOAD MULTIPLE IMAGES</button>
+      <input type="file" id="fileInput" accept="image/*" multiple>
     </div>
 
     <div class="status-area" id="statusArea">
       <div id="loadingState" class="loading-card" style="display: none;">
         <div class="spinner"></div>
-        <p>Analyzing Image...</p>
+        <p>Analyzing Images...</p>
       </div>
 
       <div id="errorState" class="error-card" style="display: none;">
@@ -214,9 +224,7 @@
         <p id="errorText"></p>
       </div>
 
-      <div id="previewState" class="preview-card" style="display: none;">
-        <img id="previewImg" src="" alt="Preview">
-      </div>
+      <div id="previewGrid" class="preview-grid"></div>
 
       <div id="resultState" class="result-card" style="display: none;">
         <div id="resultText" class="result-text"></div>
@@ -225,7 +233,7 @@
 
     <footer>
       <p>&copy; 2026 MachZero&trade;</p>
-      <p>Powered by CactusByte🌵 Studios &bull; All Rights Reserved</p>
+      <p>Powered by CactusByte Studios &bull; All Rights Reserved</p>
     </footer>
   </div>
 
@@ -237,13 +245,15 @@
     const loadingState = document.getElementById('loadingState');
     const errorState = document.getElementById('errorState');
     const errorText = document.getElementById('errorText');
-    const previewState = document.getElementById('previewState');
-    const previewImg = document.getElementById('previewImg');
+    const previewGrid = document.getElementById('previewGrid');
     const resultState = document.getElementById('resultState');
     const resultText = document.getElementById('resultText');
     const brandLogo = document.getElementById('brandLogo');
 
-    brandLogo.onerror = () => { console.error("Logo asset logo1.jpg could not be loaded."); };
+    brandLogo.onerror = () => { console.error("Logo asset logo1.png could not be loaded."); };
+
+    // Holds our processing target batch arrays
+    let selectedFilesBlobUrls = [];
 
     cameraBtn.addEventListener('click', () => {
       resetUI();
@@ -257,27 +267,49 @@
       fileInput.click();
     });
 
-    fileInput.addEventListener('change', (e) => {
-      const file = e.target.files[0];
-      if (!file) return;
+    fileInput.addEventListener('change', async (e) => {
+      const files = Array.from(e.target.files);
+      if (files.length === 0) return;
 
       setLoading(true);
 
-      previewImg.src = URL.createObjectURL(file);
-      previewState.style.display = 'block';
+      // Render thumbnails dynamically using Blob URLs instantly
+      files.forEach(file => {
+        const blobUrl = URL.createObjectURL(file);
+        selectedFilesBlobUrls.push(blobUrl);
 
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        compressAndProcessImage(reader.result);
-      };
-      reader.onerror = () => {
-        showError("Failed to process the chosen image file.");
+        const gridItem = document.createElement('div');
+        gridItem.className = 'preview-item';
+        
+        const imgNode = document.createElement('img');
+        imgNode.src = blobUrl;
+        
+        gridItem.appendChild(imgNode);
+        previewGrid.appendChild(gridItem);
+      });
+
+      try {
+        // Run optimization processing down the stack concurrently
+        const compressionPromises = files.map(file => {
+          return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onloadend = () => {
+              compressImage(reader.result, resolve);
+            };
+            reader.onerror = () => reject(new Error("Failed reading file bitstreams"));
+            reader.readAsDataURL(file);
+          });
+        });
+
+        const compressedBase64Payloads = await Promise.all(compressionPromises);
+        await sendToBackend(compressedBase64Payloads);
+      } catch (err) {
+        showError(err.message);
         setLoading(false);
-      };
-      reader.readAsDataURL(file);
+      }
     });
 
-    function compressAndProcessImage(base64Str) {
+    function compressImage(base64Str, callback) {
       const img = new Image();
       img.src = base64Str;
       img.onload = () => {
@@ -304,24 +336,24 @@
         ctx.drawImage(img, 0, 0, width, height);
 
         const optimizedBase64 = canvas.toDataURL('image/jpeg', 0.70);
-        sendToBackend(optimizedBase64);
+        callback(optimizedBase64);
       };
     }
 
-    async function sendToBackend(base64Image) {
+    async function sendToBackend(imagesArray) {
       try {
         const response = await fetch('/api/analyze', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({ image: base64Image }),
+          body: JSON.stringify({ images: imagesArray }),
         });
 
         const data = await response.json();
 
         if (!response.ok) {
-          throw new Error(data.error || data.details || 'Server error processing request');
+          throw new Error(data.error || data.details || 'Server error processing batch requests');
         }
 
         resultText.textContent = data.analysis;
@@ -353,16 +385,14 @@
 
     function resetUI() {
       errorState.style.display = 'none';
-      previewState.style.display = 'none';
       resultState.style.display = 'none';
-      
-      if (previewImg.src.startsWith('blob:')) {
-        URL.revokeObjectURL(previewImg.src);
-      }
-      
-      previewImg.src = '';
       resultText.textContent = '';
       errorText.textContent = '';
+      
+      // Clean memory loops
+      selectedFilesBlobUrls.forEach(url => URL.revokeObjectURL(url));
+      selectedFilesBlobUrls = [];
+      previewGrid.innerHTML = '';
     }
   </script>
 </body>
