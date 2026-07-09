@@ -293,7 +293,7 @@
       border: 2px solid var(--reverb-orange);
       text-align: left;
       margin-bottom: 16px;
-      display: none; /* Controlled contextually by script */
+      display: none;
     }
 
     .report-header-title {
@@ -547,41 +547,49 @@
       if (files.length === 0) return;
 
       for (const file of files) {
-        const blobUrl = URL.createObjectURL(file);
-        
-        const queueItem = {
-          id: Date.now() + Math.random().toString(36).substr(2, 5),
-          blobUrl: blobUrl,
-          rawParts: null,
-          base64: null // Store original base64 payload data safely for listing uploads
-        };
+        try {
+          const blobUrl = URL.createObjectURL(file);
+          
+          const queueItem = {
+            id: Date.now() + Math.random().toString(36).substr(2, 5),
+            blobUrl: blobUrl,
+            rawParts: null,
+            base64: null 
+          };
 
-        const gridItem = document.createElement('div');
-        gridItem.className = 'preview-item';
-        gridItem.dataset.id = queueItem.id;
-        
-        const imgNode = document.createElement('img');
-        imgNode.src = blobUrl;
-        
-        const removeBtn = document.createElement('button');
-        removeBtn.className = 'remove-btn';
-        removeBtn.innerText = '×';
-        removeBtn.onclick = () => removeImageFromBatch(queueItem.id);
+          const gridItem = document.createElement('div');
+          gridItem.className = 'preview-item';
+          gridItem.dataset.id = queueItem.id;
+          
+          const imgNode = document.createElement('img');
+          imgNode.src = blobUrl;
+          
+          const removeBtn = document.createElement('button');
+          removeBtn.className = 'remove-btn';
+          removeBtn.innerText = '×';
+          removeBtn.onclick = () => removeImageFromBatch(queueItem.id);
 
-        gridItem.appendChild(imgNode);
-        gridItem.appendChild(removeBtn);
-        previewGrid.appendChild(gridItem);
+          gridItem.appendChild(imgNode);
+          gridItem.appendChild(removeBtn);
+          previewGrid.appendChild(gridItem);
 
-        imageQueue.push(queueItem);
+          imageQueue.push(queueItem);
 
-        const reader = new FileReader();
-        reader.onloadend = () => {
-          compressAndPrepImage(reader.result, (genAIPart, cleanBase64) => {
-            queueItem.rawParts = genAIPart;
-            queueItem.base64 = cleanBase64;
-          });
-        };
-        reader.readAsDataURL(file);
+          const reader = new FileReader();
+          reader.onloadend = () => {
+            try {
+              compressAndPrepImage(reader.result, (genAIPart, cleanBase64) => {
+                queueItem.rawParts = genAIPart;
+                queueItem.base64 = cleanBase64;
+              });
+            } catch (innerErr) {
+              console.error("Compression processing error:", innerErr);
+            }
+          };
+          reader.readAsDataURL(file);
+        } catch (fileErr) {
+          console.error("File loading array registration fault:", fileErr);
+        }
       }
 
       updateSubmitButtonState();
@@ -712,7 +720,6 @@ Be thorough, precise, and direct.`;
           copyblock: text.split('[PART_5]')[1]?.trim() || ""
         };
 
-        // FIXED: Cache parameters globally, explicitly pulling the correct targeted value arrays
         structuredStagedItem = {
           title: sections.title,
           price: sections.range,
@@ -727,7 +734,6 @@ Be thorough, precise, and direct.`;
 
         masterReportWrapper.style.display = 'block';
 
-        // CONTEXTUAL FILTER: Scan both parameters for verified equipment profile strings
         const verifiedKeywords = ['guitar', 'bass', 'amplifier', 'pedal', 'synth', 'keyboard', 'pickup', 'audio', 'gear', 'drum', 'ibanez', 'fender', 'gibson'];
         const cleanTitle = sections.title.toLowerCase();
         const cleanRawText = text.toLowerCase();
@@ -757,7 +763,6 @@ Be thorough, precise, and direct.`;
       postReverbBtn.disabled = true;
       postReverbBtn.innerText = "PUBLISHING UNPUBLISHED DRAFT...";
 
-      // Gather processed batch image strings straight out of the batch queue array
       const rawImagePayloads = imageQueue.map(item => item.base64).filter(Boolean);
 
       try {
@@ -766,4 +771,52 @@ Be thorough, precise, and direct.`;
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             title: structuredStagedItem.title,
-            description
+            description: structuredStagedItem.description,
+            price: structuredStagedItem.price, 
+            images: rawImagePayloads 
+          })
+        });
+
+        if (response.ok) {
+          const userChoice = confirm("Okay, I made the draft in your Reverb. Would you like to go there now or would you like to stay on this app?\n\nClick 'OK' to view your Reverb drafts page, or 'Cancel' to stay right here.");
+          if (userChoice) {
+            window.open("https://reverb.com/my/listings?state=draft", "_blank");
+          }
+          reverbContainer.style.display = 'none';
+        } else {
+          const rawErrorPayload = await response.json().catch(() => ({}));
+          const specificDetails = rawErrorPayload.details ? JSON.stringify(rawErrorPayload.details) : rawErrorPayload.error || "Unknown server response code";
+          alert("Reverb Rejection Feedback:\n" + specificDetails);
+        }
+      } catch (err) {
+        console.error("Endpoint execution block error:", err);
+        alert("Connectivity error during API execution: " + err.message);
+      } finally {
+        postReverbBtn.disabled = false;
+        postReverbBtn.innerText = "SEND DRAFT TO REVERB.COM";
+      }
+    });
+
+    function setLoading(isLoading) {
+      if (isLoading) {
+        loadingState.style.display = 'flex';
+        cameraBtn.disabled = true;
+        uploadBtn.disabled = true;
+        submitBtn.disabled = true;
+      } else {
+        loadingState.style.display = 'none';
+        cameraBtn.disabled = false;
+        uploadBtn.disabled = false;
+        submitBtn.disabled = false;
+      }
+    }
+
+    function showError(message) {
+      errorText.textContent = message;
+      errorState.style.display = 'block';
+    }
+  </script>
+  <script defer src="https://va.vercel.clerk.com/script.js"></script>
+
+</body>
+</html>
