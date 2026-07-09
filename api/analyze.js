@@ -28,16 +28,32 @@ export default async function handler(req, res) {
       };
     });
 
-    // TARGETING THE NEW 3.5 FLASH MODEL FOR IMPROVED CODING/REASONING SPEED
-    const model = genAI.getGenerativeModel({ model: "gemini-3.5-flash" });
+    const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 
-    // The explicit appraisal prompt for MachZero
-    const prompt = `
-      Analyze the provided item images carefully. 
-      Provide a highly accurate valuation, including estimated market resale price range, 
-      item condition analysis, identifying marks/signatures, and rough dimensional estimates if visible.
-      Format the final response in clean markdown structure.
-    `;
+    // The explicit appraisal prompt unified with frontend parsing logic
+    const prompt = `You are an expert appraiser and high-end resale evaluator. 
+Analyze the provided image configurations carefully. Use these multiple angles to check frame details, signature details, canvas texture, condition details, and overall scale.
+
+Proactively calculate and deduce the estimated physical dimensions of the object based on contextual clues, perspective, aspect ratio, and object classification. Do not prompt the user for sizing information.
+
+Provide your output using this exact text layout pattern below. Do not omit the structural divider anchors [PART_1], [PART_2], [PART_3], [PART_4], and [PART_5] as they are parsed out programmatically by the interface engine.
+
+[PART_1]
+(Provide ONLY the raw Estimated Resale Market Value Range here, e.g. $150 - $200)
+
+[PART_2]
+(Provide ONLY the raw Identified Item Title & Era/Year here)
+
+[PART_3]
+(Provide a thorough Markdown bulleted list of the Valuation Factors here)
+
+[PART_4]
+(Provide a thorough Markdown list of the Recommended Marketplace Channels here)
+
+[PART_5]
+(Provide exactly what to copy and paste into a sale ad here. Generate a polished description featuring calculated measurements, condition specifics, and target keywords)
+
+Be thorough, precise, and direct.`;
 
     // Fire the request off securely
     const result = await model.generateContent([prompt, ...imageParts]);
