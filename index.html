@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>MachZero - AI Resale Estimator</title>
 
-  <!-- iOS Link Preview & Open Graph Optimization -->
   <meta property="og:title" content="MachZero - AI Resale Estimator">
   <meta property="og:description" content="Add multiple snapshots to a single batch for immediate, expert resale values and optimized marketplace descriptions.">
   <meta property="og:image" content="https://machzero-beta.vercel.app/logo1.jpg">
@@ -24,6 +23,10 @@
       --accent-indigo: #3b82f6;
       --text-main: #f8fafc;
       --text-muted: #94a3b8;
+      
+      /* MachZero Diagnostic Border Accents */
+      --border-blue: #233a66;
+      --border-indigo: #3c2475;
     }
     
     body {
@@ -248,19 +251,101 @@
       padding: 0;
     }
 
-    .result-card {
-      background-color: var(--card-bg);
-      border: 1px solid rgba(255, 255, 255, 0.05);
-      border-radius: 16px;
-      padding: 20px;
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    /* PREMIUM ACELYNN-INSPIRED BRANDING WRAPPERS */
+    .master-report-wrapper {
+      display: none;
+      width: 100%;
     }
-    
-    .result-text {
+
+    .report-box-primary {
+      padding: 24px;
+      border-radius: 12px;
+      background: var(--card-bg);
+      border: 2px solid var(--accent-blue);
+      text-align: left;
+      margin-bottom: 16px;
+    }
+
+    .report-box-secondary {
+      padding: 24px;
+      border-radius: 12px;
+      background: #0f162b;
+      border: 2px solid var(--border-blue);
+      text-align: left;
+      margin-bottom: 16px;
+    }
+
+    .report-box-deep {
+      padding: 24px;
+      border-radius: 12px;
+      background: #121526;
+      border: 2px solid var(--border-indigo);
+      text-align: left;
+      margin-bottom: 16px;
+    }
+
+    .report-header-title {
+      margin-top: 0;
+      font-size: 18px;
+      border-bottom: 2px solid var(--accent-blue);
+      padding-bottom: 10px;
+      font-weight: bold;
+      letter-spacing: 0.5px;
+    }
+
+    .diagnostic-section {
+      margin-top: 20px;
+      padding-top: 15px;
+      border-top: 1px solid var(--border-blue);
+    }
+
+    .diagnostic-title {
+      font-size: 15px;
+      font-weight: bold;
+      color: var(--text-main);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+
+    .diagnostic-text {
+      color: var(--text-muted);
+      font-size: 14px;
+      margin-bottom: 0;
+    }
+
+    /* Metric Layout Matrix Grid Tables */
+    .matrix-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 12px;
+      font-size: 14px;
+      background: #090e1a;
+      border-radius: 8px;
+      overflow: hidden;
+      border: 1px solid var(--border-blue);
+    }
+
+    .matrix-table th {
+      background: #162245;
+      color: var(--accent-blue);
+      padding: 10px 12px;
+      text-align: left;
+      font-weight: 700;
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .matrix-table td {
+      padding: 12px;
+      border-bottom: 1px solid #111a36;
       color: #e2e8f0;
-      white-space: pre-wrap;
-      line-height: 1.6;
-      font-size: 0.95rem;
+    }
+
+    .matrix-table tr:last-child td {
+      border-bottom: none;
     }
     
     footer {
@@ -286,7 +371,8 @@
     }
   </style>
 
-  <!-- Modern secure ES Modules mapping for front-end Google SDK deployment -->
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
   <script type="importmap">
     {
       "imports": {
@@ -326,8 +412,50 @@
 
       <div id="previewGrid" class="preview-grid"></div>
 
-      <div id="resultState" class="result-card" style="display: none;">
-        <div id="resultText" class="result-text"></div>
+      <div id="masterReportWrapper" class="master-report-wrapper">
+        
+        <div class="report-box-primary">
+          <h3 class="report-header-title" style="color: var(--accent-blue); border-color: var(--accent-blue);">📊 Core Inventory Valuation Matrix</h3>
+          <table class="matrix-table">
+            <thead>
+              <tr>
+                <th>Evaluation Parameter</th>
+                <th>Target Properties</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Estimated Range</td>
+                <td id="table-val-range" style="color: var(--accent-green); font-weight: bold; font-size: 15px;">Pending</td>
+              </tr>
+              <tr>
+                <td>Asset Identity</td>
+                <td id="table-val-title">Pending</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="report-box-secondary">
+          <h3 class="report-header-title" style="color: var(--accent-indigo); border-color: var(--accent-indigo);">🔍 Structural Evaluation & Factors</h3>
+          <div class="diagnostic-section" style="border-top: none; margin-top: 0; padding-top: 0;">
+            <div class="diagnostic-title">📋 Strategic Appraisal Insights</div>
+            <div class="diagnostic-text" id="box-val-factors">Processing insights...</div>
+          </div>
+          <div class="diagnostic-section">
+            <div class="diagnostic-title">🌐 Recommended Marketplace Allocation</div>
+            <div class="diagnostic-text" id="box-val-channels">Processing channels...</div>
+          </div>
+        </div>
+
+        <div class="report-box-deep">
+          <h3 class="report-header-title" style="color: #a855f7; border-color: var(--border-indigo);">🏆 Optimized Marketplace Copy Engine</h3>
+          <div class="diagnostic-section" style="border-top: none; margin-top: 0; padding-top: 0;">
+            <div class="diagnostic-title">📝 Ready-to-Publish Structural Output</div>
+            <div class="diagnostic-text" id="box-val-copyblock" style="background: #090a12; padding: 16px; border-radius: 8px; border: 1px solid var(--border-indigo); white-space: pre-wrap; font-size: 13px;">Processing content copy...</div>
+          </div>
+        </div>
+
       </div>
     </div>
 
@@ -349,9 +477,15 @@
     const errorState = document.getElementById('errorState');
     const errorText = document.getElementById('errorText');
     const previewGrid = document.getElementById('previewGrid');
-    const resultState = document.getElementById('resultState');
-    const resultText = document.getElementById('resultText');
     const brandLogo = document.getElementById('brandLogo');
+
+    // Consolidated Output Component Handlers
+    const masterReportWrapper = document.getElementById('masterReportWrapper');
+    const tableValRange = document.getElementById('table-val-range');
+    const tableValTitle = document.getElementById('table-val-title');
+    const boxValFactors = document.getElementById('box-val-factors');
+    const boxValChannels = document.getElementById('box-val-channels');
+    const boxValCopyblock = document.getElementById('box-val-copyblock');
 
     brandLogo.onerror = () => { console.error("Logo asset logo1.jpg could not be loaded."); };
 
@@ -480,7 +614,7 @@
 
       setLoading(true);
       errorState.style.display = 'none';
-      resultState.style.display = 'none';
+      masterReportWrapper.style.display = 'none';
 
       const contentPayload = imageQueue.map(item => item.rawParts);
       await sendDirectToGemini(contentPayload);
@@ -498,17 +632,28 @@
         const genAI = new GoogleGenerativeAI(activeKey);
         const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 
+        // Structured boundary markup definitions appended to allow target split parsing loops
         const appraisalPrompt = `You are an expert appraiser and high-end resale evaluator. 
 Analyze the provided image configurations carefully. Use these multiple angles to check frame details, signature details, canvas texture, condition details, and overall scale.
 
 Proactively calculate and deduce the estimated physical dimensions of the object based on contextual clues, perspective, aspect ratio, and object classification. Do not prompt the user for sizing information.
 
-Provide your output using this exact numbered structure:
-1. Estimated Resale Market Value Range ($ Min - Max Value)
-2. Identified Item Title & Era/Year
-3. Valuation Factors (Why it's worth this price point based on details or visible indicators)
-4. Recommended Marketplace Channels (e.g., eBay, Mercari, specialty forums)
-5. Exactly What To Copy And Paste into a sale add/post (Generate a polished, clean item description optimized for rapid resale, featuring calculated measurements, condition specifics, and target keywords)
+Provide your output using this exact text layout pattern below. Do not omit the structural divider anchors [PART_1], [PART_2], [PART_3], [PART_4], and [PART_5] as they are parsed out programmatically by the interface engine.
+
+[PART_1]
+(Provide ONLY the raw Estimated Resale Market Value Range here, e.g. $150 - $200)
+
+[PART_2]
+(Provide ONLY the raw Identified Item Title & Era/Year here)
+
+[PART_3]
+(Provide a thorough Markdown bulleted list of the Valuation Factors here)
+
+[PART_4]
+(Provide a thorough Markdown list of the Recommended Marketplace Channels here)
+
+[PART_5]
+(Provide exactly what to copy and paste into a sale ad here. Generate a polished description featuring calculated measurements, condition specifics, and target keywords)
 
 Be thorough, precise, and direct.`;
 
@@ -518,8 +663,26 @@ Be thorough, precise, and direct.`;
         const response = await result.response;
         const text = response.text();
 
-        resultText.textContent = text;
-        resultState.style.display = 'block';
+        // Advanced regex parser block isolating sections via layout bracket anchors
+        const sections = {
+          range: text.split('[PART_1]')[1]?.split('[PART_2]')[0]?.trim() || "Evaluation Staging Error",
+          title: text.split('[PART_2]')[1]?.split('[PART_3]')[0]?.trim() || "Evaluation Staging Error",
+          factors: text.split('[PART_3]')[1]?.split('[PART_4]')[0]?.trim() || "",
+          channels: text.split('[PART_4]')[1]?.split('[PART_5]')[0]?.trim() || "",
+          copyblock: text.split('[PART_5]')[1]?.trim() || ""
+        };
+
+        // Render targets injecting clean client-parsed HTML components
+        tableValRange.innerText = sections.range;
+        tableValTitle.innerText = sections.title;
+        boxValFactors.innerHTML = marked.parse(sections.factors);
+        boxValChannels.innerHTML = marked.parse(sections.channels);
+        
+        // The raw copy block renders with Markdown parsed out cleanly for clear clipboard capture
+        boxValCopyblock.innerHTML = marked.parse(sections.copyblock);
+
+        masterReportWrapper.style.display = 'block';
+        masterReportWrapper.scrollIntoView({ behavior: 'smooth' });
       } catch (err) {
         console.error(err);
         showError(`Analysis Error: ${err.message}`);
