@@ -16,7 +16,7 @@ export default async function handler(req, res) {
     // 1. Dynamic Brand & Model Extraction
     let make = "Other";
     let model = "Acoustic Guitar";
-    let productType = "acoustic-guitars"; // Accurate fallback for acoustic strings
+    let productType = "acoustic-guitars"; 
 
     const cleanTitle = title ? title.replace(/\[\/?PART_[0-9]\]/g, '').trim() : "Musical Instrument Asset";
     const lowerTitle = cleanTitle.toLowerCase();
@@ -27,7 +27,6 @@ export default async function handler(req, res) {
     
     if (foundBrand) {
       make = foundBrand.charAt(0).toUpperCase() + foundBrand.slice(1);
-      // Strip out the brand name to extract a cleaner model representation
       model = cleanTitle.replace(new RegExp(foundBrand, 'gi'), '').trim();
     }
 
@@ -49,7 +48,6 @@ export default async function handler(req, res) {
     if (price) {
       const numbersOnly = price.replace(/[^0-9.]/g, '');
       if (numbersOnly) {
-        // If it's a range (like 120-200), grab the first complete number set
         const components = numbersOnly.split('.');
         cleanPrice = parseFloat(components[0]).toFixed(2);
       }
@@ -68,13 +66,18 @@ export default async function handler(req, res) {
         make: make,
         model: model || "Instrument Asset",
         product_type: productType,
-        condition: "Used", // "Used" is a standard universally accepted baseline state string
+        condition: "Excellent", // CRITICAL FIX: Reverb strictly maps fixed terms ("Excellent", "Very Good", "Good")
         title: cleanTitle,
         description: description || "See photos for product condition details.",
         price: {
           amount: cleanPrice,
           currency: 'USD'
         },
+        location: {
+          country_code: "US" // CRITICAL FIX: Reverb requires a country code definition to process listings
+        },
+        has_inventory: true, // CRITICAL FIX: Every programmatic entry requires inventory visibility mapping
+        inventory: 1,
         publish: false // Lands securely inside your private draft folder configuration
       })
     });
