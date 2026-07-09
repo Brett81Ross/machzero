@@ -12,12 +12,12 @@ export default async function handler(req, res) {
   try {
     const { title, description, price, images } = req.body;
 
-    // 1. Defensively sanitize the title string
+    // 1. Sanitize the title string
     let cleanTitle = title ? title.replace(/\[\/?PART_[0-9]\]/g, '').trim() : "Musical Instrument Asset";
     cleanTitle = cleanTitle.replace(/\*\*/g, '');
     const lowerTitle = cleanTitle.toLowerCase();
 
-    // 2. Isolate Manufacturer (Make) and Model guidelines cleanly
+    // 2. Isolate Brand (Make) and Model guidelines
     let make = "Other";
     let model = cleanTitle;
     let productType = "acoustic-guitars"; 
@@ -43,37 +43,30 @@ export default async function handler(req, res) {
       productType = "keyboards-and-synths";
     }
 
-    // 4. PRECISE CORRECTION: Isolate currency numeric blocks strictly from pricing parameters
-    let cleanPrice = "150.00"; // Default baseline safety floor value
+    // 4. FIX: Accurate Price Parser (Preserves correct multi-thousand dollar values)
+    let cleanPrice = "150.00"; 
     if (price) {
-      const strippedPrice = price.replace(/[\$\s,]/g, '');
-      const match = strippedPrice.match(/^\d+(?:\.\d{2})?/);
-      if (match && match[0]) {
-        const parsedVal = parseFloat(match[0]);
-        if (parsedVal > 10 && parsedVal < 25000) {
-          cleanPrice = parsedVal.toFixed(2);
-        }
+      // Isolate just numbers, periods, and hyphens
+      const genericNumbers = price.replace(/[^0-9.\-]/g, '');
+      // If it's a range like 1500-2200, take the first segment
+      const primarySegment = genericNumbers.split('-')[0];
+      
+      if (primarySegment && !isNaN(primarySegment)) {
+        cleanPrice = parseFloat(primarySegment).toFixed(2);
       }
     }
 
-    // 5. UNBROKEN COPY PASS-THROUGH: Strips part formatting dividers but preserves text layout structures
+    // 5. Unbroken clean layout description copy block pass-through
     let cleanDescription = "See photos for product condition details.";
     if (description) {
       cleanDescription = description
         .replace(/\[\/?PART_[0-9]\]/g, '') 
         .replace(/\*\*/g, '')              
-        .replace(/\\n/g, '\n') // Restores proper text paragraph formatting line breaks
+        .replace(/\\n/g, '\n') 
         .trim();
     }
 
-    // 6. Image Array Transformation Integration Block
-    let reverbImagesArray = [];
-    if (images && Array.isArray(images) && images.length > 0) {
-      // Formats encoded snapshots inline with Reverb's base64 multi-part file specifications
-      reverbImagesArray = images.map(b64 => `data:image/jpeg;base64,${b64}`);
-    }
-
-    // Securely forward the dynamic data payload straight to Reverb's server engine
+    // 6. Step A: Initial Content Payload Save Handoff to Reverb
     const reverbResponse = await fetch('https://api.reverb.com/api/listings', {
       method: 'POST',
       headers: {
@@ -87,7 +80,7 @@ export default async function handler(req, res) {
         model: model || "Instrument Asset",
         product_type: productType,
         condition: {
-          uuid: "df268ad1-c462-4ba6-b6db-e007e23922ea" // Standard UUID for "Excellent"
+          uuid: "df268ad1-c462-4ba6-b6db-e007e23922ea" // Standard UUID mapping for "Excellent"
         },
         title: cleanTitle.substring(0, 80), 
         description: cleanDescription,
@@ -98,23 +91,47 @@ export default async function handler(req, res) {
         location: {
           country_code: "US"
         },
-        images: reverbImagesArray, // Inject image array asset block cleanly into data payload
         has_inventory: true,
         inventory: 1,
         publish: false 
       })
     });
 
-    if (reverbResponse.ok) {
-      return res.status(200).json({ success: true });
-    } else {
+    if (!reverbResponse.ok) {
       const errLog = await reverbResponse.json().catch(() => ({}));
-      console.error("Reverb API Rejected Parameters directly:", errLog);
-      return res.status(reverbResponse.status).json({ 
-        error: 'Reverb rejected parameters.', 
-        details: errLog 
-      });
+      return res.status(reverbResponse.status).json({ error: 'Reverb rejected draft text data.', details: errLog });
     }
+
+    const successfulListingData = await reverbResponse.json();
+    
+    // 7. Step B: Dynamic Image Multi-Part Binding Append Sequence
+    // Extract the exact programmatic endpoints linking directly to your newly generated draft id
+    const imageUploadEndpoint = successfulListingData._links?.['reverb:listing_images']?.href 
+      || `https://api.reverb.com/api/listings/${successfulListingData.id}/images`;
+
+    if (images && Array.isArray(images) && images.length > 0 && imageUploadEndpoint) {
+      for (const b64Data String of images) {
+        try {
+          await fetch(imageUploadEndpoint, {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${REVERB_TOKEN}`,
+              'Content-Type': 'application/json',
+              'Accept': 'application/hal+json',
+              'Accept-Version': '3.0'
+            },
+            body: JSON.stringify({
+              file: `data:image/jpeg;base64,${b64DataString}`
+            })
+          });
+        } catch (imgErr) {
+          console.error("Single child image payload asset upload dropout failed:", imgErr);
+        }
+      }
+    }
+
+    return res.status(200).json({ success: true });
+
   } catch (err) {
     console.error("Serverless Backend Endpoint Failure:", err);
     return res.status(500).json({ error: err.message });
