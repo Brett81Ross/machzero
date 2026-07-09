@@ -8,7 +8,7 @@ export default async function handler(req, res) {
   // 🔑 PASTE YOUR REVERB PERSONAL ACCESS TOKEN BELOW HERE:
   // ========================================================
   const REVERB_TOKEN = "a1350a74e75826b0ecf03b1d6513c1b455022d5f60c130e35af0e698848c24ca"; 
-  // ====================================================
+  // ========================================================
 
   try {
     const { title, description, price } = req.body;
@@ -44,15 +44,18 @@ export default async function handler(req, res) {
       productType = "keyboards-and-synths";
     }
 
-    // 4. Robust Price Extraction Loop
+    // 4. FIXED: Advanced String Splitting Price Extraction Loop
     let cleanPrice = "0.00";
     if (price) {
-      const numericalString = price.replace(/[^0-9.\-]/g, '');
-      const parts = numericalString.split('-');
-      const targetNumber = parts[0] ? parts[0].split('.')[0] : "0";
+      // Split the string by common range dividers (hyphens, words like "to", or spaces)
+      const parts = price.split(/[\-\s]+/);
       
-      if (targetNumber && !isNaN(targetNumber)) {
-        cleanPrice = parseFloat(targetNumber).toFixed(2);
+      // Grab the first block (e.g., "$2,500") and clean up formatting symbols
+      if (parts[0]) {
+        const firstValueNumbers = parts[0].replace(/[^0-9.]/g, '');
+        if (firstValueNumbers && !isNaN(firstValueNumbers)) {
+          cleanPrice = parseFloat(firstValueNumbers).toFixed(2);
+        }
       }
     }
 
@@ -69,15 +72,9 @@ export default async function handler(req, res) {
         make: make,
         model: model || "Instrument Asset",
         product_type: productType,
-        
-        // ========================================================
-        // 🛠️ CRITICAL FIX: REVERB V3 SCHEMA UUID CONDITION OBJECT
-        // ========================================================
         condition: {
           uuid: "df268ad1-c462-4ba6-b6db-e007e23922ea" // Standard UUID for "Excellent"
         },
-        // ========================================================
-
         title: cleanTitle.substring(0, 80), 
         description: description || "See photos for product condition details.",
         price: {
