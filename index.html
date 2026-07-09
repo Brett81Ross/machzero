@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>MachZero - AI Resale Estimator</title>
 
-  <!-- iOS Link Preview & Open Graph Optimization -->
   <meta property="og:title" content="MachZero - AI Resale Estimator">
   <meta property="og:description" content="Add multiple snapshots to a single batch for immediate, expert resale values and optimized marketplace descriptions.">
   <meta property="og:image" content="https://machzero-beta.vercel.app/logo1.jpg">
@@ -254,7 +253,6 @@
       padding: 0;
     }
 
-    /* PREMIUM ACELYNN-INSPIRED BRANDING WRAPPERS */
     .master-report-wrapper {
       display: none;
       width: 100%;
@@ -329,7 +327,6 @@
       margin-bottom: 0;
     }
 
-    /* Metric Layout Matrix Grid Tables */
     .matrix-table {
       width: 100%;
       border-collapse: collapse;
@@ -362,7 +359,7 @@
       border-bottom: none;
     }
     
-    /* Cross-Listing Buttons Grid */
+    /* Cross-Listing Buttons Grid Layout */
     .marketplace-grid {
       display: grid;
       grid-template-columns: 1fr;
@@ -377,7 +374,6 @@
     }
     
     .btn-reverb:hover { background-color: #d94e06; }
-
     .btn-mercari { background-color: #e60012; color: #ffffff; }
     .btn-ebay { background-color: #0064d2; color: #ffffff; }
     .btn-facebook { background-color: #1877f2; color: #ffffff; }
@@ -394,23 +390,13 @@
       width: 100%;
     }
     
-    footer p {
-      margin: 0;
-    }
-    
-    footer p:first-child {
-      margin-bottom: 4px;
-    }
-    
-    #fileInput {
-      display: none;
-    }
+    footer p { margin: 0; }
+    footer p:first-child { margin-bottom: 4px; }
+    #fileInput { display: none; }
   </style>
 
-  <!-- Embedded Markdown Client Parser Engine -->
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 
-  <!-- Modern secure ES Modules mapping for front-end Google SDK deployment -->
   <script type="importmap">
     {
       "imports": {
@@ -450,10 +436,8 @@
 
       <div id="previewGrid" class="preview-grid"></div>
 
-      <!-- CONSOLIDATED SEGMENTED BRANDING LAYOUT MODULES -->
       <div id="masterReportWrapper" class="master-report-wrapper">
         
-        <!-- Primary Snapshot Dashboard Card -->
         <div class="report-box-primary">
           <h3 class="report-header-title" style="color: var(--accent-blue); border-color: var(--accent-blue);">📊 Core Inventory Valuation Matrix</h3>
           <table class="matrix-table">
@@ -476,7 +460,6 @@
           </table>
         </div>
 
-        <!-- Secondary Analytical Context Card -->
         <div class="report-box-secondary">
           <h3 class="report-header-title" style="color: var(--accent-indigo); border-color: var(--accent-indigo);">🔍 Structural Evaluation & Factors</h3>
           <div class="diagnostic-section" style="border-top: none; margin-top: 0; padding-top: 0;">
@@ -489,7 +472,6 @@
           </div>
         </div>
 
-        <!-- Deep Listing Automation Production Card -->
         <div class="report-box-deep">
           <h3 class="report-header-title" style="color: #a855f7; border-color: var(--border-indigo);">🏆 Optimized Marketplace Copy Engine</h3>
           <div class="diagnostic-section" style="border-top: none; margin-top: 0; padding-top: 0;">
@@ -498,7 +480,6 @@
           </div>
         </div>
 
-        <!-- Consolidated Multi-Marketplace Hub Panel -->
         <div id="marketplace-hub-container">
           <div style="display: flex; align-items: center; gap: 12px;">
             <span style="font-size: 24px;">🚀</span>
@@ -559,8 +540,9 @@
 
     brandLogo.onerror = () => { console.error("Logo asset logo1.jpg could not be loaded."); };
 
-    let imageQueue = [];
-    let structuredStagedItem = null;
+    // BIND TO GLOBAL WINDOW SCOPE: Prevents Android closures from losing references
+    window.imageQueue = [];
+    window.structuredStagedItem = null;
 
     cameraBtn.addEventListener('click', () => {
       errorState.style.display = 'none';
@@ -605,7 +587,7 @@
           gridItem.appendChild(removeBtn);
           previewGrid.appendChild(gridItem);
 
-          imageQueue.push(queueItem);
+          window.imageQueue.push(queueItem);
 
           const reader = new FileReader();
           reader.onloadend = () => {
@@ -667,10 +649,10 @@
     }
 
     function removeImageFromBatch(id) {
-      const index = imageQueue.findIndex(item => item.id === id);
+      const index = window.imageQueue.findIndex(item => item.id === id);
       if (index !== -1) {
-        URL.revokeObjectURL(imageQueue[index].blobUrl);
-        imageQueue.splice(index, 1);
+        URL.revokeObjectURL(window.imageQueue[index].blobUrl);
+        window.imageQueue.splice(index, 1);
       }
       const element = previewGrid.querySelector(`[data-id="${id}"]`);
       if (element) element.remove();
@@ -678,16 +660,16 @@
     }
 
     function updateSubmitButtonState() {
-      if (imageQueue.length > 0) {
+      if (window.imageQueue.length > 0) {
         submitBtn.style.display = 'block';
-        submitBtn.innerText = `ANALYZE PHOTO/IMAGE (${imageQueue.length})`;
+        submitBtn.innerText = `ANALYZE PHOTO/IMAGE (${window.imageQueue.length})`;
       } else {
         submitBtn.style.display = 'none';
       }
     }
 
     submitBtn.addEventListener('click', async () => {
-      const uncompleted = imageQueue.some(item => !item.rawParts);
+      const uncompleted = window.imageQueue.some(item => !item.rawParts);
       if (uncompleted) {
         showError("Images are still processing. Please press analyze again.");
         return;
@@ -698,15 +680,24 @@
       masterReportWrapper.style.display = 'none';
       marketplaceHubContainer.style.display = 'none';
 
-      const contentPayload = imageQueue.map(item => item.rawParts);
+      const contentPayload = window.imageQueue.map(item => item.rawParts);
       await sendDirectToGemini(contentPayload);
     });
 
     async function sendDirectToGemini(contentPartsArray) {
       try {
-        const keyFetch = await fetch('/api/analyze');
+        // EXPLICIT HANDSHAKE: Stating properties directly to resolve Vercel routing errors
+        const keyFetch = await fetch('/api/analyze', {
+          method: 'GET',
+          headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+          }
+        });
+        
         if (!keyFetch.ok) {
-          throw new Error("Could not retrieve secure credentials from backend handoff.");
+          const rawErrText = await keyFetch.text().catch(() => "");
+          throw new Error(`Server status fault ${keyFetch.status}. ${rawErrText}`);
         }
         const keyData = await keyFetch.json();
         const activeKey = keyData.key;
@@ -752,7 +743,7 @@ Be thorough, precise, and direct.`;
           copyblock: text.split('[PART_5]')[1]?.trim() || ""
         };
 
-        structuredStagedItem = {
+        window.structuredStagedItem = {
           title: sections.title,
           price: sections.range,
           description: sections.copyblock
@@ -790,23 +781,22 @@ Be thorough, precise, and direct.`;
       }
     }
 
-    // CRITICAL CORE FIX: Wrapped in try-catch block to completely prevent WebView script crashes
+    // ANDROID WEBVIEW SECURITY FAIL-SAFE WRAPPER
     async function executeClipboardHandoff(platformName, redirectUrl) {
-      if (!structuredStagedItem) return;
+      if (!window.structuredStagedItem) return;
       
-      const cleanDescText = boxValCopyblock.innerText || structuredStagedItem.description;
-      const clipboardContent = `TITLE: ${structuredStagedItem.title}\nPRICE SEGMENT: ${structuredStagedItem.price}\n\n${cleanDescText}`;
+      const cleanDescText = boxValCopyblock.innerText || window.structuredStagedItem.description;
+      const clipboardContent = `TITLE: ${window.structuredStagedItem.title}\nPRICE SEGMENT: ${window.structuredStagedItem.price}\n\n${cleanDescText}`;
       
       try {
-        // Safe check to verify if the context supports the clipboard write API cleanly
         if (navigator.clipboard && typeof navigator.clipboard.writeText === 'function') {
           await navigator.clipboard.writeText(clipboardContent);
           alert(`Copied to Clipboard!\n\nMachZero has copied your item title, pricing estimation, and detailed description. We are now opening ${platformName} so you can paste it right in.`);
         }
       } catch (err) {
-        console.warn("Mobile system container blocked direct script clipboard access:", err);
+        console.warn("WebView blocked execution context copy access:", err);
       } finally {
-        // This block runs unconditionally, ensuring the browser link opens without freezing the screen
+        // Runs unconditionally to guarantee buttons never freeze up
         window.open(redirectUrl, "_blank");
       }
     }
@@ -832,21 +822,21 @@ Be thorough, precise, and direct.`;
     });
 
     postReverbBtn.addEventListener('click', async () => {
-      if (!structuredStagedItem) return;
+      if (!window.structuredStagedItem) return;
 
       postReverbBtn.disabled = true;
       postReverbBtn.innerText = "PUBLISHING UNPUBLISHED DRAFT...";
 
-      const rawImagePayloads = imageQueue.map(item => item.base64).filter(Boolean);
+      const rawImagePayloads = window.imageQueue.map(item => item.base64).filter(Boolean);
 
       try {
         const response = await fetch('/api/reverb-draft', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            title: structuredStagedItem.title,
-            description: structuredStagedItem.description,
-            price: structuredStagedItem.price, 
+            title: window.structuredStagedItem.title,
+            description: window.structuredStagedItem.description,
+            price: window.structuredStagedItem.price, 
             images: rawImagePayloads 
           })
         });
@@ -862,7 +852,7 @@ Be thorough, precise, and direct.`;
           alert("Reverb Rejection Feedback:\n" + specificDetails);
         }
       } catch (err) {
-        console.error("Endpoint execution block error:", err);
+        console.error("Endpoint execution error:", err);
         alert("Connectivity error during API execution: " + err.message);
       } finally {
         postReverbBtn.disabled = false;
