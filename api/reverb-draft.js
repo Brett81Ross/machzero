@@ -8,29 +8,26 @@ export default async function handler(req, res) {
   // 🔑 PASTE YOUR REVERB PERSONAL ACCESS TOKEN BELOW HERE:
   // ========================================================
   const REVERB_TOKEN = "a1350a74e75826b0ecf03b1d6513c1b455022d5f60c130e35af0e698848c24ca"; 
-  // ========================================================
+  // ====================================================
 
   try {
     const { title, description, price } = req.body;
 
     // 1. Defensively sanitize the input title string
     let cleanTitle = title ? title.replace(/\[\/?PART_[0-9]\]/g, '').trim() : "Musical Instrument Asset";
-    // Strip out markdown formatting symbols like asterisks
     cleanTitle = cleanTitle.replace(/\*\*/g, '');
     const lowerTitle = cleanTitle.toLowerCase();
 
     // 2. Isolate Brand (Make) and Model strictly according to Reverb guidelines
     let make = "Other";
     let model = cleanTitle;
-    let productType = "acoustic-guitars"; // Accurate fallback for acoustic instruments
+    let productType = "acoustic-guitars"; 
 
-    // Common brand identification strings matching Reverb endpoints
     const brandList = ['Gibson', 'Ibanez', 'Fender', 'Epiphone', 'Martin', 'Taylor', 'PRS', 'Yamaha', 'Gretsch', 'Squier'];
     const foundBrand = brandList.find(b => lowerTitle.includes(b.toLowerCase()));
     
     if (foundBrand) {
       make = foundBrand;
-      // Strip the manufacturer out of the model parameter so it doesn't double-up
       model = cleanTitle.replace(new RegExp(foundBrand, 'gi'), '').trim();
     }
 
@@ -50,9 +47,7 @@ export default async function handler(req, res) {
     // 4. Robust Price Extraction Loop
     let cleanPrice = "0.00";
     if (price) {
-      // Remove commas and dollar signs, keep numbers and decimals
       const numericalString = price.replace(/[^0-9.\-]/g, '');
-      // If it's a range (e.g. 1500-2000), split and pull the lower baseline threshold number
       const parts = numericalString.split('-');
       const targetNumber = parts[0] ? parts[0].split('.')[0] : "0";
       
@@ -74,8 +69,16 @@ export default async function handler(req, res) {
         make: make,
         model: model || "Instrument Asset",
         product_type: productType,
-        condition: "Excellent", // Must be one of Reverb's exact structural strings
-        title: cleanTitle.substring(0, 80), // Reverb limits title headers to 80 characters
+        
+        // ========================================================
+        // 🛠️ CRITICAL FIX: REVERB V3 SCHEMA UUID CONDITION OBJECT
+        // ========================================================
+        condition: {
+          uuid: "df268ad1-c462-4ba6-b6db-e007e23922ea" // Standard UUID for "Excellent"
+        },
+        // ========================================================
+
+        title: cleanTitle.substring(0, 80), 
         description: description || "See photos for product condition details.",
         price: {
           amount: cleanPrice,
@@ -86,7 +89,7 @@ export default async function handler(req, res) {
         },
         has_inventory: true,
         inventory: 1,
-        publish: false // Forces the payload into your private unpublished draft section
+        publish: false 
       })
     });
 
