@@ -13,24 +13,28 @@ export default async function handler(req, res) {
   try {
     const { title, description, price } = req.body;
 
-    // 1. Dynamic Brand & Model Extraction
-    let make = "Other";
-    let model = "Acoustic Guitar";
-    let productType = "acoustic-guitars"; 
-
-    const cleanTitle = title ? title.replace(/\[\/?PART_[0-9]\]/g, '').trim() : "Musical Instrument Asset";
+    // 1. Defensively sanitize the input title string
+    let cleanTitle = title ? title.replace(/\[\/?PART_[0-9]\]/g, '').trim() : "Musical Instrument Asset";
+    // Strip out markdown formatting symbols like asterisks
+    cleanTitle = cleanTitle.replace(/\*\*/g, '');
     const lowerTitle = cleanTitle.toLowerCase();
 
-    // Scan for major brands to satisfy Reverb's core payload requirements
-    const brandList = ['gibson', 'ibanez', 'fender', 'epiphone', 'martin', 'taylor', 'prs', 'yamaha', 'gretsch', 'squier'];
-    const foundBrand = brandList.find(b => lowerTitle.includes(b));
+    // 2. Isolate Brand (Make) and Model strictly according to Reverb guidelines
+    let make = "Other";
+    let model = cleanTitle;
+    let productType = "acoustic-guitars"; // Accurate fallback for acoustic instruments
+
+    // Common brand identification strings matching Reverb endpoints
+    const brandList = ['Gibson', 'Ibanez', 'Fender', 'Epiphone', 'Martin', 'Taylor', 'PRS', 'Yamaha', 'Gretsch', 'Squier'];
+    const foundBrand = brandList.find(b => lowerTitle.includes(b.toLowerCase()));
     
     if (foundBrand) {
-      make = foundBrand.charAt(0).toUpperCase() + foundBrand.slice(1);
+      make = foundBrand;
+      // Strip the manufacturer out of the model parameter so it doesn't double-up
       model = cleanTitle.replace(new RegExp(foundBrand, 'gi'), '').trim();
     }
 
-    // 2. Dynamic Category Mapping Matrix
+    // 3. Dynamic Category Mapping Matrix
     if (lowerTitle.includes('electric') && lowerTitle.includes('guitar')) {
       productType = "electric-guitars";
     } else if (lowerTitle.includes('bass')) {
@@ -43,13 +47,17 @@ export default async function handler(req, res) {
       productType = "keyboards-and-synths";
     }
 
-    // 3. Clean up the price string to isolate numerical values
+    // 4. Robust Price Extraction Loop
     let cleanPrice = "0.00";
     if (price) {
-      const numbersOnly = price.replace(/[^0-9.]/g, '');
-      if (numbersOnly) {
-        const components = numbersOnly.split('.');
-        cleanPrice = parseFloat(components[0]).toFixed(2);
+      // Remove commas and dollar signs, keep numbers and decimals
+      const numericalString = price.replace(/[^0-9.\-]/g, '');
+      // If it's a range (e.g. 1500-2000), split and pull the lower baseline threshold number
+      const parts = numericalString.split('-');
+      const targetNumber = parts[0] ? parts[0].split('.')[0] : "0";
+      
+      if (targetNumber && !isNaN(targetNumber)) {
+        cleanPrice = parseFloat(targetNumber).toFixed(2);
       }
     }
 
@@ -66,19 +74,19 @@ export default async function handler(req, res) {
         make: make,
         model: model || "Instrument Asset",
         product_type: productType,
-        condition: "Excellent", // CRITICAL FIX: Reverb strictly maps fixed terms ("Excellent", "Very Good", "Good")
-        title: cleanTitle,
+        condition: "Excellent", // Must be one of Reverb's exact structural strings
+        title: cleanTitle.substring(0, 80), // Reverb limits title headers to 80 characters
         description: description || "See photos for product condition details.",
         price: {
           amount: cleanPrice,
           currency: 'USD'
         },
         location: {
-          country_code: "US" // CRITICAL FIX: Reverb requires a country code definition to process listings
+          country_code: "US"
         },
-        has_inventory: true, // CRITICAL FIX: Every programmatic entry requires inventory visibility mapping
+        has_inventory: true,
         inventory: 1,
-        publish: false // Lands securely inside your private draft folder configuration
+        publish: false // Forces the payload into your private unpublished draft section
       })
     });
 
@@ -86,14 +94,14 @@ export default async function handler(req, res) {
       return res.status(200).json({ success: true });
     } else {
       const errLog = await reverbResponse.json().catch(() => ({}));
-      console.error("Reverb API Error Payload Return:", errLog);
+      console.error("Reverb API Rejected Parameters directly:", errLog);
       return res.status(reverbResponse.status).json({ 
-        error: 'Reverb rejected the parameters.', 
+        error: 'Reverb rejected parameters.', 
         details: errLog 
       });
     }
   } catch (err) {
-    console.error("Serverless Backend Endpoint Exception:", err);
+    console.error("Serverless Backend Endpoint Failure:", err);
     return res.status(500).json({ error: err.message });
   }
 }
