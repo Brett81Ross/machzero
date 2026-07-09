@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>MachZero - AI Resale Estimator</title>
 
+  <!-- iOS Link Preview & Open Graph Optimization -->
   <meta property="og:title" content="MachZero - AI Resale Estimator">
   <meta property="og:description" content="Add multiple snapshots to a single batch for immediate, expert resale values and optimized marketplace descriptions.">
   <meta property="og:image" content="https://machzero-beta.vercel.app/logo1.jpg">
@@ -28,6 +29,7 @@
       --border-blue: #233a66;
       --border-indigo: #3c2475;
       --reverb-orange: #ea580c;
+      --generic-border: #334155;
     }
     
     body {
@@ -261,4 +263,633 @@
     .report-box-primary {
       padding: 24px;
       border-radius: 12px;
-      background
+      background: var(--card-bg);
+      border: 2px solid var(--accent-blue);
+      text-align: left;
+      margin-bottom: 16px;
+    }
+
+    .report-box-secondary {
+      padding: 24px;
+      border-radius: 12px;
+      background: #0f162b;
+      border: 2px solid var(--border-blue);
+      text-align: left;
+      margin-bottom: 16px;
+    }
+
+    .report-box-deep {
+      padding: 24px;
+      border-radius: 12px;
+      background: #121526;
+      border: 2px solid var(--border-indigo);
+      text-align: left;
+      margin-bottom: 16px;
+    }
+
+    /* Consolidated Multi-Marketplace Hub Panel */
+    #marketplace-hub-container {
+      padding: 24px;
+      border-radius: 12px;
+      background: #0f172a;
+      border: 2px solid var(--accent-blue);
+      text-align: left;
+      margin-bottom: 16px;
+      display: none;
+    }
+
+    .report-header-title {
+      margin-top: 0;
+      font-size: 18px;
+      border-bottom: 2px solid var(--accent-blue);
+      padding-bottom: 10px;
+      font-weight: bold;
+      letter-spacing: 0.5px;
+    }
+
+    .diagnostic-section {
+      margin-top: 20px;
+      padding-top: 15px;
+      border-top: 1px solid var(--border-blue);
+    }
+
+    .diagnostic-title {
+      font-size: 15px;
+      font-weight: bold;
+      color: var(--text-main);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+
+    .diagnostic-text {
+      color: var(--text-muted);
+      font-size: 14px;
+      margin-bottom: 0;
+    }
+
+    /* Metric Layout Matrix Grid Tables */
+    .matrix-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 12px;
+      font-size: 14px;
+      background: #090e1a;
+      border-radius: 8px;
+      overflow: hidden;
+      border: 1px solid var(--border-blue);
+    }
+
+    .matrix-table th {
+      background: #162245;
+      color: var(--accent-blue);
+      padding: 10px 12px;
+      text-align: left;
+      font-weight: 700;
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .matrix-table td {
+      padding: 12px;
+      border-bottom: 1px solid #111a36;
+      color: #e2e8f0;
+    }
+
+    .matrix-table tr:last-child td {
+      border-bottom: none;
+    }
+    
+    /* Cross-Listing Buttons Grid */
+    .marketplace-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 12px;
+      margin-top: 16px;
+    }
+
+    .btn-reverb {
+      background-color: var(--reverb-orange);
+      color: #ffffff;
+      box-shadow: 0 4px 12px rgba(234, 88, 12, 0.2);
+    }
+    
+    .btn-reverb:hover { background-color: #d94e06; }
+
+    .btn-mercari { background-color: #e60012; color: #ffffff; }
+    .btn-ebay { background-color: #0064d2; color: #ffffff; }
+    .btn-facebook { background-color: #1877f2; color: #ffffff; }
+    .btn-offerup { background-color: #00b6aa; color: #ffffff; }
+    .btn-poshmark { background-color: #8b1e3f; color: #ffffff; }
+
+    footer {
+      margin-top: auto;
+      padding-top: 48px;
+      padding-bottom: 12px;
+      text-align: center;
+      font-size: 0.75rem;
+      color: #475569;
+      width: 100%;
+    }
+    
+    footer p {
+      margin: 0;
+    }
+    
+    footer p:first-child {
+      margin-bottom: 4px;
+    }
+    
+    #fileInput {
+      display: none;
+    }
+  </style>
+
+  <!-- Embedded Markdown Client Parser Engine -->
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
+  <!-- Modern secure ES Modules mapping for front-end Google SDK deployment -->
+  <script type="importmap">
+    {
+      "imports": {
+        "@google/generative-ai": "https://esm.run/@google/generative-ai"
+      }
+    }
+  </script>
+</head>
+<body>
+
+  <div class="container">
+    <div class="header">
+      <img src="logo1.jpg" alt="MachZero Logo" class="logo" id="brandLogo">
+      <h1 class="title">MACH<span>ZERO</span></h1>
+      <p class="description">
+        Add multiple pictures to your batch to get a precise appraisal. Capture different details, close-ups of signatures, or angles of your item before analyzing.
+      </p>
+    </div>
+
+    <div class="button-group">
+      <button class="btn btn-camera" id="cameraBtn">TAKE A PHOTO</button>
+      <button class="btn btn-upload" id="uploadBtn">CHOOSE IMAGES</button>
+      <button class="btn btn-submit" id="submitBtn" style="display: none;">ANALYZE PHOTO/IMAGE (0)</button>
+      <input type="file" id="fileInput" accept="image/*" multiple>
+    </div>
+
+    <div class="status-area" id="statusArea">
+      <div id="loadingState" class="loading-card" style="display: none; margin-bottom: 20px;">
+        <div class="spinner"></div>
+        <p>Analyzing Images...</p>
+      </div>
+
+      <div id="errorState" class="error-card" style="display: none;">
+        <h4>Network Fault</h4>
+        <p id="errorText"></p>
+      </div>
+
+      <div id="previewGrid" class="preview-grid"></div>
+
+      <!-- CONSOLIDATED SEGMENTED BRANDING LAYOUT MODULES -->
+      <div id="masterReportWrapper" class="master-report-wrapper">
+        
+        <!-- Primary Snapshot Dashboard Card -->
+        <div class="report-box-primary">
+          <h3 class="report-header-title" style="color: var(--accent-blue); border-color: var(--accent-blue);">📊 Core Inventory Valuation Matrix</h3>
+          <table class="matrix-table">
+            <thead>
+              <tr>
+                <th>Evaluation Parameter</th>
+                <th>Target Properties</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Estimated Range</td>
+                <td id="table-val-range" style="color: var(--accent-green); font-weight: bold; font-size: 15px;">Pending</td>
+              </tr>
+              <tr>
+                <td>Asset Identity</td>
+                <td id="table-val-title">Pending</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Secondary Analytical Context Card -->
+        <div class="report-box-secondary">
+          <h3 class="report-header-title" style="color: var(--accent-indigo); border-color: var(--accent-indigo);">🔍 Structural Evaluation & Factors</h3>
+          <div class="diagnostic-section" style="border-top: none; margin-top: 0; padding-top: 0;">
+            <div class="diagnostic-title">📋 Strategic Appraisal Insights</div>
+            <div class="diagnostic-text" id="box-val-factors">Processing insights...</div>
+          </div>
+          <div class="diagnostic-section">
+            <div class="diagnostic-title">🌐 Recommended Marketplace Allocation</div>
+            <div class="diagnostic-text" id="box-val-channels">Processing channels...</div>
+          </div>
+        </div>
+
+        <!-- Deep Listing Automation Production Card -->
+        <div class="report-box-deep">
+          <h3 class="report-header-title" style="color: #a855f7; border-color: var(--border-indigo);">🏆 Optimized Marketplace Copy Engine</h3>
+          <div class="diagnostic-section" style="border-top: none; margin-top: 0; padding-top: 0;">
+            <div class="diagnostic-title">📝 Ready-to-Publish Structural Output</div>
+            <div class="diagnostic-text" id="box-val-copyblock" style="background: #090a12; padding: 16px; border-radius: 8px; border: 1px solid var(--border-indigo); white-space: pre-wrap; font-size: 13px;">Processing content copy...</div>
+          </div>
+        </div>
+
+        <!-- Consolidated Multi-Marketplace Hub Panel -->
+        <div id="marketplace-hub-container">
+          <div style="display: flex; align-items: center; gap: 12px;">
+            <span style="font-size: 24px;">🚀</span>
+            <div>
+              <h3 style="color: var(--accent-blue); margin: 0; font-size: 15px; font-weight: bold;">Marketplace Cross-Listing Hub</h3>
+              <p style="margin: 2px 0 0 0; font-size: 13px; color: var(--text-muted);">Instantly push automated data arrays or stage listings onto multiple channels.</p>
+            </div>
+          </div>
+          
+          <div class="marketplace-grid">
+            <button class="btn btn-reverb" id="postReverbBtn" style="display: none;">SEND DRAFT TO REVERB.COM</button>
+            <button class="btn btn-mercari" id="crossMercariBtn">LIST DRAFT ON MERCARI</button>
+            <button class="btn btn-ebay" id="crossEbayBtn">LIST DRAFT ON EBAY</button>
+            <button class="btn btn-facebook" id="crossFacebookBtn">LIST DRAFT ON FACEBOOK MARKETPLACE</button>
+            <button class="btn btn-offerup" id="crossOfferUpBtn">LIST DRAFT ON OFFERUP</button>
+            <button class="btn btn-poshmark" id="crossPoshmarkBtn">LIST DRAFT ON POSHMARK</button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <footer>
+      <p>&copy; 2026 MachZero&trade;</p>
+      <p>Powered by CactusByte Studios &bull; All Rights Reserved</p>
+    </footer>
+  </div>
+
+  <script type="module">
+    import { GoogleGenerativeAI } from "@google/generative-ai";
+
+    const fileInput = document.getElementById('fileInput');
+    const cameraBtn = document.getElementById('cameraBtn');
+    const uploadBtn = document.getElementById('uploadBtn');
+    const submitBtn = document.getElementById('submitBtn');
+    
+    const loadingState = document.getElementById('loadingState');
+    const errorState = document.getElementById('errorState');
+    const errorText = document.getElementById('errorText');
+    const previewGrid = document.getElementById('previewGrid');
+    const brandLogo = document.getElementById('brandLogo');
+
+    const masterReportWrapper = document.getElementById('masterReportWrapper');
+    const tableValRange = document.getElementById('table-val-range');
+    const tableValTitle = document.getElementById('table-val-title');
+    const boxValFactors = document.getElementById('box-val-factors');
+    const boxValChannels = document.getElementById('box-val-channels');
+    const boxValCopyblock = document.getElementById('box-val-copyblock');
+    
+    const marketplaceHubContainer = document.getElementById('marketplace-hub-container');
+    const postReverbBtn = document.getElementById('postReverbBtn');
+
+    const crossMercariBtn = document.getElementById('crossMercariBtn');
+    const crossEbayBtn = document.getElementById('crossEbayBtn');
+    const crossFacebookBtn = document.getElementById('crossFacebookBtn');
+    const crossOfferUpBtn = document.getElementById('crossOfferUpBtn');
+    const crossPoshmarkBtn = document.getElementById('crossPoshmarkBtn');
+
+    brandLogo.onerror = () => { console.error("Logo asset logo1.jpg could not be loaded."); };
+
+    let imageQueue = [];
+    let structuredStagedItem = null;
+
+    cameraBtn.addEventListener('click', () => {
+      errorState.style.display = 'none';
+      fileInput.setAttribute('capture', 'environment');
+      fileInput.click();
+    });
+
+    uploadBtn.addEventListener('click', () => {
+      errorState.style.display = 'none';
+      fileInput.removeAttribute('capture');
+      fileInput.click();
+    });
+
+    fileInput.addEventListener('change', async (e) => {
+      const files = Array.from(e.target.files);
+      if (files.length === 0) return;
+
+      for (const file of files) {
+        try {
+          const blobUrl = URL.createObjectURL(file);
+          
+          const queueItem = {
+            id: Date.now() + Math.random().toString(36).substr(2, 5),
+            blobUrl: blobUrl,
+            rawParts: null,
+            base64: null 
+          };
+
+          const gridItem = document.createElement('div');
+          gridItem.className = 'preview-item';
+          gridItem.dataset.id = queueItem.id;
+          
+          const imgNode = document.createElement('img');
+          imgNode.src = blobUrl;
+          
+          const removeBtn = document.createElement('button');
+          removeBtn.className = 'remove-btn';
+          removeBtn.innerText = '×';
+          removeBtn.onclick = () => removeImageFromBatch(queueItem.id);
+
+          gridItem.appendChild(imgNode);
+          gridItem.appendChild(removeBtn);
+          previewGrid.appendChild(gridItem);
+
+          imageQueue.push(queueItem);
+
+          const reader = new FileReader();
+          reader.onloadend = () => {
+            try {
+              compressAndPrepImage(reader.result, (genAIPart, cleanBase64) => {
+                queueItem.rawParts = genAIPart;
+                queueItem.base64 = cleanBase64;
+              });
+            } catch (innerErr) {
+              console.error("Compression processing error:", innerErr);
+            }
+          };
+          reader.readAsDataURL(file);
+        } catch (fileErr) {
+          console.error("File loading array registration fault:", fileErr);
+        }
+      }
+
+      updateSubmitButtonState();
+      fileInput.value = ''; 
+    });
+
+    function compressAndPrepImage(base64Str, callback) {
+      const img = new Image();
+      img.src = base64Str;
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        let width = img.width;
+        let height = img.height;
+        const max_size = 800; 
+
+        if (width > height) {
+          if (width > max_size) {
+            height *= max_size / width;
+            width = max_size;
+          }
+        } else {
+          if (height > max_size) {
+            width *= max_size / height;
+            height = max_size;
+          }
+        }
+
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, width, height);
+
+        const optimizedBase64 = canvas.toDataURL('image/jpeg', 0.78);
+        const splitData = optimizedBase64.split(',');
+        
+        callback({
+          inlineData: {
+            data: splitData[1],
+            mimeType: "image/jpeg"
+          }
+        }, splitData[1]);
+      };
+    }
+
+    function removeImageFromBatch(id) {
+      const index = imageQueue.findIndex(item => item.id === id);
+      if (index !== -1) {
+        URL.revokeObjectURL(imageQueue[index].blobUrl);
+        imageQueue.splice(index, 1);
+      }
+      const element = previewGrid.querySelector(`[data-id="${id}"]`);
+      if (element) element.remove();
+      updateSubmitButtonState();
+    }
+
+    function updateSubmitButtonState() {
+      if (imageQueue.length > 0) {
+        submitBtn.style.display = 'block';
+        submitBtn.innerText = `ANALYZE PHOTO/IMAGE (${imageQueue.length})`;
+      } else {
+        submitBtn.style.display = 'none';
+      }
+    }
+
+    submitBtn.addEventListener('click', async () => {
+      const uncompleted = imageQueue.some(item => !item.rawParts);
+      if (uncompleted) {
+        showError("Images are still processing. Please press analyze again.");
+        return;
+      }
+
+      setLoading(true);
+      errorState.style.display = 'none';
+      masterReportWrapper.style.display = 'none';
+      marketplaceHubContainer.style.display = 'none';
+
+      const contentPayload = imageQueue.map(item => item.rawParts);
+      await sendDirectToGemini(contentPayload);
+    });
+
+    async function sendDirectToGemini(contentPartsArray) {
+      try {
+        const keyFetch = await fetch('/api/analyze');
+        if (!keyFetch.ok) {
+          throw new Error("Could not retrieve secure credentials from backend handoff.");
+        }
+        const keyData = await keyFetch.json();
+        const activeKey = keyData.key;
+
+        const genAI = new GoogleGenerativeAI(activeKey);
+        const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+
+        const appraisalPrompt = `You are an expert appraiser and high-end resale evaluator. 
+Analyze the provided image configurations carefully. Use these multiple angles to check frame details, signature details, canvas texture, condition details, and overall scale.
+
+Proactively calculate and deduce the estimated physical dimensions of the object based on contextual clues, perspective, aspect ratio, and object classification. Do not prompt the user for sizing information.
+
+Provide your output using this exact text layout pattern below. Do not omit the structural divider anchors [PART_1], [PART_2], [PART_3], [PART_4], and [PART_5] as they are parsed out programmatically by the interface engine.
+
+[PART_1]
+(Provide ONLY the raw Estimated Resale Market Value Range here, e.g. $150 - $200)
+
+[PART_2]
+(Provide ONLY the raw Identified Item Title & Era/Year here)
+
+[PART_3]
+(Provide a thorough Markdown bulleted list of the Valuation Factors here)
+
+[PART_4]
+(Provide a thorough Markdown list of the Recommended Marketplace Channels here)
+
+[PART_5]
+(Provide exactly what to copy and paste into a sale ad here. Generate a polished description featuring calculated measurements, condition specifics, and target keywords)
+
+Be thorough, precise, and direct.`;
+
+        contentPartsArray.push(appraisalPrompt);
+
+        const result = await model.generateContent(contentPartsArray);
+        const response = await result.response;
+        const text = response.text();
+
+        const sections = {
+          range: text.split('[PART_1]')[1]?.split('[PART_2]')[0]?.trim() || "Evaluation Staging Error",
+          title: text.split('[PART_2]')[1]?.split('[PART_3]')[0]?.trim() || "Evaluation Staging Error",
+          factors: text.split('[PART_3]')[1]?.split('[PART_4]')[0]?.trim() || "",
+          channels: text.split('[PART_4]')[1]?.split('[PART_5]')[0]?.trim() || "",
+          copyblock: text.split('[PART_5]')[1]?.trim() || ""
+        };
+
+        structuredStagedItem = {
+          title: sections.title,
+          price: sections.range,
+          description: sections.copyblock
+        };
+
+        tableValRange.innerText = sections.range;
+        tableValTitle.innerText = sections.title;
+        boxValFactors.innerHTML = marked.parse(sections.factors);
+        boxValChannels.innerHTML = marked.parse(sections.channels);
+        boxValCopyblock.innerHTML = marked.parse(sections.copyblock);
+
+        masterReportWrapper.style.display = 'block';
+        marketplaceHubContainer.style.display = 'block';
+
+        const verifiedKeywords = ['guitar', 'bass', 'amplifier', 'pedal', 'synth', 'keyboard', 'pickup', 'audio', 'gear', 'drum', 'ibanez', 'fender', 'gibson'];
+        const cleanTitle = sections.title.toLowerCase();
+        const cleanRawText = text.toLowerCase();
+
+        const matchedInstrument = verifiedKeywords.some(keyword => 
+          cleanTitle.includes(keyword) || cleanRawText.includes(keyword)
+        );
+
+        if (matchedInstrument) {
+          postReverbBtn.style.display = 'block';
+        } else {
+          postReverbBtn.style.display = 'none';
+        }
+
+        masterReportWrapper.scrollIntoView({ behavior: 'smooth' });
+      } catch (err) {
+        console.error(err);
+        showError(`Analysis Error: ${err.message}`);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    // CRITICAL CORE FIX: Wrapped in try-catch block to completely prevent WebView script crashes
+    async function executeClipboardHandoff(platformName, redirectUrl) {
+      if (!structuredStagedItem) return;
+      
+      const cleanDescText = boxValCopyblock.innerText || structuredStagedItem.description;
+      const clipboardContent = `TITLE: ${structuredStagedItem.title}\nPRICE SEGMENT: ${structuredStagedItem.price}\n\n${cleanDescText}`;
+      
+      try {
+        // Safe check to verify if the context supports the clipboard write API cleanly
+        if (navigator.clipboard && typeof navigator.clipboard.writeText === 'function') {
+          await navigator.clipboard.writeText(clipboardContent);
+          alert(`Copied to Clipboard!\n\nMachZero has copied your item title, pricing estimation, and detailed description. We are now opening ${platformName} so you can paste it right in.`);
+        }
+      } catch (err) {
+        console.warn("Mobile system container blocked direct script clipboard access:", err);
+      } finally {
+        // This block runs unconditionally, ensuring the browser link opens without freezing the screen
+        window.open(redirectUrl, "_blank");
+      }
+    }
+
+    crossMercariBtn.addEventListener('click', () => {
+      executeClipboardHandoff("Mercari", "https://www.mercari.com/sell/");
+    });
+
+    crossEbayBtn.addEventListener('click', () => {
+      executeClipboardHandoff("eBay", "https://www.ebay.com/sl/sell");
+    });
+
+    crossFacebookBtn.addEventListener('click', () => {
+      executeClipboardHandoff("Facebook Marketplace", "https://www.facebook.com/marketplace/create");
+    });
+
+    crossOfferUpBtn.addEventListener('click', () => {
+      executeClipboardHandoff("OfferUp", "https://offerup.com/post");
+    });
+
+    crossPoshmarkBtn.addEventListener('click', () => {
+      executeClipboardHandoff("Poshmark", "https://poshmark.com/listing");
+    });
+
+    postReverbBtn.addEventListener('click', async () => {
+      if (!structuredStagedItem) return;
+
+      postReverbBtn.disabled = true;
+      postReverbBtn.innerText = "PUBLISHING UNPUBLISHED DRAFT...";
+
+      const rawImagePayloads = imageQueue.map(item => item.base64).filter(Boolean);
+
+      try {
+        const response = await fetch('/api/reverb-draft', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            title: structuredStagedItem.title,
+            description: structuredStagedItem.description,
+            price: structuredStagedItem.price, 
+            images: rawImagePayloads 
+          })
+        });
+
+        if (response.ok) {
+          const userChoice = confirm("Okay, I made the draft in your Reverb. Would you like to go there now or would you like to stay on this app?\n\nClick 'OK' to view your Reverb drafts page, or 'Cancel' to stay right here.");
+          if (userChoice) {
+            window.open("https://reverb.com/my/listings?state=draft", "_blank");
+          }
+        } else {
+          const rawErrorPayload = await response.json().catch(() => ({}));
+          const specificDetails = rawErrorPayload.details ? JSON.stringify(rawErrorPayload.details) : rawErrorPayload.error || "Unknown server response code";
+          alert("Reverb Rejection Feedback:\n" + specificDetails);
+        }
+      } catch (err) {
+        console.error("Endpoint execution block error:", err);
+        alert("Connectivity error during API execution: " + err.message);
+      } finally {
+        postReverbBtn.disabled = false;
+        postReverbBtn.innerText = "SEND DRAFT TO REVERB.COM";
+      }
+    });
+
+    function setLoading(isLoading) {
+      if (isLoading) {
+        loadingState.style.display = 'flex';
+        cameraBtn.disabled = true;
+        uploadBtn.disabled = true;
+        submitBtn.disabled = true;
+      } else {
+        loadingState.style.display = 'none';
+        cameraBtn.disabled = false;
+        uploadBtn.disabled = false;
+        submitBtn.disabled = false;
+      }
+    }
+
+    function showError(message) {
+      errorText.textContent = message;
+      errorState.style.display = 'block';
+    }
+  </script>
+  <script defer src="https://va.vercel.clerk.com/script.js"></script>
+
+</body>
+</html>
