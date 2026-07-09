@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>MachZero - AI Resale Estimator</title>
 
+  <!-- iOS Link Preview & Open Graph Optimization -->
   <meta property="og:title" content="MachZero - AI Resale Estimator">
   <meta property="og:description" content="Add multiple snapshots to a single batch for immediate, expert resale values and optimized marketplace descriptions.">
   <meta property="og:image" content="https://machzero-beta.vercel.app/logo1.jpg">
@@ -406,8 +407,10 @@
     }
   </style>
 
+  <!-- Embedded Markdown Client Parser Engine -->
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 
+  <!-- Modern secure ES Modules mapping for front-end Google SDK deployment -->
   <script type="importmap">
     {
       "imports": {
@@ -447,8 +450,10 @@
 
       <div id="previewGrid" class="preview-grid"></div>
 
+      <!-- CONSOLIDATED SEGMENTED BRANDING LAYOUT MODULES -->
       <div id="masterReportWrapper" class="master-report-wrapper">
         
+        <!-- Primary Snapshot Dashboard Card -->
         <div class="report-box-primary">
           <h3 class="report-header-title" style="color: var(--accent-blue); border-color: var(--accent-blue);">📊 Core Inventory Valuation Matrix</h3>
           <table class="matrix-table">
@@ -471,6 +476,7 @@
           </table>
         </div>
 
+        <!-- Secondary Analytical Context Card -->
         <div class="report-box-secondary">
           <h3 class="report-header-title" style="color: var(--accent-indigo); border-color: var(--accent-indigo);">🔍 Structural Evaluation & Factors</h3>
           <div class="diagnostic-section" style="border-top: none; margin-top: 0; padding-top: 0;">
@@ -483,6 +489,7 @@
           </div>
         </div>
 
+        <!-- Deep Listing Automation Production Card -->
         <div class="report-box-deep">
           <h3 class="report-header-title" style="color: #a855f7; border-color: var(--border-indigo);">🏆 Optimized Marketplace Copy Engine</h3>
           <div class="diagnostic-section" style="border-top: none; margin-top: 0; padding-top: 0;">
@@ -491,6 +498,7 @@
           </div>
         </div>
 
+        <!-- Consolidated Multi-Marketplace Hub Panel -->
         <div id="marketplace-hub-container">
           <div style="display: flex; align-items: center; gap: 12px;">
             <span style="font-size: 24px;">🚀</span>
@@ -502,7 +510,6 @@
           
           <div class="marketplace-grid">
             <button class="btn btn-reverb" id="postReverbBtn" style="display: none;">SEND DRAFT TO REVERB.COM</button>
-            
             <button class="btn btn-mercari" id="crossMercariBtn">LIST DRAFT ON MERCARI</button>
             <button class="btn btn-ebay" id="crossEbayBtn">LIST DRAFT ON EBAY</button>
             <button class="btn btn-facebook" id="crossFacebookBtn">LIST DRAFT ON FACEBOOK MARKETPLACE</button>
@@ -544,7 +551,6 @@
     const marketplaceHubContainer = document.getElementById('marketplace-hub-container');
     const postReverbBtn = document.getElementById('postReverbBtn');
 
-    // Handoff buttons
     const crossMercariBtn = document.getElementById('crossMercariBtn');
     const crossEbayBtn = document.getElementById('crossEbayBtn');
     const crossFacebookBtn = document.getElementById('crossFacebookBtn');
@@ -761,7 +767,6 @@ Be thorough, precise, and direct.`;
         masterReportWrapper.style.display = 'block';
         marketplaceHubContainer.style.display = 'block';
 
-        // Reverb context handling
         const verifiedKeywords = ['guitar', 'bass', 'amplifier', 'pedal', 'synth', 'keyboard', 'pickup', 'audio', 'gear', 'drum', 'ibanez', 'fender', 'gibson'];
         const cleanTitle = sections.title.toLowerCase();
         const cleanRawText = text.toLowerCase();
@@ -785,24 +790,106 @@ Be thorough, precise, and direct.`;
       }
     }
 
-    // Direct Clipboard Handoff Utility Function
-    function executeClipboardHandoff(platformName, redirectUrl) {
+    // CRITICAL CORE FIX: Wrapped in try-catch block to completely prevent WebView script crashes
+    async function executeClipboardHandoff(platformName, redirectUrl) {
       if (!structuredStagedItem) return;
       
-      // Strip formatting to create a clean text copy block
       const cleanDescText = boxValCopyblock.innerText || structuredStagedItem.description;
       const clipboardContent = `TITLE: ${structuredStagedItem.title}\nPRICE SEGMENT: ${structuredStagedItem.price}\n\n${cleanDescText}`;
       
-      navigator.clipboard.writeText(clipboardContent).then(() => {
-        alert(`Copied to Clipboard!\n\nMachZero has copied your item title, pricing estimation, and detailed description. We are now opening ${platformName} so you can paste it right in.`);
+      try {
+        // Safe check to verify if the context supports the clipboard write API cleanly
+        if (navigator.clipboard && typeof navigator.clipboard.writeText === 'function') {
+          await navigator.clipboard.writeText(clipboardContent);
+          alert(`Copied to Clipboard!\n\nMachZero has copied your item title, pricing estimation, and detailed description. We are now opening ${platformName} so you can paste it right in.`);
+        }
+      } catch (err) {
+        console.warn("Mobile system container blocked direct script clipboard access:", err);
+      } finally {
+        // This block runs unconditionally, ensuring the browser link opens without freezing the screen
         window.open(redirectUrl, "_blank");
-      }).catch(err => {
-        console.error("Clipboard blocking error:", err);
-        window.open(redirectUrl, "_blank");
-      });
+      }
     }
 
-    // Dynamic Channel Trigger Mappings
     crossMercariBtn.addEventListener('click', () => {
       executeClipboardHandoff("Mercari", "https://www.mercari.com/sell/");
     });
+
+    crossEbayBtn.addEventListener('click', () => {
+      executeClipboardHandoff("eBay", "https://www.ebay.com/sl/sell");
+    });
+
+    crossFacebookBtn.addEventListener('click', () => {
+      executeClipboardHandoff("Facebook Marketplace", "https://www.facebook.com/marketplace/create");
+    });
+
+    crossOfferUpBtn.addEventListener('click', () => {
+      executeClipboardHandoff("OfferUp", "https://offerup.com/post");
+    });
+
+    crossPoshmarkBtn.addEventListener('click', () => {
+      executeClipboardHandoff("Poshmark", "https://poshmark.com/listing");
+    });
+
+    postReverbBtn.addEventListener('click', async () => {
+      if (!structuredStagedItem) return;
+
+      postReverbBtn.disabled = true;
+      postReverbBtn.innerText = "PUBLISHING UNPUBLISHED DRAFT...";
+
+      const rawImagePayloads = imageQueue.map(item => item.base64).filter(Boolean);
+
+      try {
+        const response = await fetch('/api/reverb-draft', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            title: structuredStagedItem.title,
+            description: structuredStagedItem.description,
+            price: structuredStagedItem.price, 
+            images: rawImagePayloads 
+          })
+        });
+
+        if (response.ok) {
+          const userChoice = confirm("Okay, I made the draft in your Reverb. Would you like to go there now or would you like to stay on this app?\n\nClick 'OK' to view your Reverb drafts page, or 'Cancel' to stay right here.");
+          if (userChoice) {
+            window.open("https://reverb.com/my/listings?state=draft", "_blank");
+          }
+        } else {
+          const rawErrorPayload = await response.json().catch(() => ({}));
+          const specificDetails = rawErrorPayload.details ? JSON.stringify(rawErrorPayload.details) : rawErrorPayload.error || "Unknown server response code";
+          alert("Reverb Rejection Feedback:\n" + specificDetails);
+        }
+      } catch (err) {
+        console.error("Endpoint execution block error:", err);
+        alert("Connectivity error during API execution: " + err.message);
+      } finally {
+        postReverbBtn.disabled = false;
+        postReverbBtn.innerText = "SEND DRAFT TO REVERB.COM";
+      }
+    });
+
+    function setLoading(isLoading) {
+      if (isLoading) {
+        loadingState.style.display = 'flex';
+        cameraBtn.disabled = true;
+        uploadBtn.disabled = true;
+        submitBtn.disabled = true;
+      } else {
+        loadingState.style.display = 'none';
+        cameraBtn.disabled = false;
+        uploadBtn.disabled = false;
+        submitBtn.disabled = false;
+      }
+    }
+
+    function showError(message) {
+      errorText.textContent = message;
+      errorState.style.display = 'block';
+    }
+  </script>
+  <script defer src="https://va.vercel.clerk.com/script.js"></script>
+
+</body>
+</html>
