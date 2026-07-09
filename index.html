@@ -27,6 +27,7 @@
       /* MachZero Diagnostic Border Accents */
       --border-blue: #233a66;
       --border-indigo: #3c2475;
+      --reverb-orange: #ea580c;
     }
     
     body {
@@ -284,6 +285,17 @@
       margin-bottom: 16px;
     }
 
+    /* Contextual Reverb Portal Container Box */
+    #reverb-container {
+      padding: 24px;
+      border-radius: 12px;
+      background: #1c1310;
+      border: 2px solid var(--reverb-orange);
+      text-align: left;
+      margin-bottom: 16px;
+      display: none; /* Controlled contextually by script */
+    }
+
     .report-header-title {
       margin-top: 0;
       font-size: 18px;
@@ -348,6 +360,18 @@
       border-bottom: none;
     }
     
+    .btn-reverb {
+      background-color: var(--reverb-orange);
+      color: #ffffff;
+      width: 100%;
+      margin-top: 15px;
+      box-shadow: 0 4px 12px rgba(234, 88, 12, 0.2);
+    }
+    
+    .btn-reverb:hover {
+      background-color: #d94e06;
+    }
+
     footer {
       margin-top: auto;
       padding-top: 48px;
@@ -456,6 +480,17 @@
           </div>
         </div>
 
+        <div id="reverb-container">
+          <div style="display: flex; align-items: center; gap: 12px;">
+            <span style="font-size: 24px;">🎸</span>
+            <div>
+              <h3 style="color: var(--reverb-orange); margin: 0; font-size: 15px; font-weight: bold;">Musical Equipment Identified</h3>
+              <p style="margin: 2px 0 0 0; font-size: 13px; color: var(--text-muted);">Stage this asset automatically as a draft listing on your Reverb shop.</p>
+            </div>
+          </div>
+          <button class="btn btn-reverb" id="postReverbBtn">SEND DRAFT TO REVERB.COM</button>
+        </div>
+
       </div>
     </div>
 
@@ -486,10 +521,14 @@
     const boxValFactors = document.getElementById('box-val-factors');
     const boxValChannels = document.getElementById('box-val-channels');
     const boxValCopyblock = document.getElementById('box-val-copyblock');
+    
+    const reverbContainer = document.getElementById('reverb-container');
+    const postReverbBtn = document.getElementById('postReverbBtn');
 
     brandLogo.onerror = () => { console.error("Logo asset logo1.jpg could not be loaded."); };
 
     let imageQueue = [];
+    let structuredStagedItem = null;
 
     cameraBtn.addEventListener('click', () => {
       errorState.style.display = 'none';
@@ -605,6 +644,7 @@
       }
     }
 
+    submitBtn.disabled = false;
     submitBtn.addEventListener('click', async () => {
       const uncompleted = imageQueue.some(item => !item.rawParts);
       if (uncompleted) {
@@ -615,6 +655,7 @@
       setLoading(true);
       errorState.style.display = 'none';
       masterReportWrapper.style.display = 'none';
+      reverbContainer.style.display = 'none';
 
       const contentPayload = imageQueue.map(item => item.rawParts);
       await sendDirectToGemini(contentPayload);
@@ -632,7 +673,6 @@
         const genAI = new GoogleGenerativeAI(activeKey);
         const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 
-        // Structured boundary markup definitions appended to allow target split parsing loops
         const appraisalPrompt = `You are an expert appraiser and high-end resale evaluator. 
 Analyze the provided image configurations carefully. Use these multiple angles to check frame details, signature details, canvas texture, condition details, and overall scale.
 
@@ -663,7 +703,6 @@ Be thorough, precise, and direct.`;
         const response = await result.response;
         const text = response.text();
 
-        // Advanced regex parser block isolating sections via layout bracket anchors
         const sections = {
           range: text.split('[PART_1]')[1]?.split('[PART_2]')[0]?.trim() || "Evaluation Staging Error",
           title: text.split('[PART_2]')[1]?.split('[PART_3]')[0]?.trim() || "Evaluation Staging Error",
@@ -672,16 +711,35 @@ Be thorough, precise, and direct.`;
           copyblock: text.split('[PART_5]')[1]?.trim() || ""
         };
 
-        // Render targets injecting clean client-parsed HTML components
+        structuredStagedItem = {
+          title: sections.title,
+          price: sections.range,
+          description: sections.copyblock
+        };
+
         tableValRange.innerText = sections.range;
         tableValTitle.innerText = sections.title;
         boxValFactors.innerHTML = marked.parse(sections.factors);
         boxValChannels.innerHTML = marked.parse(sections.channels);
-        
-        // The raw copy block renders with Markdown parsed out cleanly for clear clipboard capture
         boxValCopyblock.innerHTML = marked.parse(sections.copyblock);
 
         masterReportWrapper.style.display = 'block';
+
+        // UPGRADED CONTEXTUAL FILTER: Scan both the isolated title block and the complete raw output text for full keyword compliance
+        const verifiedKeywords = ['guitar', 'bass', 'amplifier', 'pedal', 'synth', 'keyboard', 'pickup', 'audio', 'gear', 'drum', 'ibanez', 'fender', 'gibson'];
+        const cleanTitle = sections.title.toLowerCase();
+        const cleanRawText = text.toLowerCase();
+
+        const matchedInstrument = verifiedKeywords.some(keyword => 
+          cleanTitle.includes(keyword) || cleanRawText.includes(keyword)
+        );
+
+        if (matchedInstrument) {
+          reverbContainer.style.display = 'block';
+        } else {
+          reverbContainer.style.display = 'none';
+        }
+
         masterReportWrapper.scrollIntoView({ behavior: 'smooth' });
       } catch (err) {
         console.error(err);
@@ -690,6 +748,38 @@ Be thorough, precise, and direct.`;
         setLoading(false);
       }
     }
+
+    postReverbBtn.addEventListener('click', async () => {
+      if (!structuredStagedItem) return;
+
+      postReverbBtn.disabled = true;
+      postReverbBtn.innerText = "PUBLISHING UNPUBLISHED DRAFT...";
+
+      try {
+        const response = await fetch('/api/reverb-draft', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            title: structuredStagedItem.title,
+            description: structuredStagedItem.description,
+            price: structuredStagedItem.price.replace(/[^0-9.]/g, '').split('.')[0] || "0"
+          })
+        });
+
+        if (response.ok) {
+          alert("Success! Draft created in your Reverb shop dashboard.");
+          reverbContainer.style.display = 'none';
+        } else {
+          alert("Staging handoff error. Verify your account connection configurations.");
+        }
+      } catch (err) {
+        console.error("Endpoint execution block error:", err);
+        alert("Connectivity error during API execution.");
+      } finally {
+        postReverbBtn.disabled = false;
+        postReverbBtn.innerText = "SEND DRAFT TO REVERB.COM";
+      }
+    });
 
     function setLoading(isLoading) {
       if (isLoading) {
