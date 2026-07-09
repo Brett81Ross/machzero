@@ -1,137 +1,60 @@
+import { GoogleGenerativeAI } from "@google/generative-ai";
+
+// Initialize the Gemini SDK securely on the server using your environment variable
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+
 export default async function handler(req, res) {
-  if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Method not allowed' });
+  // Enforce POST requests
+  if (req.method !== "POST") {
+    return res.status(405).json({ error: "Method not allowed. Use POST." });
   }
 
-  // ========================================================
-  // 🔑 PASTE YOUR REVERB PERSONAL ACCESS TOKEN BELOW HERE:
-  // ========================================================
-  const REVERB_TOKEN = "a1350a74e75826b0ecf03b1d6513c1b455022d5f60c130e35af0e698848c24ca"; 
-  // ========================================================
-
   try {
-    const { title, description, price, images } = req.body;
+    const { images } = req.body;
 
-    // 1. Sanitize the title string
-    let cleanTitle = title ? title.replace(/\[\/?PART_[0-9]\]/g, '').trim() : "Musical Instrument Asset";
-    cleanTitle = cleanTitle.replace(/\*\*/g, '');
-    const lowerTitle = cleanTitle.toLowerCase();
-
-    // 2. Isolate Brand (Make) and Model guidelines
-    let make = "Other";
-    let model = cleanTitle;
-    let productType = "acoustic-guitars"; 
-
-    const brandList = ['Gibson', 'Ibanez', 'Fender', 'Epiphone', 'Martin', 'Taylor', 'PRS', 'Yamaha', 'Gretsch', 'Squier'];
-    const foundBrand = brandList.find(b => lowerTitle.includes(b.toLowerCase()));
-    
-    if (foundBrand) {
-      make = foundBrand;
-      model = cleanTitle.replace(new RegExp(foundBrand, 'gi'), '').trim();
+    // Validation: Ensure images were actually sent in the payload
+    if (!images || !Array.isArray(images) || images.length === 0) {
+      return res.status(400).json({ error: "No images provided for analysis." });
     }
 
-    // 3. Dynamic Category Mapping Matrix
-    if (lowerTitle.includes('electric') && lowerTitle.includes('guitar')) {
-      productType = "electric-guitars";
-    } else if (lowerTitle.includes('bass')) {
-      productType = "bass-guitars";
-    } else if (lowerTitle.includes('amplifier') || lowerTitle.includes('amp')) {
-      productType = "amps";
-    } else if (lowerTitle.includes('pedal') || lowerTitle.includes('effects')) {
-      productType = "effects-and-pedals";
-    } else if (lowerTitle.includes('synth') || lowerTitle.includes('keyboard')) {
-      productType = "keyboards-and-synths";
-    }
-
-    // 4. Accurate Price Parser (Preserves correct multi-thousand dollar values)
-    let cleanPrice = "150.00"; 
-    if (price) {
-      const genericNumbers = price.replace(/[^0-9.\-]/g, '');
-      const primarySegment = genericNumbers.split('-')[0];
-      
-      if (primarySegment && !isNaN(primarySegment)) {
-        cleanPrice = parseFloat(primarySegment).toFixed(2);
-      }
-    }
-
-    // 5. Unbroken clean layout description copy block pass-through
-    let cleanDescription = "See photos for product condition details.";
-    if (description) {
-      cleanDescription = description
-        .replace(/\[\/?PART_[0-9]\]/g, '') 
-        .replace(/\*\*/g, '')              
-        .replace(/\\n/g, '\n') 
-        .trim();
-    }
-
-    // 6. Step A: Initial Content Payload Save Handoff to Reverb
-    const reverbResponse = await fetch('https://api.reverb.com/api/listings', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${REVERB_TOKEN}`,
-        'Content-Type': 'application/hal+json',
-        'Accept': 'application/hal+json',
-        'Accept-Version': '3.0'
-      },
-      body: JSON.stringify({
-        make: make,
-        model: model || "Instrument Asset",
-        product_type: productType,
-        condition: {
-          uuid: "df268ad1-c462-4ba6-b6db-e007e23922ea" // Standard UUID mapping for "Excellent"
+    // Format the incoming base64 strings into the structure the Gemini SDK expects
+    const imageParts = images.map((base64Str) => {
+      const cleanBase64 = base64Str.replace(/^data:image\/\w+;base64,/, "");
+      return {
+        inlineData: {
+          data: cleanBase64,
+          mimeType: "image/jpeg",
         },
-        title: cleanTitle.substring(0, 80), 
-        description: cleanDescription,
-        price: {
-          amount: cleanPrice,
-          currency: 'USD'
-        },
-        location: {
-          country_code: "US"
-        },
-        has_inventory: true,
-        inventory: 1,
-        publish: false 
-      })
+      };
     });
 
-    if (!reverbResponse.ok) {
-      const errLog = await reverbResponse.json().catch(() => ({}));
-      return res.status(reverbResponse.status).json({ error: 'Reverb rejected draft text data.', details: errLog });
-    }
+    // TARGETING THE NEW 3.5 FLASH MODEL FOR IMPROVED CODING/REASONING SPEED
+    const model = genAI.getGenerativeModel({ model: "gemini-3.5-flash" });
 
-    const successfulListingData = await reverbResponse.json();
-    
-    // 7. Step B: Dynamic Image Multi-Part Binding Append Sequence
-    const imageUploadEndpoint = successfulListingData._links?.['reverb:listing_images']?.href 
-      || `https://api.reverb.com/api/listings/${successfulListingData.id}/images`;
+    // The explicit appraisal prompt for MachZero
+    const prompt = `
+      Analyze the provided item images carefully. 
+      Provide a highly accurate valuation, including estimated market resale price range, 
+      item condition analysis, identifying marks/signatures, and rough dimensional estimates if visible.
+      Format the final response in clean markdown structure.
+    `;
 
-    if (images && Array.isArray(images) && images.length > 0 && imageUploadEndpoint) {
-      // FIX: Corrected syntax loop structure variable assignment
-      for (const b64Data of images) {
-        try {
-          await fetch(imageUploadEndpoint, {
-            method: 'POST',
-            headers: {
-              'Authorization': `Bearer ${REVERB_TOKEN}`,
-              'Content-Type': 'application/json',
-              'Accept': 'application/hal+json',
-              'Accept-Version': '3.0'
-            },
-            body: JSON.stringify({
-              file: `data:image/jpeg;base64,${b64Data}`
-            })
-          });
-        } catch (imgErr) {
-          console.error("Single child image payload asset upload dropout failed:", imgErr);
-        }
-      }
-    }
+    // Fire the request off securely
+    const result = await model.generateContent([prompt, ...imageParts]);
+    const response = await result.response;
+    const text = response.text();
 
-    return res.status(200).json({ success: true });
+    // Send the data back to your frontend UI
+    return res.status(200).json({ 
+      success: true, 
+      analysis: text 
+    });
 
-  } catch (err) {
-    console.error("Serverless Backend Endpoint Failure:", err);
-    return res.status(500).json({ error: err.message });
+  } catch (error) {
+    console.error("Backend MachZero Error:", error);
+    return res.status(500).json({ 
+      success: false, 
+      error: "Internal server error during image appraisal processing." 
+    });
   }
 }
