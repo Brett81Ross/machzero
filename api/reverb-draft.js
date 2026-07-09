@@ -44,27 +44,16 @@ export default async function handler(req, res) {
       productType = "keyboards-and-synths";
     }
 
-    // 4. BULLETPROOF FIX: Price-Specific Tokenizer (Ignores Year Text like 2000s/2010s)
+    // 4. PRECISE PRICE EXTRACTOR: Isolate numerical content ONLY from the price variable
     let cleanPrice = "0.00";
     if (price) {
-      // RegEx target: Finds standard currency notations (e.g., $1,500, $250.00, 1500)
-      const currencyMatch = price.match(/\$?([1-9]\d{2,}(?:[\.,]\d{2})?)/);
+      // Remove spaces, dollar signs, and commas first
+      const strippedPrice = price.replace(/[\$\s,]/g, '');
       
-      if (currencyMatch && currencyMatch[1]) {
-        // Strip out any commas so parseFloat can process it cleanly
-        const rawNumbers = currencyMatch[1].replace(/,/g, '');
-        if (rawNumbers && !isNaN(rawNumbers)) {
-          cleanPrice = parseFloat(rawNumbers).toFixed(2);
-        }
-      } else {
-        // Fallback catch-all if no standard currency format matches
-        const backupMatch = price.match(/\d[\d,.]*/);
-        if (backupMatch && backupMatch[0]) {
-          const rawNumbers = backupMatch[0].replace(/,/g, '');
-          if (rawNumbers && !isNaN(rawNumbers)) {
-            cleanPrice = parseFloat(rawNumbers).toFixed(2);
-          }
-        }
+      // Look for the first continuous block of numbers or decimals left over
+      const match = strippedPrice.match(/^\d+(?:\.\d{2})?/);
+      if (match && match[0]) {
+        cleanPrice = parseFloat(match[0]).toFixed(2);
       }
     }
 
