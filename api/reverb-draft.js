@@ -44,19 +44,32 @@ export default async function handler(req, res) {
       productType = "keyboards-and-synths";
     }
 
-    // 4. FIXED: Robust Extraction for First Complete Price Value (Ignores Ranges/Commas)
+    // 4. Robust Price Extraction Loop
     let cleanPrice = "0.00";
     if (price) {
-      // Pulls the very first continuous block of numbers/commas/periods (e.g. "1,500")
       const firstPriceMatch = price.match(/\d[\d,.]*/);
       if (firstPriceMatch && firstPriceMatch[0]) {
-        // Strip out any commas so parseFloat can process it correctly
         const rawNumbers = firstPriceMatch[0].replace(/,/g, '');
         if (rawNumbers && !isNaN(rawNumbers)) {
           cleanPrice = parseFloat(rawNumbers).toFixed(2);
         }
       }
     }
+
+    // ========================================================
+    // 🛠️ FIX: CLEAN DESCRIPTION FORMATTING FOR REVERB INGESTION
+    // ========================================================
+    let cleanDescription = "See photos for product condition details.";
+    if (description) {
+      cleanDescription = description
+        .replace(/\[\/?PART_[0-9]\]/g, '') // Remove structural part tags
+        .replace(/\*\*/g, '')              // Strip markdown bold markers
+        .replace(/\\n/g, ' ')              // Convert escaped string line breaks to spaces
+        .replace(/\n/g, ' ')               // Convert raw line breaks to spaces
+        .replace(/\s+/g, ' ')              // Collapse any double spacing down to clean single spaces
+        .trim();
+    }
+    // ========================================================
 
     // Securely forward the dynamic data payload straight to Reverb's server engine
     const reverbResponse = await fetch('https://api.reverb.com/api/listings', {
@@ -75,7 +88,7 @@ export default async function handler(req, res) {
           uuid: "df268ad1-c462-4ba6-b6db-e007e23922ea" // Standard UUID for "Excellent"
         },
         title: cleanTitle.substring(0, 80), 
-        description: description || "See photos for product condition details.",
+        description: cleanDescription,
         price: {
           amount: cleanPrice,
           currency: 'USD'
