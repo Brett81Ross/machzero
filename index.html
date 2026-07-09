@@ -28,6 +28,7 @@
       --border-blue: #233a66;
       --border-indigo: #3c2475;
       --reverb-orange: #ea580c;
+      --generic-border: #334155;
     }
     
     body {
@@ -285,12 +286,12 @@
       margin-bottom: 16px;
     }
 
-    /* Contextual Reverb Portal Container Box */
-    #reverb-container {
+    /* Consolidated Multi-Marketplace Hub Panel */
+    #marketplace-hub-container {
       padding: 24px;
       border-radius: 12px;
-      background: #1c1310;
-      border: 2px solid var(--reverb-orange);
+      background: #0f172a;
+      border: 2px solid var(--accent-blue);
       text-align: left;
       margin-bottom: 16px;
       display: none;
@@ -360,17 +361,27 @@
       border-bottom: none;
     }
     
+    /* Cross-Listing Buttons Grid */
+    .marketplace-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 12px;
+      margin-top: 16px;
+    }
+
     .btn-reverb {
       background-color: var(--reverb-orange);
       color: #ffffff;
-      width: 100%;
-      margin-top: 15px;
       box-shadow: 0 4px 12px rgba(234, 88, 12, 0.2);
     }
     
-    .btn-reverb:hover {
-      background-color: #d94e06;
-    }
+    .btn-reverb:hover { background-color: #d94e06; }
+
+    .btn-mercari { background-color: #e60012; color: #ffffff; }
+    .btn-ebay { background-color: #0064d2; color: #ffffff; }
+    .btn-facebook { background-color: #1877f2; color: #ffffff; }
+    .btn-offerup { background-color: #00b6aa; color: #ffffff; }
+    .btn-poshmark { background-color: #8b1e3f; color: #ffffff; }
 
     footer {
       margin-top: auto;
@@ -480,15 +491,24 @@
           </div>
         </div>
 
-        <div id="reverb-container">
+        <div id="marketplace-hub-container">
           <div style="display: flex; align-items: center; gap: 12px;">
-            <span style="font-size: 24px;">🎸</span>
+            <span style="font-size: 24px;">🚀</span>
             <div>
-              <h3 style="color: var(--reverb-orange); margin: 0; font-size: 15px; font-weight: bold;">Musical Equipment Identified</h3>
-              <p style="margin: 2px 0 0 0; font-size: 13px; color: var(--text-muted);">Stage this asset automatically as a draft listing on your Reverb shop.</p>
+              <h3 style="color: var(--accent-blue); margin: 0; font-size: 15px; font-weight: bold;">Marketplace Cross-Listing Hub</h3>
+              <p style="margin: 2px 0 0 0; font-size: 13px; color: var(--text-muted);">Instantly push automated data arrays or stage listings onto multiple channels.</p>
             </div>
           </div>
-          <button class="btn btn-reverb" id="postReverbBtn">SEND DRAFT TO REVERB.COM</button>
+          
+          <div class="marketplace-grid">
+            <button class="btn btn-reverb" id="postReverbBtn" style="display: none;">SEND DRAFT TO REVERB.COM</button>
+            
+            <button class="btn btn-mercari" id="crossMercariBtn">LIST DRAFT ON MERCARI</button>
+            <button class="btn btn-ebay" id="crossEbayBtn">LIST DRAFT ON EBAY</button>
+            <button class="btn btn-facebook" id="crossFacebookBtn">LIST DRAFT ON FACEBOOK MARKETPLACE</button>
+            <button class="btn btn-offerup" id="crossOfferUpBtn">LIST DRAFT ON OFFERUP</button>
+            <button class="btn btn-poshmark" id="crossPoshmarkBtn">LIST DRAFT ON POSHMARK</button>
+          </div>
         </div>
 
       </div>
@@ -514,7 +534,6 @@
     const previewGrid = document.getElementById('previewGrid');
     const brandLogo = document.getElementById('brandLogo');
 
-    // Consolidated Output Component Handlers
     const masterReportWrapper = document.getElementById('masterReportWrapper');
     const tableValRange = document.getElementById('table-val-range');
     const tableValTitle = document.getElementById('table-val-title');
@@ -522,8 +541,15 @@
     const boxValChannels = document.getElementById('box-val-channels');
     const boxValCopyblock = document.getElementById('box-val-copyblock');
     
-    const reverbContainer = document.getElementById('reverb-container');
+    const marketplaceHubContainer = document.getElementById('marketplace-hub-container');
     const postReverbBtn = document.getElementById('postReverbBtn');
+
+    // Handoff buttons
+    const crossMercariBtn = document.getElementById('crossMercariBtn');
+    const crossEbayBtn = document.getElementById('crossEbayBtn');
+    const crossFacebookBtn = document.getElementById('crossFacebookBtn');
+    const crossOfferUpBtn = document.getElementById('crossOfferUpBtn');
+    const crossPoshmarkBtn = document.getElementById('crossPoshmarkBtn');
 
     brandLogo.onerror = () => { console.error("Logo asset logo1.jpg could not be loaded."); };
 
@@ -664,7 +690,7 @@
       setLoading(true);
       errorState.style.display = 'none';
       masterReportWrapper.style.display = 'none';
-      reverbContainer.style.display = 'none';
+      marketplaceHubContainer.style.display = 'none';
 
       const contentPayload = imageQueue.map(item => item.rawParts);
       await sendDirectToGemini(contentPayload);
@@ -733,7 +759,9 @@ Be thorough, precise, and direct.`;
         boxValCopyblock.innerHTML = marked.parse(sections.copyblock);
 
         masterReportWrapper.style.display = 'block';
+        marketplaceHubContainer.style.display = 'block';
 
+        // Reverb context handling
         const verifiedKeywords = ['guitar', 'bass', 'amplifier', 'pedal', 'synth', 'keyboard', 'pickup', 'audio', 'gear', 'drum', 'ibanez', 'fender', 'gibson'];
         const cleanTitle = sections.title.toLowerCase();
         const cleanRawText = text.toLowerCase();
@@ -743,9 +771,9 @@ Be thorough, precise, and direct.`;
         );
 
         if (matchedInstrument) {
-          reverbContainer.style.display = 'block';
+          postReverbBtn.style.display = 'block';
         } else {
-          reverbContainer.style.display = 'none';
+          postReverbBtn.style.display = 'none';
         }
 
         masterReportWrapper.scrollIntoView({ behavior: 'smooth' });
@@ -757,66 +785,24 @@ Be thorough, precise, and direct.`;
       }
     }
 
-    postReverbBtn.addEventListener('click', async () => {
+    // Direct Clipboard Handoff Utility Function
+    function executeClipboardHandoff(platformName, redirectUrl) {
       if (!structuredStagedItem) return;
+      
+      // Strip formatting to create a clean text copy block
+      const cleanDescText = boxValCopyblock.innerText || structuredStagedItem.description;
+      const clipboardContent = `TITLE: ${structuredStagedItem.title}\nPRICE SEGMENT: ${structuredStagedItem.price}\n\n${cleanDescText}`;
+      
+      navigator.clipboard.writeText(clipboardContent).then(() => {
+        alert(`Copied to Clipboard!\n\nMachZero has copied your item title, pricing estimation, and detailed description. We are now opening ${platformName} so you can paste it right in.`);
+        window.open(redirectUrl, "_blank");
+      }).catch(err => {
+        console.error("Clipboard blocking error:", err);
+        window.open(redirectUrl, "_blank");
+      });
+    }
 
-      postReverbBtn.disabled = true;
-      postReverbBtn.innerText = "PUBLISHING UNPUBLISHED DRAFT...";
-
-      const rawImagePayloads = imageQueue.map(item => item.base64).filter(Boolean);
-
-      try {
-        const response = await fetch('/api/reverb-draft', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            title: structuredStagedItem.title,
-            description: structuredStagedItem.description,
-            price: structuredStagedItem.price, 
-            images: rawImagePayloads 
-          })
-        });
-
-        if (response.ok) {
-          const userChoice = confirm("Okay, I made the draft in your Reverb. Would you like to go there now or would you like to stay on this app?\n\nClick 'OK' to view your Reverb drafts page, or 'Cancel' to stay right here.");
-          if (userChoice) {
-            window.open("https://reverb.com/my/listings?state=draft", "_blank");
-          }
-          reverbContainer.style.display = 'none';
-        } else {
-          const rawErrorPayload = await response.json().catch(() => ({}));
-          const specificDetails = rawErrorPayload.details ? JSON.stringify(rawErrorPayload.details) : rawErrorPayload.error || "Unknown server response code";
-          alert("Reverb Rejection Feedback:\n" + specificDetails);
-        }
-      } catch (err) {
-        console.error("Endpoint execution block error:", err);
-        alert("Connectivity error during API execution: " + err.message);
-      } finally {
-        postReverbBtn.disabled = false;
-        postReverbBtn.innerText = "SEND DRAFT TO REVERB.COM";
-      }
+    // Dynamic Channel Trigger Mappings
+    crossMercariBtn.addEventListener('click', () => {
+      executeClipboardHandoff("Mercari", "https://www.mercari.com/sell/");
     });
-
-    function setLoading(isLoading) {
-      if (isLoading) {
-        loadingState.style.display = 'flex';
-        cameraBtn.disabled = true;
-        uploadBtn.disabled = true;
-        submitBtn.disabled = true;
-      } else {
-        loadingState.style.display = 'none';
-        cameraBtn.disabled = false;
-        uploadBtn.disabled = false;
-        submitBtn.disabled = false;
-      }
-    }
-
-    function showError(message) {
-      errorText.textContent = message;
-      errorState.style.display = 'block';
-    }
-  </script>
-  <script defer src="https://va.vercel.clerk.com/script.js"></script>
-
-</body>
-</html>
