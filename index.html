@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>MachZero - AI Resale Estimator</title>
 
+  <!-- iOS Link Preview & Open Graph Optimization -->
   <meta property="og:title" content="MachZero - AI Resale Estimator">
   <meta property="og:description" content="Add multiple snapshots to a single batch for immediate, expert resale values and optimized marketplace descriptions.">
   <meta property="og:image" content="https://machzero-beta.vercel.app/logo1.jpg">
@@ -395,8 +396,10 @@
     }
   </style>
 
+  <!-- Embedded Markdown Client Parser Engine -->
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 
+  <!-- Modern secure ES Modules mapping for front-end Google SDK deployment -->
   <script type="importmap">
     {
       "imports": {
@@ -436,8 +439,10 @@
 
       <div id="previewGrid" class="preview-grid"></div>
 
+      <!-- CONSOLIDATED SEGMENTED BRANDING LAYOUT MODULES -->
       <div id="masterReportWrapper" class="master-report-wrapper">
         
+        <!-- Primary Snapshot Dashboard Card -->
         <div class="report-box-primary">
           <h3 class="report-header-title" style="color: var(--accent-blue); border-color: var(--accent-blue);">📊 Core Inventory Valuation Matrix</h3>
           <table class="matrix-table">
@@ -460,6 +465,7 @@
           </table>
         </div>
 
+        <!-- Secondary Analytical Context Card -->
         <div class="report-box-secondary">
           <h3 class="report-header-title" style="color: var(--accent-indigo); border-color: var(--accent-indigo);">🔍 Structural Evaluation & Factors</h3>
           <div class="diagnostic-section" style="border-top: none; margin-top: 0; padding-top: 0;">
@@ -472,6 +478,7 @@
           </div>
         </div>
 
+        <!-- Deep Listing Automation Production Card -->
         <div class="report-box-deep">
           <h3 class="report-header-title" style="color: #a855f7; border-color: var(--border-indigo);">🏆 Optimized Marketplace Copy Engine</h3>
           <div class="diagnostic-section" style="border-top: none; margin-top: 0; padding-top: 0;">
@@ -480,6 +487,7 @@
           </div>
         </div>
 
+        <!-- Contextual Marketplace Handoff Panel: Only shows if item is an instrument -->
         <div id="reverb-container">
           <div style="display: flex; align-items: center; gap: 12px;">
             <span style="font-size: 24px;">🎸</span>
@@ -765,15 +773,18 @@ Be thorough, precise, and direct.`;
           })
         });
 
-        // UPGRADED REVERB DIAGNOSTIC INTERCEPTOR
         if (response.ok) {
-          alert("Success! Draft created in your Reverb shop dashboard.");
+          // UPGRADED CUSTOM DIRECTIONAL PROMPT WINDOW
+          const userChoice = confirm("Okay, I made the draft in your Reverb. Would you like to go there now or would you like to stay on this app?\n\nClick 'OK' to view your Reverb drafts page, or 'Cancel' to stay right here.");
+          
+          if (userChoice) {
+            // Smoothly redirects directly to the standard Reverb shop dashboard draft box URL path
+            window.open("https://reverb.com/my/listings?state=draft", "_blank");
+          }
           reverbContainer.style.display = 'none';
         } else {
           const rawErrorPayload = await response.json().catch(() => ({}));
           const specificDetails = rawErrorPayload.details ? JSON.stringify(rawErrorPayload.details) : rawErrorPayload.error || "Unknown server response code";
-          
-          // Alerts you exactly what parameter failed or if authorization was denied
           alert("Reverb Rejection Feedback:\n" + specificDetails);
         }
       } catch (err) {
