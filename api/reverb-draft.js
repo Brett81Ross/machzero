@@ -44,17 +44,16 @@ export default async function handler(req, res) {
       productType = "keyboards-and-synths";
     }
 
-    // 4. FIXED: Advanced String Splitting Price Extraction Loop
+    // 4. FIXED: Robust Extraction for First Complete Price Value (Ignores Ranges/Commas)
     let cleanPrice = "0.00";
     if (price) {
-      // Split the string by common range dividers (hyphens, words like "to", or spaces)
-      const parts = price.split(/[\-\s]+/);
-      
-      // Grab the first block (e.g., "$2,500") and clean up formatting symbols
-      if (parts[0]) {
-        const firstValueNumbers = parts[0].replace(/[^0-9.]/g, '');
-        if (firstValueNumbers && !isNaN(firstValueNumbers)) {
-          cleanPrice = parseFloat(firstValueNumbers).toFixed(2);
+      // Pulls the very first continuous block of numbers/commas/periods (e.g. "1,500")
+      const firstPriceMatch = price.match(/\d[\d,.]*/);
+      if (firstPriceMatch && firstPriceMatch[0]) {
+        // Strip out any commas so parseFloat can process it correctly
+        const rawNumbers = firstPriceMatch[0].replace(/,/g, '');
+        if (rawNumbers && !isNaN(rawNumbers)) {
+          cleanPrice = parseFloat(rawNumbers).toFixed(2);
         }
       }
     }
