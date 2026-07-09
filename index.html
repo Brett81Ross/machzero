@@ -540,7 +540,7 @@
 
     brandLogo.onerror = () => { console.error("Logo asset logo1.jpg could not be loaded."); };
 
-    // BIND TO GLOBAL WINDOW SCOPE: Prevents Android closures from losing references
+    // BIND TO GLOBAL WINDOW SCOPE: Prevents closures from breaking variable references
     window.imageQueue = [];
     window.structuredStagedItem = null;
 
@@ -686,9 +686,9 @@
 
     async function sendDirectToGemini(contentPartsArray) {
       try {
-        // EXPLICIT HANDSHAKE: Stating properties directly to resolve Vercel routing errors
+        // 🛠️ POST HANDSHAKE INTEGRATION: Matches your api/analyze routing constraint perfectly
         const keyFetch = await fetch('/api/analyze', {
-          method: 'GET',
+          method: 'POST',
           headers: {
             'Accept': 'application/json',
             'Content-Type': 'application/json'
@@ -781,7 +781,7 @@ Be thorough, precise, and direct.`;
       }
     }
 
-    // ANDROID WEBVIEW SECURITY FAIL-SAFE WRAPPER
+    // ANDROID WEBVIEW CONTEXT SECURITY EXCEPTION WRAPPER
     async function executeClipboardHandoff(platformName, redirectUrl) {
       if (!window.structuredStagedItem) return;
       
@@ -794,7 +794,7 @@ Be thorough, precise, and direct.`;
           alert(`Copied to Clipboard!\n\nMachZero has copied your item title, pricing estimation, and detailed description. We are now opening ${platformName} so you can paste it right in.`);
         }
       } catch (err) {
-        console.warn("WebView blocked execution context copy access:", err);
+        console.warn("Mobile system container blocked direct clipboard engine mapping:", err);
       } finally {
         // Runs unconditionally to guarantee buttons never freeze up
         window.open(redirectUrl, "_blank");
