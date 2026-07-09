@@ -43,12 +43,10 @@ export default async function handler(req, res) {
       productType = "keyboards-and-synths";
     }
 
-    // 4. FIX: Accurate Price Parser (Preserves correct multi-thousand dollar values)
+    // 4. Accurate Price Parser (Preserves correct multi-thousand dollar values)
     let cleanPrice = "150.00"; 
     if (price) {
-      // Isolate just numbers, periods, and hyphens
       const genericNumbers = price.replace(/[^0-9.\-]/g, '');
-      // If it's a range like 1500-2200, take the first segment
       const primarySegment = genericNumbers.split('-')[0];
       
       if (primarySegment && !isNaN(primarySegment)) {
@@ -105,12 +103,12 @@ export default async function handler(req, res) {
     const successfulListingData = await reverbResponse.json();
     
     // 7. Step B: Dynamic Image Multi-Part Binding Append Sequence
-    // Extract the exact programmatic endpoints linking directly to your newly generated draft id
     const imageUploadEndpoint = successfulListingData._links?.['reverb:listing_images']?.href 
       || `https://api.reverb.com/api/listings/${successfulListingData.id}/images`;
 
     if (images && Array.isArray(images) && images.length > 0 && imageUploadEndpoint) {
-      for (const b64Data String of images) {
+      // FIX: Corrected syntax loop structure variable assignment
+      for (const b64Data of images) {
         try {
           await fetch(imageUploadEndpoint, {
             method: 'POST',
@@ -121,7 +119,7 @@ export default async function handler(req, res) {
               'Accept-Version': '3.0'
             },
             body: JSON.stringify({
-              file: `data:image/jpeg;base64,${b64DataString}`
+              file: `data:image/jpeg;base64,${b64Data}`
             })
           });
         } catch (imgErr) {
