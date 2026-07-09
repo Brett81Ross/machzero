@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>MachZero - AI Resale Estimator</title>
 
+  <!-- iOS Link Preview & Open Graph Optimization -->
   <meta property="og:title" content="MachZero - AI Resale Estimator">
   <meta property="og:description" content="Add multiple snapshots to a single batch for immediate, expert resale values and optimized marketplace descriptions.">
   <meta property="og:image" content="https://machzero-beta.vercel.app/logo1.jpg">
@@ -395,15 +396,8 @@
     #fileInput { display: none; }
   </style>
 
+  <!-- Embedded Markdown Client Parser Engine -->
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-
-  <script type="importmap">
-    {
-      "imports": {
-        "@google/generative-ai": "https://esm.run/@google/generative-ai"
-      }
-    }
-  </script>
 </head>
 <body>
 
@@ -436,8 +430,10 @@
 
       <div id="previewGrid" class="preview-grid"></div>
 
+      <!-- CONSOLIDATED SEGMENTED BRANDING LAYOUT MODULES -->
       <div id="masterReportWrapper" class="master-report-wrapper">
         
+        <!-- Primary Snapshot Dashboard Card -->
         <div class="report-box-primary">
           <h3 class="report-header-title" style="color: var(--accent-blue); border-color: var(--accent-blue);">📊 Core Inventory Valuation Matrix</h3>
           <table class="matrix-table">
@@ -460,6 +456,7 @@
           </table>
         </div>
 
+        <!-- Secondary Analytical Context Card -->
         <div class="report-box-secondary">
           <h3 class="report-header-title" style="color: var(--accent-indigo); border-color: var(--accent-indigo);">🔍 Structural Evaluation & Factors</h3>
           <div class="diagnostic-section" style="border-top: none; margin-top: 0; padding-top: 0;">
@@ -472,6 +469,7 @@
           </div>
         </div>
 
+        <!-- Deep Listing Automation Production Card -->
         <div class="report-box-deep">
           <h3 class="report-header-title" style="color: #a855f7; border-color: var(--border-indigo);">🏆 Optimized Marketplace Copy Engine</h3>
           <div class="diagnostic-section" style="border-top: none; margin-top: 0; padding-top: 0;">
@@ -480,6 +478,7 @@
           </div>
         </div>
 
+        <!-- Consolidated Multi-Marketplace Hub Panel -->
         <div id="marketplace-hub-container">
           <div style="display: flex; align-items: center; gap: 12px;">
             <span style="font-size: 24px;">🚀</span>
@@ -508,9 +507,7 @@
     </footer>
   </div>
 
-  <script type="module">
-    import { GoogleGenerativeAI } from "@google/generative-ai";
-
+  <script>
     const fileInput = document.getElementById('fileInput');
     const cameraBtn = document.getElementById('cameraBtn');
     const uploadBtn = document.getElementById('uploadBtn');
@@ -540,7 +537,7 @@
 
     brandLogo.onerror = () => { console.error("Logo asset logo1.jpg could not be loaded."); };
 
-    // BIND TO GLOBAL WINDOW SCOPE: Prevents closures from breaking variable references
+    // BIND TO GLOBAL WINDOW SCOPE: Keeps image properties alive across asynchronous events
     window.imageQueue = [];
     window.structuredStagedItem = null;
 
@@ -567,7 +564,6 @@
           const queueItem = {
             id: Date.now() + Math.random().toString(36).substr(2, 5),
             blobUrl: blobUrl,
-            rawParts: null,
             base64: null 
           };
 
@@ -592,8 +588,7 @@
           const reader = new FileReader();
           reader.onloadend = () => {
             try {
-              compressAndPrepImage(reader.result, (genAIPart, cleanBase64) => {
-                queueItem.rawParts = genAIPart;
+              compressAndPrepImage(reader.result, (cleanBase64) => {
                 queueItem.base64 = cleanBase64;
               });
             } catch (innerErr) {
@@ -602,7 +597,7 @@
           };
           reader.readAsDataURL(file);
         } catch (fileErr) {
-          console.error("File loading array registration fault:", fileErr);
+          console.error("File loading registration fault:", fileErr);
         }
       }
 
@@ -639,12 +634,7 @@
         const optimizedBase64 = canvas.toDataURL('image/jpeg', 0.78);
         const splitData = optimizedBase64.split(',');
         
-        callback({
-          inlineData: {
-            data: splitData[1],
-            mimeType: "image/jpeg"
-          }
-        }, splitData[1]);
+        callback(splitData[1]);
       };
     }
 
@@ -669,7 +659,7 @@
     }
 
     submitBtn.addEventListener('click', async () => {
-      const uncompleted = window.imageQueue.some(item => !item.rawParts);
+      const uncompleted = window.imageQueue.some(item => !item.base64);
       if (uncompleted) {
         showError("Images are still processing. Please press analyze again.");
         return;
@@ -680,61 +670,32 @@
       masterReportWrapper.style.display = 'none';
       marketplaceHubContainer.style.display = 'none';
 
-      const contentPayload = window.imageQueue.map(item => item.rawParts);
-      await sendDirectToGemini(contentPayload);
+      // Gather the arrays of pure base64 data to hand off to our backend route
+      const base64Array = window.imageQueue.map(item => item.base64);
+      await sendDirectToBackend(base64Array);
     });
 
-    async function sendDirectToGemini(contentPartsArray) {
+    async function sendDirectToBackend(base64ImagesArray) {
       try {
-        // 🛠️ POST HANDSHAKE INTEGRATION: Matches your api/analyze routing constraint perfectly
-        const keyFetch = await fetch('/api/analyze', {
+        // 🛠️ CORRECT HANDOFF IMPLEMENTATION: Sends payload to api/analyze securely via POST
+        const responseFetch = await fetch('/api/analyze', {
           method: 'POST',
           headers: {
             'Accept': 'application/json',
             'Content-Type': 'application/json'
-          }
+          },
+          body: JSON.stringify({ images: base64ImagesArray })
         });
         
-        if (!keyFetch.ok) {
-          const rawErrText = await keyFetch.text().catch(() => "");
-          throw new Error(`Server status fault ${keyFetch.status}. ${rawErrText}`);
+        if (!responseFetch.ok) {
+          const rawErrText = await responseFetch.text().catch(() => "");
+          throw new Error(`Server status fault ${responseFetch.status}. ${rawErrText}`);
         }
-        const keyData = await keyFetch.json();
-        const activeKey = keyData.key;
+        
+        const serverData = await responseFetch.json();
+        const text = serverData.analysis;
 
-        const genAI = new GoogleGenerativeAI(activeKey);
-        const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
-
-        const appraisalPrompt = `You are an expert appraiser and high-end resale evaluator. 
-Analyze the provided image configurations carefully. Use these multiple angles to check frame details, signature details, canvas texture, condition details, and overall scale.
-
-Proactively calculate and deduce the estimated physical dimensions of the object based on contextual clues, perspective, aspect ratio, and object classification. Do not prompt the user for sizing information.
-
-Provide your output using this exact text layout pattern below. Do not omit the structural divider anchors [PART_1], [PART_2], [PART_3], [PART_4], and [PART_5] as they are parsed out programmatically by the interface engine.
-
-[PART_1]
-(Provide ONLY the raw Estimated Resale Market Value Range here, e.g. $150 - $200)
-
-[PART_2]
-(Provide ONLY the raw Identified Item Title & Era/Year here)
-
-[PART_3]
-(Provide a thorough Markdown bulleted list of the Valuation Factors here)
-
-[PART_4]
-(Provide a thorough Markdown list of the Recommended Marketplace Channels here)
-
-[PART_5]
-(Provide exactly what to copy and paste into a sale ad here. Generate a polished description featuring calculated measurements, condition specifics, and target keywords)
-
-Be thorough, precise, and direct.`;
-
-        contentPartsArray.push(appraisalPrompt);
-
-        const result = await model.generateContent(contentPartsArray);
-        const response = await result.response;
-        const text = response.text();
-
+        // Extract and map structural markdown tags back to their respective container layout modules
         const sections = {
           range: text.split('[PART_1]')[1]?.split('[PART_2]')[0]?.trim() || "Evaluation Staging Error",
           title: text.split('[PART_2]')[1]?.split('[PART_3]')[0]?.trim() || "Evaluation Staging Error",
@@ -781,7 +742,7 @@ Be thorough, precise, and direct.`;
       }
     }
 
-    // ANDROID WEBVIEW CONTEXT SECURITY EXCEPTION WRAPPER
+    // ANDROID WEBVIEW SECURITY FAIL-SAFE WRAPPER
     async function executeClipboardHandoff(platformName, redirectUrl) {
       if (!window.structuredStagedItem) return;
       
@@ -794,9 +755,9 @@ Be thorough, precise, and direct.`;
           alert(`Copied to Clipboard!\n\nMachZero has copied your item title, pricing estimation, and detailed description. We are now opening ${platformName} so you can paste it right in.`);
         }
       } catch (err) {
-        console.warn("Mobile system container blocked direct clipboard engine mapping:", err);
+        console.warn("Mobile browser context copy routine blocked:", err);
       } finally {
-        // Runs unconditionally to guarantee buttons never freeze up
+        // Unconditional redirect execution to completely protect screen responsiveness
         window.open(redirectUrl, "_blank");
       }
     }
@@ -852,7 +813,7 @@ Be thorough, precise, and direct.`;
           alert("Reverb Rejection Feedback:\n" + specificDetails);
         }
       } catch (err) {
-        console.error("Endpoint execution error:", err);
+        console.error("Endpoint execution block error:", err);
         alert("Connectivity error during API execution: " + err.message);
       } finally {
         postReverbBtn.disabled = false;
