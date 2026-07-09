@@ -44,32 +44,41 @@ export default async function handler(req, res) {
       productType = "keyboards-and-synths";
     }
 
-    // 4. Robust Price Extraction Loop
+    // 4. BULLETPROOF FIX: Price-Specific Tokenizer (Ignores Year Text like 2000s/2010s)
     let cleanPrice = "0.00";
     if (price) {
-      const firstPriceMatch = price.match(/\d[\d,.]*/);
-      if (firstPriceMatch && firstPriceMatch[0]) {
-        const rawNumbers = firstPriceMatch[0].replace(/,/g, '');
+      // RegEx target: Finds standard currency notations (e.g., $1,500, $250.00, 1500)
+      const currencyMatch = price.match(/\$?([1-9]\d{2,}(?:[\.,]\d{2})?)/);
+      
+      if (currencyMatch && currencyMatch[1]) {
+        // Strip out any commas so parseFloat can process it cleanly
+        const rawNumbers = currencyMatch[1].replace(/,/g, '');
         if (rawNumbers && !isNaN(rawNumbers)) {
           cleanPrice = parseFloat(rawNumbers).toFixed(2);
+        }
+      } else {
+        // Fallback catch-all if no standard currency format matches
+        const backupMatch = price.match(/\d[\d,.]*/);
+        if (backupMatch && backupMatch[0]) {
+          const rawNumbers = backupMatch[0].replace(/,/g, '');
+          if (rawNumbers && !isNaN(rawNumbers)) {
+            cleanPrice = parseFloat(rawNumbers).toFixed(2);
+          }
         }
       }
     }
 
-    // ========================================================
-    // 🛠️ FIX: CLEAN DESCRIPTION FORMATTING FOR REVERB INGESTION
-    // ========================================================
+    // 5. Clean description formatting for clean ingest parameters
     let cleanDescription = "See photos for product condition details.";
     if (description) {
       cleanDescription = description
-        .replace(/\[\/?PART_[0-9]\]/g, '') // Remove structural part tags
-        .replace(/\*\*/g, '')              // Strip markdown bold markers
-        .replace(/\\n/g, ' ')              // Convert escaped string line breaks to spaces
-        .replace(/\n/g, ' ')               // Convert raw line breaks to spaces
-        .replace(/\s+/g, ' ')              // Collapse any double spacing down to clean single spaces
+        .replace(/\[\/?PART_[0-9]\]/g, '') 
+        .replace(/\*\*/g, '')              
+        .replace(/\\n/g, ' ')              
+        .replace(/\n/g, ' ')               
+        .replace(/\s+/g, ' ')              
         .trim();
     }
-    // ========================================================
 
     // Securely forward the dynamic data payload straight to Reverb's server engine
     const reverbResponse = await fetch('https://api.reverb.com/api/listings', {
