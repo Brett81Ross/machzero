@@ -4,7 +4,6 @@ const MAX_IMAGES = 10;
 
 const appraisalSchema = {
   type: "object",
-  additionalProperties: false,
   properties: {
     itemTitle: {
       type: "string",
@@ -60,7 +59,6 @@ const appraisalSchema = {
       maxItems: 8,
       items: {
         type: "object",
-        additionalProperties: false,
         properties: {
           marketplace: { type: "string" },
           listingType: {
@@ -159,7 +157,7 @@ async function requestAppraisal({ apiKey, images, useSearch }) {
     ? {
         responseFormat: {
           text: {
-            mimeType: "application/json",
+            mimeType: "APPLICATION_JSON",
             schema: appraisalSchema,
           },
         },
