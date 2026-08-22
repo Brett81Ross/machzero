@@ -1,7 +1,9 @@
 {
   "version": 2,
+  "redirects": [
+    { "source": "/", "destination": "/splash.html", "permanent": false }
+  ],
   "rewrites": [
-    { "source": "/", "destination": "/splash.html" },
     { "source": "/api/analyze", "destination": "/api/analyze.js" },
     { "source": "/api/get-history", "destination": "/api/get-history.js" }
   ]
