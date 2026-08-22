@@ -83,28 +83,49 @@
       ].join("\n");
     }
 
-    $("shareBtn").addEventListener("click", () => {
-      renderQr();
-      openModal("shareModal");
-    });
+    const APP_SHARE_DATA = {
+      title: "MachZero™",
+      text: "Snap it. Price it. Decide with MachZero™ — AI-powered resale evaluation by Cactus🌵Byte Studios™.",
+    };
 
-    $("nativeShareBtn").addEventListener("click", async () => {
+    async function shareMachZero() {
       const shareData = {
-        title: "MachZero™",
-        text: "Snap it. Price it. Decide with MachZero™ — AI-powered resale evaluation by Cactus🌵Byte Studios™.",
+        ...APP_SHARE_DATA,
         url: shareUrl(),
       };
-      try {
-        if (navigator.share) {
+
+      if (typeof navigator.share === "function") {
+        try {
           await navigator.share(shareData);
-        } else {
-          await navigator.clipboard.writeText(`${shareData.text}\n${shareData.url}`);
-          $("nativeShareBtn").textContent = "SHARE TEXT COPIED";
-          setTimeout(() => $("nativeShareBtn").textContent = "SHARE MACHZERO", 1300);
+          return true;
+        } catch (error) {
+          if (error?.name === "AbortError") return true;
+          renderQr();
+          openModal("shareModal");
+          return false;
         }
-      } catch (error) {
-        if (error?.name !== "AbortError") showError("Sharing was blocked by this browser.");
       }
+
+      try {
+        await navigator.clipboard.writeText(`${shareData.text}\n${shareData.url}`);
+        renderQr();
+        openModal("shareModal");
+        $("nativeShareBtn").textContent = "SHARE TEXT COPIED";
+        setTimeout(() => $("nativeShareBtn").textContent = "SHARE MACHZERO", 1300);
+      } catch (_) {
+        renderQr();
+        openModal("shareModal");
+      }
+      return false;
+    }
+
+    $("shareBtn").addEventListener("click", () => {
+      // Keep this click as the direct user gesture so Android can open its native share sheet.
+      shareMachZero();
+    });
+
+    $("nativeShareBtn").addEventListener("click", () => {
+      shareMachZero();
     });
 
     $("shareAppraisalBtn").addEventListener("click", async () => {
@@ -117,7 +138,7 @@
       };
       const button = $("shareAppraisalBtn");
       try {
-        if (navigator.share) {
+        if (typeof navigator.share === "function") {
           await navigator.share(shareData);
         } else {
           await navigator.clipboard.writeText(`${text}\n${shareUrl()}`);
