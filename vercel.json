@@ -1,6 +1,7 @@
 {
   "version": 2,
   "rewrites": [
+    { "source": "/", "destination": "/splash.html" },
     { "source": "/api/analyze", "destination": "/api/analyze.js" },
     { "source": "/api/get-history", "destination": "/api/get-history.js" }
   ]

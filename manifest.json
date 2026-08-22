@@ -1,15 +1,24 @@
 {
-  "name": "Resale IQ",
-  "short_name": "Resale IQ",
-  "start_url": "/",
+  "name": "MachZero™",
+  "short_name": "MachZero",
+  "id": "/",
+  "start_url": "/splash.html",
+  "scope": "/",
   "display": "standalone",
-  "background_color": "#050505",
-  "theme_color": "#0070f3",
+  "background_color": "#070b19",
+  "theme_color": "#070b19",
   "icons": [
     {
-      "src": "/logo1.png",
+      "src": "/logo1.jpg",
       "sizes": "192x192",
-      "type": "image/png"
+      "type": "image/jpeg",
+      "purpose": "any"
+    },
+    {
+      "src": "/logo1.jpg",
+      "sizes": "512x512",
+      "type": "image/jpeg",
+      "purpose": "any"
     }
   ]
 }
