@@ -36,10 +36,10 @@
   <main class="splash" aria-label="MachZero loading">
     <div class="studio-wrap">
       <div class="studio-fallback">Cactus🌵Byte Studios™</div>
-      <img class="studio-logo" src="https://raw.githubusercontent.com/Brett81Ross/cactusbyte-studios/main/public/logo2.png" alt="Cactus Byte Studios">
+      <img class="studio-logo" src="https://raw.githubusercontent.com/Brett81Ross/cactusbyte-studios/main/public/logo2.png" alt="Cactus Byte Studios" decoding="async" fetchpriority="low">
     </div>
     <div class="app-lockup">
-      <div class="app-logo-shell"><img class="app-logo" src="/logo1.jpg" alt="MachZero logo"></div>
+      <div class="app-logo-shell"><img class="app-logo" src="/logo1.jpg" alt="MachZero logo" decoding="async"></div>
       <div class="app-name">MachZero™</div>
       <div class="studio-tag">A Cactus🌵Byte Studios™ App</div>
       <div class="loader" aria-hidden="true"></div>
@@ -50,8 +50,7 @@
     (()=>{
       let moved=false;
       const go=()=>{if(moved)return;moved=true;location.replace('/index.html')};
-      window.addEventListener('load',()=>setTimeout(go,1200),{once:true});
-      setTimeout(go,4500);
+      setTimeout(go,500);
     })();
   </script>
 </body>
