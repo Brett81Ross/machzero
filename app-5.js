@@ -47,10 +47,26 @@
       return location.href.split(/[?#]/)[0];
     }
 
-    function renderQr() {
+    let qrLibraryPromise = null;
+    function ensureQrLibrary() {
+      if (window.QRCode) return Promise.resolve();
+      if (qrLibraryPromise) return qrLibraryPromise;
+      qrLibraryPromise = new Promise((resolve, reject) => {
+        const script = document.createElement("script");
+        script.src = "https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js";
+        script.async = true;
+        script.onload = resolve;
+        script.onerror = () => reject(new Error("QR library unavailable."));
+        document.head.appendChild(script);
+      });
+      return qrLibraryPromise;
+    }
+
+    async function renderQr() {
       const qr = $("qrCode");
       qr.innerHTML = "";
-      if (window.QRCode) {
+      try {
+        await ensureQrLibrary();
         new QRCode(qr, {
           text: shareUrl(),
           width: 200,
@@ -59,6 +75,8 @@
           colorLight: "#ffffff",
           correctLevel: QRCode.CorrectLevel.H,
         });
+      } catch (_) {
+        qr.textContent = "QR unavailable — use Copy Link instead.";
       }
     }
 
@@ -100,27 +118,26 @@
           return true;
         } catch (error) {
           if (error?.name === "AbortError") return true;
-          renderQr();
           openModal("shareModal");
+          renderQr();
           return false;
         }
       }
 
       try {
         await navigator.clipboard.writeText(`${shareData.text}\n${shareData.url}`);
-        renderQr();
         openModal("shareModal");
+        renderQr();
         $("nativeShareBtn").textContent = "SHARE TEXT COPIED";
         setTimeout(() => $("nativeShareBtn").textContent = "SHARE MACHZERO", 1300);
       } catch (_) {
-        renderQr();
         openModal("shareModal");
+        renderQr();
       }
       return false;
     }
 
     $("shareBtn").addEventListener("click", () => {
-      // Keep this click as the direct user gesture so Android can open its native share sheet.
       shareMachZero();
     });
 
@@ -178,6 +195,6 @@
     confirmReturnedCheckout();
 
     if ("serviceWorker" in navigator) {
-      window.addEventListener("load", () => navigator.serviceWorker.register("/sw.js").catch((error) => console.warn("Service worker registration failed:", error)));
+      navigator.serviceWorker.register("/sw.js").catch((error) => console.warn("Service worker registration failed:", error));
     }
   
