@@ -22,6 +22,12 @@
   <meta name="twitter:card" content="summary">
 
   <link rel="stylesheet" href="/styles.css">
+  <script defer src="/app-1.js"></script>
+  <script defer src="/app-2.js"></script>
+  <script defer src="/app-3.js"></script>
+  <script defer src="/app-4.js"></script>
+  <script defer src="/app-5.js"></script>
+  <script defer src="https://va.vercel.clerk.com/script.js"></script>
 </head>
 <body>
   <main class="app">
@@ -32,9 +38,9 @@
     </div>
 
     <header class="brand">
-      <img src="/logo1.jpg" alt="MachZero™" class="logo">
+      <img src="/logo1.jpg" alt="MachZero™" class="logo" decoding="async" fetchpriority="high">
       <p class="tagline">Snap it. Price it. Decide.</p>
-      <div class="version">v1.4.0 · Atomic Release</div>
+      <div class="version">v1.4.1 · Performance Release</div>
       <div class="usage-strip"><span class="usage-pill" id="usagePill"><span id="usageText">Free · 5 scans left</span></span><button class="mini-btn" id="planBtn" type="button">UPGRADE</button></div>
     </header>
 
@@ -181,7 +187,7 @@
   <div class="modal-backdrop" id="shareModal" role="dialog" aria-modal="true" aria-labelledby="shareTitle">
     <div class="modal">
       <div class="modal-head"><h2 id="shareTitle">Share MachZero™</h2><button class="close" data-close="shareModal" aria-label="Close">×</button></div>
-      <div class="qr-wrap" id="qrWrap"><div id="qrCode"></div><img src="/logo1.jpg" class="qr-logo" alt="MachZero logo"></div>
+      <div class="qr-wrap" id="qrWrap"><div id="qrCode"></div><img src="/logo1.jpg" class="qr-logo" alt="MachZero logo" loading="lazy" decoding="async"></div>
       <p class="share-note">Scan the MachZero™ QR code or share the app through your phone.</p>
       <button class="btn btn-primary" id="nativeShareBtn" type="button" style="width:100%">SHARE MACHZERO</button>
       <button class="btn btn-ghost" id="copyLinkBtn" type="button" style="width:100%;margin-top:9px">COPY LINK</button>
@@ -223,13 +229,5 @@
       </div>
     </div>
   </div>
-
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-    <script src="/app-1.js"></script>
-  <script src="/app-2.js"></script>
-  <script src="/app-3.js"></script>
-  <script src="/app-4.js"></script>
-  <script src="/app-5.js"></script>
-  <script defer src="https://va.vercel.clerk.com/script.js"></script>
 </body>
 </html>
