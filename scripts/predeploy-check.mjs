@@ -36,10 +36,10 @@ const files = [
 ].map((file) => [file, read(file)]);
 const source = files.map(([, value]) => value).join("\n") + frontend;
 
-check(pkg.version === "1.4.0", "package version is 1.4.0");
-check(frontend.includes('const APP_VERSION = "1.4.0"'), "frontend APP_VERSION is 1.4.0");
-check(frontend.includes("v1.4.0 · Atomic Release"), "visible version label is 1.4.0");
-check(sw.includes("machzero-shell-v1.4.0"), "service-worker cache is versioned 1.4.0");
+check(pkg.version === "1.4.1", "package version is 1.4.1");
+check(frontend.includes('const APP_VERSION = "1.4.1"'), "frontend APP_VERSION is 1.4.1");
+check(frontend.includes("v1.4.1 · Performance Release"), "visible version label is 1.4.1");
+check(sw.includes("machzero-shell-v1.4.1"), "service-worker cache is versioned 1.4.1");
 check(manifest.name === "MachZero™" && manifest.short_name === "MachZero", "manifest uses MachZero branding");
 check(html.includes("MachZero™ · <strong>Cactus🌵Byte Studios™</strong> · All Rights Reserved"), "required footer branding is present");
 check(frontend.includes("Snap it. MachZero does the rest."), "zero-input scan experience is present");
