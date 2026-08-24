@@ -105,10 +105,6 @@ export default async function handler(req, res) {
         ? appraisal.missingEvidence[0]
         : null;
 
-    if (reservation?.newReservation) {
-      await markScanSuccess(reservation.snapshot?.user?.plan || "unknown");
-    }
-    const billing = await usageSnapshot(installId);
     const draftToken = createAppraisalToken({
       installId,
       scanId,
@@ -116,6 +112,12 @@ export default async function handler(req, res) {
       price: appraisal.recommendedListPrice,
       conditionGrade: appraisal.conditionGrade,
     });
+
+    const billingPromise = usageSnapshot(installId);
+    const metricPromise = reservation?.newReservation
+      ? markScanSuccess(reservation.snapshot?.user?.plan || "unknown")
+      : Promise.resolve();
+    const [billing] = await Promise.all([billingPromise, metricPromise]);
 
     return res.status(200).json({
       success: true,
