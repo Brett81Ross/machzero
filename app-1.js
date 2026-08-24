@@ -1,6 +1,8 @@
-    const APP_VERSION = "1.4.0";
+    const APP_VERSION = "1.4.1";
     const MAX_PHOTOS = 6;
+    const PHOTO_WORKERS = 2;
     const DEFAULT_SETTINGS = { feeRate: 13.25, targetMargin: 35, shippingAllowance: 0 };
+    const MONEY_FORMATTER = new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" });
     const BILLING_FALLBACK = {
       plans: [
         { code: "free", name: "Free", price: 0, scans: 5, type: "free", available: true },
@@ -64,7 +66,7 @@
 
     function money(value) {
       const n = Number(value);
-      return Number.isFinite(n) ? new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(n) : "—";
+      return Number.isFinite(n) ? MONEY_FORMATTER.format(n) : "—";
     }
 
     function clampNumber(value, fallback, min, max) {
@@ -94,7 +96,6 @@
     }
 
     function updateScanButton() {
-      // MachZero is zero-input by default. This button only appears after an error as a retry fallback.
       if (!errorCard || errorCard.style.display !== "block") scanBtn.hidden = true;
       scanBtn.textContent = appraisal ? "RETRY REFINEMENT" : "RETRY ANALYSIS";
     }
@@ -112,13 +113,13 @@
     $("missionPhotoBtn").addEventListener("click", () => openPicker(true));
 
     fileInput.addEventListener("change", async (event) => {
-      const files = Array.from(event.target.files || []).slice(0, Math.max(0, MAX_PHOTOS - imageQueue.length));
+      const files = Array.from(event.target.files || [])
+        .filter((file) => file.type.startsWith("image/"))
+        .slice(0, Math.max(0, MAX_PHOTOS - imageQueue.length));
       fileInput.value = "";
       if (!files.length) return;
 
-      let added = 0;
-      for (const file of files) {
-        if (!file.type.startsWith("image/")) continue;
+      const jobs = files.map((file) => {
         const item = {
           id: `${Date.now()}-${Math.random().toString(36).slice(2)}`,
           previewUrl: URL.createObjectURL(file),
@@ -126,14 +127,26 @@
         };
         imageQueue.push(item);
         addPreview(item);
-        try {
-          item.dataUrl = await compressImage(file);
-          added += 1;
-        } catch (error) {
-          removePhoto(item.id);
-          showError("One photo could not be prepared. Try that photo again.");
+        return { file, item };
+      });
+
+      let added = 0;
+      let nextJob = 0;
+      const workerCount = Math.min(PHOTO_WORKERS, jobs.length);
+      await Promise.all(Array.from({ length: workerCount }, async () => {
+        while (true) {
+          const index = nextJob++;
+          if (index >= jobs.length) return;
+          const { file, item } = jobs[index];
+          try {
+            item.dataUrl = await compressImage(file);
+            added += 1;
+          } catch (error) {
+            removePhoto(item.id);
+            showError("One photo could not be prepared. Try that photo again.");
+          }
         }
-      }
+      }));
 
       requestedPhotoMode = false;
       updateScanButton();
@@ -146,8 +159,7 @@
         autoScanQueued = true;
         return;
       }
-      // Let the preview paint before the network work starts so the interaction feels immediate.
-      setTimeout(() => runScan(true), 40);
+      requestAnimationFrame(() => runScan(true));
     }
 
     function addPreview(item) {
@@ -199,27 +211,62 @@
       });
     }
 
+    async function decodeImage(file) {
+      if (typeof createImageBitmap === "function") {
+        try {
+          return await createImageBitmap(file);
+        } catch (_) {}
+      }
+      return loadImage(await fileToDataUrl(file));
+    }
+
+    function canvasToDataUrl(canvas, quality) {
+      return new Promise((resolve, reject) => {
+        canvas.toBlob((blob) => {
+          if (!blob) {
+            reject(new Error("Image encoding failed."));
+            return;
+          }
+          const reader = new FileReader();
+          reader.onload = () => resolve(reader.result);
+          reader.onerror = reject;
+          reader.readAsDataURL(blob);
+        }, "image/jpeg", quality);
+      });
+    }
+
     async function compressImage(file) {
-      const original = await fileToDataUrl(file);
-      const image = await loadImage(original);
       const targetChars = 600000;
+      if (/^image\/(jpeg|jpg|webp)$/i.test(file.type) && file.size <= 420000) {
+        const original = await fileToDataUrl(file);
+        if (original.length <= targetChars) return original;
+      }
+
+      const image = await decodeImage(file);
+      const sourceWidth = image.naturalWidth || image.width;
+      const sourceHeight = image.naturalHeight || image.height;
       let maxDimension = 1800;
       let quality = 0.86;
-      let output = original;
+      let output = "";
+      const canvas = document.createElement("canvas");
+      const ctx = canvas.getContext("2d", { alpha: false });
+      if (!ctx) throw new Error("Image preparation is unavailable on this device.");
 
-      for (let attempt = 0; attempt < 5; attempt++) {
-        const scale = Math.min(1, maxDimension / Math.max(image.naturalWidth, image.naturalHeight));
-        const width = Math.max(1, Math.round(image.naturalWidth * scale));
-        const height = Math.max(1, Math.round(image.naturalHeight * scale));
-        const canvas = document.createElement("canvas");
-        canvas.width = width;
-        canvas.height = height;
-        const ctx = canvas.getContext("2d", { alpha: false });
-        ctx.drawImage(image, 0, 0, width, height);
-        output = canvas.toDataURL("image/jpeg", quality);
-        if (output.length <= targetChars || maxDimension <= 1150) break;
-        maxDimension = Math.round(maxDimension * 0.86);
-        quality = Math.max(0.72, quality - 0.04);
+      try {
+        for (let attempt = 0; attempt < 5; attempt++) {
+          const scale = Math.min(1, maxDimension / Math.max(sourceWidth, sourceHeight));
+          canvas.width = Math.max(1, Math.round(sourceWidth * scale));
+          canvas.height = Math.max(1, Math.round(sourceHeight * scale));
+          ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
+          output = await canvasToDataUrl(canvas, quality);
+          if (output.length <= targetChars || maxDimension <= 1150) break;
+          maxDimension = Math.round(maxDimension * 0.86);
+          quality = Math.max(0.72, quality - 0.04);
+        }
+      } finally {
+        if (typeof image.close === "function") image.close();
+        canvas.width = 1;
+        canvas.height = 1;
       }
       return output;
     }
