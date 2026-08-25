@@ -81,7 +81,14 @@
     .comp strong{color:var(--text)}
     .source-list a{color:#7dd3fc;text-decoration:none;word-break:break-word}
     .listing-copy{white-space:pre-wrap;background:#070c1b;border:1px solid var(--line);padding:13px;border-radius:12px;color:#cbd5e1;font-size:.8rem;line-height:1.5;max-height:260px;overflow:auto}
-    .marketplace-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:12px}.marketplace-grid .btn{padding:12px 8px;font-size:.77rem}
+    .marketplace-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:12px}.marketplace-grid .btn{padding:12px 8px;font-size:.77rem;border-width:1px;border-style:solid;box-shadow:0 6px 16px rgba(0,0,0,.16)}
+    .marketplace-grid [data-market="eBay"]{background:linear-gradient(110deg,#e53238 0 25%,#0064d2 25% 50%,#f5af02 50% 75%,#86b817 75% 100%);border-color:rgba(255,255,255,.32);color:#fff;text-shadow:0 1px 3px rgba(0,0,0,.75)}
+    .marketplace-grid [data-market="Mercari"]{background:#ff0211;border-color:#4dc9ff;color:#fff}
+    .marketplace-grid [data-market="Facebook Marketplace"]{background:#1877f2;border-color:#4193ff;color:#fff}
+    .marketplace-grid [data-market="OfferUp"]{background:#00a87e;border-color:#29c99f;color:#fff}
+    .marketplace-grid [data-market="Poshmark"]{background:#7f0353;border-color:#a5367d;color:#fff}
+    .marketplace-grid #reverbBtn{background:#f6870e;border-color:#ffad52;color:#17110a}
+    .marketplace-grid .btn:active{filter:brightness(.9)}
     .modal-backdrop{display:none;position:fixed;inset:0;background:rgba(0,0,0,.72);z-index:50;padding:20px;align-items:center;justify-content:center}
     .modal{width:100%;max-width:420px;background:#0d1530;border:1px solid #2a3d67;border-radius:20px;padding:18px;box-shadow:var(--shadow);max-height:90vh;overflow:auto}
     .modal-head{display:flex;justify-content:space-between;align-items:center;gap:12px}.modal-head h2{font-size:1.1rem;margin:0}.close{border:0;background:transparent;color:#fff;font-size:1.6rem;cursor:pointer}
