@@ -1,6 +1,7 @@
 const CACHE_NAME = "machzero-shell-v1.4.1";
 const SHELL = ["/", "/splash.html", "/index.html", "/manifest.json", "/logo1.jpg", "/styles.css", "/app-1.js", "/app-2.js", "/app-3.js", "/app-4.js", "/app-5.js"];
 const SHELL_PATHS = new Set(SHELL.map((path) => path === "/" ? "/" : new URL(path, self.location.origin).pathname));
+// Refresh marker: marketplace button brand colors.
 
 self.addEventListener("install", (event) => {
   event.waitUntil(caches.open(CACHE_NAME).then((cache) => cache.addAll(SHELL)));
