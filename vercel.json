@@ -51,6 +51,10 @@
     {
       "source": "/api/admin-metrics",
       "destination": "/api/admin-metrics.js"
+    },
+    {
+      "source": "/api/cactusbyte-vip",
+      "destination": "/api/cactusbyte-vip.js"
     }
   ],
   "headers": [

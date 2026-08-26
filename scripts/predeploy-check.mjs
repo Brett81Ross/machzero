@@ -23,6 +23,9 @@ const vercel = JSON.parse(read("vercel.json"));
 const env = read(".env.example");
 const reverb = read("api/reverb-draft.js");
 const billing = read("api/_billing.js") + read("api/_billing-core.js") + read("api/_billing-commerce.js");
+const vipHelper = read("api/_cactusbyte-vip.js");
+const vipRoute = read("api/cactusbyte-vip.js");
+const analyze = read("api/analyze.js");
 const files = [
   "api/analyze.js",
   "api/create-checkout.js",
@@ -33,6 +36,8 @@ const files = [
   "api/restore-access.js",
   "api/reverb-draft.js",
   "api/_security.js",
+  "api/_cactusbyte-vip.js",
+  "api/cactusbyte-vip.js",
 ].map((file) => [file, read(file)]);
 const source = files.map(([, value]) => value).join("\n") + frontend;
 
@@ -47,6 +52,9 @@ check(frontend.includes("SHARE APPRAISAL") && frontend.includes("Share MachZeroâ
 check(frontend.includes("RESTORE PAID ACCESS") && frontend.includes("CREATE RECOVERY KEY"), "paid-access recovery UI is present");
 check(billing.includes("MACHZERO_BILLING_ENFORCED"), "explicit billing enforcement switch is present");
 check(reverb.includes("verifyAppraisalToken") && reverb.includes("X-MachZero-Install-Id") === false, "Reverb endpoint verifies signed appraisal authorization");
+check(vipHelper.includes("timingSafeEqual") && vipHelper.includes("HttpOnly") && vipHelper.includes("cactusByteVipUser"), "CactusByte VIP access uses a signed HttpOnly app-local lifetime cookie");
+check(vipRoute.includes("consume-app-token") && vipRoute.includes('appId: APP_ID'), "CactusByte VIP activation validates a one-time central app token");
+check(analyze.includes("cactusByteVipFromRequest") && analyze.includes('source: "cactusbyte_vip"'), "CactusByte VIP bypasses MachZero scan-credit consumption");
 check(!source.match(/sk_live_[A-Za-z0-9]+|rk_live_[A-Za-z0-9]+/), "no obvious live Stripe secret is hard-coded");
 check(!reverb.match(/Authorization:\s*["'`]Bearer\s+[A-Za-z0-9_-]{20,}/), "no Reverb bearer token is hard-coded");
 check(env.includes("MACHZERO_SIGNING_SECRET=") && env.includes("MACHZERO_BILLING_ENFORCED=false"), "new hardening environment variables are documented");
@@ -62,6 +70,7 @@ for (const endpoint of [
   "/api/restore-access",
   "/api/reverb-draft",
   "/api/admin-metrics",
+  "/api/cactusbyte-vip",
 ]) check(rewriteSources.has(endpoint), `Vercel rewrite exists for ${endpoint}`);
 
 check(!read("api/get-history.js").includes("Access-Control-Allow-Origin', '*'"), "unused history endpoint no longer exposes wildcard cross-origin history");

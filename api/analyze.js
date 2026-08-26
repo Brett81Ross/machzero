@@ -7,6 +7,7 @@ import {
   scanIdFromRequest,
   usageSnapshot,
 } from "./_billing.js";
+import { cactusByteVipFromRequest, cactusByteVipUser } from "./_cactusbyte-vip.js";
 import { createAppraisalToken } from "./_security.js";
 import { MAX_IMAGES, MAX_TOTAL_IMAGE_CHARS, enforceScanRateLimit, publicError, requestAppraisal } from "./_analyze-gemini.js";
 import { normalizeAppraisal, sourceList, toMarkdown } from "./_analyze-pricing.js";
@@ -57,9 +58,13 @@ export default async function handler(req, res) {
     return res.status(413).json({ success: false, code: "PHOTOS_TOO_LARGE", error: "Those photos are still too large to send together. Remove one photo or retake the largest image." });
   }
 
+  const cactusByteVip = cactusByteVipFromRequest(req);
+  const vipUser = cactusByteVip ? cactusByteVipUser(installId) : null;
   let reservation = null;
   try {
-    reservation = await reserveScanCredit(installId, scanId);
+    reservation = cactusByteVip
+      ? { allowed: true, newReservation: false, source: "cactusbyte_vip", snapshot: { user: vipUser } }
+      : await reserveScanCredit(installId, scanId);
     if (!reservation.allowed) {
       if (reservation.code === "BILLING_UNAVAILABLE" || reservation.source === "billing_unavailable") {
         return res.status(503).json({
@@ -113,7 +118,7 @@ export default async function handler(req, res) {
       conditionGrade: appraisal.conditionGrade,
     });
 
-    const billingPromise = usageSnapshot(installId);
+    const billingPromise = cactusByteVip ? Promise.resolve({ user: vipUser }) : usageSnapshot(installId);
     const metricPromise = reservation?.newReservation
       ? markScanSuccess(reservation.snapshot?.user?.plan || "unknown")
       : Promise.resolve();
