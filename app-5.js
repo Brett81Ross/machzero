@@ -195,6 +195,13 @@
     confirmReturnedCheckout();
 
     if ("serviceWorker" in navigator) {
-      navigator.serviceWorker.register("/sw.js").catch((error) => console.warn("Service worker registration failed:", error));
+      navigator.serviceWorker.getRegistrations()
+        .then((registrations) => Promise.all(registrations.map((registration) => registration.unregister())))
+        .catch(() => null);
+    }
+    if ("caches" in window) {
+      caches.keys()
+        .then((keys) => Promise.all(keys.filter((key) => key.startsWith("machzero-shell-")).map((key) => caches.delete(key))))
+        .catch(() => null);
     }
   
