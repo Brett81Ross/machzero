@@ -204,4 +204,21 @@
         .then((keys) => Promise.all(keys.filter((key) => key.startsWith("machzero-shell-")).map((key) => caches.delete(key))))
         .catch(() => null);
     }
+
+    // Cactus🌵Byte Studios™ Demo & Help Standard — client-only; no service worker.
+    (() => {
+      const version = document.querySelector('.version');
+      if (version) version.textContent = 'v1.4.2 · Demo & Help';
+      const loadScript = (src) => new Promise((resolve, reject) => {
+        if (document.querySelector(`script[src="${src}"]`)) return resolve();
+        const script = document.createElement('script');
+        script.src = src;
+        script.onload = resolve;
+        script.onerror = reject;
+        document.body.appendChild(script);
+      });
+      loadScript('/demo-config.js')
+        .then(() => loadScript('/cactusbyte-demo.js'))
+        .catch((error) => console.warn('MachZero Help unavailable:', error));
+    })();
   

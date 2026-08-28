@@ -3,8 +3,7 @@
   "version": 2,
   "git": {
     "deploymentEnabled": {
-      "main": true,
-      "*": false
+      "main": true
     }
   },
   "redirects": [
@@ -15,10 +14,6 @@
     }
   ],
   "rewrites": [
-    {
-      "source": "/index.html",
-      "destination": "/api/demo-shell.js"
-    },
     {
       "source": "/api/analyze",
       "destination": "/api/analyze.js"
