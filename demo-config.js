@@ -24,4 +24,5 @@ window.CACTUSBYTE_DEMO={
     {title:'Copy and publish',text:'Copy the ready-to-list title and description, then open your marketplace.'}
   ]
 };
+const machZeroVersion=document.querySelector('.version');if(machZeroVersion)machZeroVersion.textContent='v1.4.1 · Performance Release';
 (()=>{const s=document.createElement('script');s.src='https://cactusbyte-studios.vercel.app/demo-embed.js';s.dataset.cactusbyteDemo='machzero';s.defer=true;document.body.appendChild(s)})();
