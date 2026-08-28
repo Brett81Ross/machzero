@@ -1,7 +1,7 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "version": 2,
-  "git": {"deploymentEnabled": true},
+  "git": {"deploymentEnabled": false},
   "redirects": [{"source":"/","destination":"/splash.html","permanent":false}],
   "rewrites": [
     {"source":"/api/analyze","destination":"/api/analyze.js"},
