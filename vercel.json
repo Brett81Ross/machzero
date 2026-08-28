@@ -1,84 +1,24 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "version": 2,
-  "git": {
-    "deploymentEnabled": {
-      "main": true,
-      "*": false
-    }
-  },
-  "redirects": [
-    {
-      "source": "/",
-      "destination": "/splash.html",
-      "permanent": false
-    }
-  ],
+  "git": {"deploymentEnabled": false},
+  "redirects": [{"source":"/","destination":"/splash.html","permanent":false}],
   "rewrites": [
-    {
-      "source": "/api/analyze",
-      "destination": "/api/analyze.js"
-    },
-    {
-      "source": "/api/reverb-draft",
-      "destination": "/api/reverb-draft.js"
-    },
-    {
-      "source": "/api/get-history",
-      "destination": "/api/get-history.js"
-    },
-    {
-      "source": "/api/billing-status",
-      "destination": "/api/billing-status.js"
-    },
-    {
-      "source": "/api/create-checkout",
-      "destination": "/api/create-checkout.js"
-    },
-    {
-      "source": "/api/confirm-checkout",
-      "destination": "/api/confirm-checkout.js"
-    },
-    {
-      "source": "/api/create-portal",
-      "destination": "/api/create-portal.js"
-    },
-    {
-      "source": "/api/create-recovery-key",
-      "destination": "/api/create-recovery-key.js"
-    },
-    {
-      "source": "/api/restore-access",
-      "destination": "/api/restore-access.js"
-    },
-    {
-      "source": "/api/stripe-webhook",
-      "destination": "/api/stripe-webhook.js"
-    },
-    {
-      "source": "/api/admin-metrics",
-      "destination": "/api/admin-metrics.js"
-    },
-    {
-      "source": "/api/cactusbyte-vip",
-      "destination": "/api/cactusbyte-vip.js"
-    }
+    {"source":"/api/analyze","destination":"/api/analyze.js"},
+    {"source":"/api/reverb-draft","destination":"/api/reverb-draft.js"},
+    {"source":"/api/get-history","destination":"/api/get-history.js"},
+    {"source":"/api/billing-status","destination":"/api/billing-status.js"},
+    {"source":"/api/create-checkout","destination":"/api/create-checkout.js"},
+    {"source":"/api/confirm-checkout","destination":"/api/confirm-checkout.js"},
+    {"source":"/api/create-portal","destination":"/api/create-portal.js"},
+    {"source":"/api/create-recovery-key","destination":"/api/create-recovery-key.js"},
+    {"source":"/api/restore-access","destination":"/api/restore-access.js"},
+    {"source":"/api/stripe-webhook","destination":"/api/stripe-webhook.js"},
+    {"source":"/api/admin-metrics","destination":"/api/admin-metrics.js"},
+    {"source":"/api/cactusbyte-vip","destination":"/api/cactusbyte-vip.js"}
   ],
   "headers": [
-    {
-      "source": "/(.*)",
-      "headers": [
-        {"key":"X-Content-Type-Options","value":"nosniff"},
-        {"key":"Referrer-Policy","value":"strict-origin-when-cross-origin"},
-        {"key":"Permissions-Policy","value":"camera=(self), microphone=(), geolocation=()"},
-        {"key":"X-Frame-Options","value":"DENY"}
-      ]
-    },
-    {
-      "source": "/api/(.*)",
-      "headers": [
-        {"key":"Cache-Control","value":"no-store"}
-      ]
-    }
+    {"source":"/(.*)","headers":[{"key":"X-Content-Type-Options","value":"nosniff"},{"key":"Referrer-Policy","value":"strict-origin-when-cross-origin"},{"key":"Permissions-Policy","value":"camera=(self), microphone=(), geolocation=()"},{"key":"X-Frame-Options","value":"DENY"}]},
+    {"source":"/api/(.*)","headers":[{"key":"Cache-Control","value":"no-store"}]}
   ]
 }
