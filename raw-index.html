@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#070b19">
+  <meta name="description" content="MachZero™ turns item photos into evidence-backed resale pricing, buy decisions, and ready-to-list copy.">
+  <title>MachZero™ — AI Resale Evaluator</title>
+
+  <link rel="manifest" href="/manifest.json">
+  <link rel="icon" href="/logo1.jpg" type="image/jpeg">
+  <link rel="apple-touch-icon" href="/logo1.jpg">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="MachZero">
+
+  <meta property="og:title" content="MachZero™ — AI Resale Evaluator">
+  <meta property="og:description" content="Snap it. Price it. Decide. Evidence-backed resale pricing from your photos.">
+  <meta property="og:image" content="https://machzero-beta.vercel.app/logo1.jpg">
+  <meta property="og:image:type" content="image/jpeg">
+  <meta property="og:type" content="website">
+  <meta name="twitter:card" content="summary">
+
+  <link rel="stylesheet" href="/styles.css">
+  <script defer src="/app-1.js"></script>
+  <script defer src="/app-2.js"></script>
+  <script defer src="/app-3.js"></script>
+  <script defer src="/app-4.js"></script>
+  <script defer src="/app-5.js"></script>
+  <script defer src="https://va.vercel.clerk.com/script.js"></script>
+</head>
+<body>
+  <main class="app">
+    <div class="topbar">
+      <button class="icon-btn" id="installBtn" type="button" hidden>Install</button>
+      <button class="icon-btn" id="shareBtn" type="button" aria-label="Share MachZero">Share</button>
+      <button class="icon-btn" id="settingsBtn" type="button" aria-label="MachZero settings">⚙</button>
+    </div>
+
+    <header class="brand">
+      <img src="/logo1.jpg" alt="MachZero™" class="logo" decoding="async" fetchpriority="high">
+      <p class="tagline">Snap it. Price it. Decide.</p>
+      <div class="version">v1.4.1 · Performance Release</div>
+      <div class="usage-strip"><span class="usage-pill" id="usagePill"><span id="usageText">Free · 5 scans left</span></span><button class="mini-btn" id="planBtn" type="button">UPGRADE</button></div>
+    </header>
+
+    <section class="card" aria-labelledby="scanHeading">
+      <h1 class="scan-lead" id="scanHeading">Snap it. MachZero does the rest.</h1>
+      <p class="scan-note">No appraisal form. Take a photo and MachZero automatically identifies the item, reads visible details and condition, checks the market, and returns the resale decision. If one more photo would materially improve the answer, it will ask for exactly that photo.</p>
+      <div class="actions">
+        <button class="btn btn-primary" id="cameraBtn" type="button">SNAP ITEM</button>
+        <button class="btn btn-secondary" id="uploadBtn" type="button">ADD PHOTOS</button>
+      </div>
+      <input id="fileInput" type="file" accept="image/*" multiple>
+      <div class="preview-grid" id="previewGrid"></div>
+      <p class="tiny" id="autoScanNote">Analysis starts automatically after your photo is ready.</p>
+      <button class="btn btn-scan" id="scanBtn" type="button" hidden>RETRY ANALYSIS</button>
+    </section>
+
+    <section class="card status" id="loadingCard" aria-live="polite">
+      <div class="spinner"></div>
+      <div id="loadingText">Identifying item and checking the market…</div>
+    </section>
+
+    <section class="card error" id="errorCard" aria-live="assertive">
+      <strong>Scan couldn't finish</strong>
+      <p id="errorText"></p>
+      <button class="btn btn-ghost" id="errorRetryBtn" type="button" style="width:100%;margin-top:12px">TRY SAME PHOTOS AGAIN</button>
+    </section>
+
+    <section id="results">
+      <article class="card">
+        <div class="result-top">
+          <div>
+            <h2 class="item-title" id="itemTitle">Item</h2>
+            <div class="chips">
+              <span class="chip" id="pricingConfidence">Price confidence</span>
+              <span class="chip" id="identityConfidence">ID confidence</span>
+              <span class="chip" id="conditionChip">Condition</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="price-grid">
+          <div class="price-box primary"><div class="price-label">List it</div><div class="price-value" id="listPrice">—</div></div>
+          <div class="price-box"><div class="price-label">Expect</div><div class="price-value" id="expectedPrice">—</div></div>
+          <div class="price-box"><div class="price-label">Sell fast</div><div class="price-value" id="quickPrice">—</div></div>
+          <div class="price-box"><div class="price-label">Max buy</div><div class="price-value" id="maxBuyPrice">—</div></div>
+        </div>
+
+        <div class="market-row"><span>Best marketplace</span><strong id="bestMarketplace">—</strong></div>
+
+        <details id="foundDetails">
+          <summary><span>What MachZero found</span><span>＋</span></summary>
+          <div class="detail-body">
+            <div id="detectedDetails"></div>
+            <p id="conditionNotes"></p>
+          </div>
+        </details>
+
+        <details>
+          <summary><span>Why this price?</span><span>＋</span></summary>
+          <div class="detail-body">
+            <p id="marketBasis"></p>
+            <div id="comparables"></div>
+            <div class="source-list" id="sources"></div>
+          </div>
+        </details>
+      </article>
+
+      <article class="card decision-card">
+        <div class="decision-head">
+          <div><div class="decision-label">Resale decision</div><div class="decision" id="decisionText">BUY AT OR BELOW</div></div>
+          <div class="price-value" id="decisionMaxBuy">—</div>
+        </div>
+        <div class="market-row"><span>Target profit at Max Buy</span><strong id="targetProfitValue">—</strong></div>
+        <p class="tiny" id="profitNote"></p>
+        <details>
+          <summary><span>Check a specific buy price</span><span>＋</span></summary>
+          <div class="detail-body">
+            <input class="money-input" id="buyCost" inputmode="decimal" type="number" min="0" step="0.01" placeholder="Your buy cost (optional)">
+            <div class="market-row"><span>Estimated net profit</span><strong id="actualProfitValue">—</strong></div>
+          </div>
+        </details>
+        <button class="btn btn-primary share-result" id="shareAppraisalBtn" type="button" style="width:100%">SHARE APPRAISAL</button>
+      </article>
+
+      <article class="card mission" id="missionCard">
+        <div class="mission-kicker">One photo can tighten this price</div>
+        <h3>MachZero needs this next:</h3>
+        <p id="missionText"></p>
+        <button class="btn btn-primary" id="missionPhotoBtn" type="button">TAKE REQUESTED PHOTO</button>
+      </article>
+
+      <article class="card">
+        <details>
+          <summary><span>Ready-to-list copy</span><span>＋</span></summary>
+          <div class="detail-body">
+            <div class="listing-copy" id="listingCopy"></div>
+            <button class="btn btn-ghost" id="copyListingBtn" type="button" style="width:100%;margin-top:10px">COPY LISTING</button>
+          </div>
+        </details>
+
+        <details>
+          <summary><span>List it somewhere</span><span>＋</span></summary>
+          <div class="detail-body">
+            <p>MachZero copies the title, price, and listing text before opening the marketplace.</p>
+            <div class="marketplace-grid">
+              <button class="btn btn-ghost" data-market="eBay" data-url="https://www.ebay.com/sl/sell">eBay</button>
+              <button class="btn btn-ghost" data-market="Mercari" data-url="https://www.mercari.com/sell/">Mercari</button>
+              <button class="btn btn-ghost" data-market="Facebook Marketplace" data-url="https://www.facebook.com/marketplace/create">Facebook</button>
+              <button class="btn btn-ghost" data-market="OfferUp" data-url="https://offerup.com/post">OfferUp</button>
+              <button class="btn btn-ghost" data-market="Poshmark" data-url="https://poshmark.com/listing">Poshmark</button>
+              <button class="btn btn-ghost" id="reverbBtn" type="button" hidden>Reverb Draft</button>
+            </div>
+          </div>
+        </details>
+      </article>
+      <div class="new-item-wrap"><button class="btn btn-secondary" id="newItemBtn" type="button" style="width:100%">SCAN ANOTHER ITEM</button></div>
+    </section>
+
+    <footer class="footer">MachZero™ · <strong>Cactus🌵Byte Studios™</strong> · All Rights Reserved</footer>
+  </main>
+
+  <div class="modal-backdrop" id="settingsModal" role="dialog" aria-modal="true" aria-labelledby="settingsTitle">
+    <div class="modal">
+      <div class="modal-head"><h2 id="settingsTitle">Resale settings</h2><button class="close" data-close="settingsModal" aria-label="Close">×</button></div>
+      <div class="setting">
+        <label for="feeRate">Estimated marketplace fees (%)</label>
+        <input id="feeRate" type="number" min="0" max="50" step="0.25">
+        <small>Used only for Max Buy and estimated net profit. Change it to match where you usually sell.</small>
+      </div>
+      <div class="setting">
+        <label for="targetMargin">Target net margin (%)</label>
+        <input id="targetMargin" type="number" min="0" max="80" step="1">
+        <small>MachZero uses this target to calculate the most you should pay for an item.</small>
+      </div>
+      <div class="setting">
+        <label for="shippingAllowance">Seller-paid shipping allowance ($)</label>
+        <input id="shippingAllowance" type="number" min="0" step="0.50">
+        <small>Leave at $0 when the buyer normally pays shipping.</small>
+      </div>
+      <button class="btn btn-primary" id="saveSettingsBtn" type="button" style="width:100%;margin-top:18px">SAVE SETTINGS</button>
+    </div>
+  </div>
+
+  <div class="modal-backdrop" id="shareModal" role="dialog" aria-modal="true" aria-labelledby="shareTitle">
+    <div class="modal">
+      <div class="modal-head"><h2 id="shareTitle">Share MachZero™</h2><button class="close" data-close="shareModal" aria-label="Close">×</button></div>
+      <div class="qr-wrap" id="qrWrap"><div id="qrCode"></div><img src="/logo1.jpg" class="qr-logo" alt="MachZero logo" loading="lazy" decoding="async"></div>
+      <p class="share-note">Scan the MachZero™ QR code or share the app through your phone.</p>
+      <button class="btn btn-primary" id="nativeShareBtn" type="button" style="width:100%">SHARE MACHZERO</button>
+      <button class="btn btn-ghost" id="copyLinkBtn" type="button" style="width:100%;margin-top:9px">COPY LINK</button>
+    </div>
+  </div>
+
+  <div class="modal-backdrop" id="billingModal" role="dialog" aria-modal="true" aria-labelledby="billingTitle">
+    <div class="modal">
+      <div class="modal-head"><h2 id="billingTitle">MachZero™ plans</h2><button class="close" data-close="billingModal" aria-label="Close">×</button></div>
+      <div class="billing-notice" id="billingNotice"></div>
+      <p class="billing-note" id="billingSummary">One new item appraisal uses one scan. Extra photos MachZero requests for the same item do not use another scan.</p>
+      <div class="plan-list" id="planCards"></div>
+      <div class="credit-title">Need extra scans without changing plans?</div>
+      <div class="credit-grid" id="creditCards"></div>
+      <button class="btn btn-ghost" id="manageBillingBtn" type="button" style="width:100%;margin-top:14px" hidden>MANAGE SUBSCRIPTION</button>
+      <div class="recovery-actions">
+        <button class="btn btn-ghost" id="createRecoveryKeyBtn" type="button" hidden>CREATE RECOVERY KEY</button>
+        <button class="btn btn-ghost" id="restoreAccessBtn" type="button">RESTORE PAID ACCESS</button>
+      </div>
+      <p class="billing-fine">Payments are handled by Stripe Checkout. Credit packs are added on top of included monthly scans. Requested follow-up photos for the same item never use another scan. A recovery key can move paid access to a replacement device without adding an appraisal form or login to the scan flow.</p>
+    </div>
+  </div>
+
+  <div class="modal-backdrop" id="recoveryModal" role="dialog" aria-modal="true" aria-labelledby="recoveryTitle">
+    <div class="modal">
+      <div class="modal-head"><h2 id="recoveryTitle">MachZero™ access recovery</h2><button class="close" data-close="recoveryModal" aria-label="Close">×</button></div>
+      <div class="billing-notice" id="recoveryNotice"></div>
+      <div id="recoveryCreateView" hidden>
+        <p class="billing-note" id="recoveryCreateText">Save this key somewhere private. It moves your paid MachZero access to a replacement device.</p>
+        <div class="recovery-key" id="recoveryKeyOutput"></div>
+        <button class="btn btn-primary" id="copyRecoveryKeyBtn" type="button" style="width:100%">COPY RECOVERY KEY</button>
+        <button class="btn btn-ghost" id="shareRecoveryKeyBtn" type="button" style="width:100%;margin-top:9px">SHARE / SAVE KEY</button>
+        <div class="recovery-warning">Creating a new recovery key replaces the previous one. MachZero does not store the readable key, so save it before closing this screen.</div>
+      </div>
+      <div id="recoveryRestoreView" hidden>
+        <p class="billing-note">Enter the recovery key from your previous MachZero installation. Restoring moves that paid plan and remaining scan-pack credits to this device and returns the old installation to Free.</p>
+        <input class="recovery-input" id="recoveryKeyInput" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="MZ-XXXX-XXXX-XXXX-XXXX-XXXX">
+        <button class="btn btn-primary" id="submitRestoreBtn" type="button" style="width:100%;margin-top:12px">RESTORE ACCESS</button>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
