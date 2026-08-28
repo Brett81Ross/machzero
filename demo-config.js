@@ -2,7 +2,7 @@ window.CACTUSBYTE_DEMO={
   appId:'machzero',
   appName:'MachZero™',
   demoVersion:'2026-08-v2',
-  firstLaunch:true,
+  firstLaunch:false,
   autoDelayMs:1000,
   triggerContainer:'.topbar',
   logoUrl:'/logo1.jpg',
