@@ -56,6 +56,7 @@
     const missionText = $("missionText");
     const reverbBtn = $("reverbBtn");
     const buyCostInput = $("buyCost");
+    if (PLAY_BUILD) $("planBtn").hidden = true;
 
     let imageQueue = [];
     let appraisal = null;
