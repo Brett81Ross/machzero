@@ -1,6 +1,6 @@
-# MachZero™ Stripe Setup — v1.4.0 Atomic Release
+# MachZero™ Stripe Setup — v1.4.2 Demo & Help Release
 
-This package contains the Stripe integration code, but this staged copy does not create or modify anything in Stripe, GitHub, or Vercel.
+This package contains the Stripe integration code and is staged on GitHub `main`, but this release sequence has not intentionally deployed it to Vercel or changed Stripe configuration.
 
 ## Products / prices
 
@@ -81,7 +81,7 @@ Paid customers get **Manage Subscription**, backed by Stripe's hosted Customer P
 
 ## Accountless paid-access recovery
 
-MachZero stays zero-input for appraisal and does not force users to create an account. v1.4.0 adds an accountless recovery key for paid access:
+MachZero stays zero-input for appraisal and does not force users to create an account. v1.4.2 retains the accountless recovery key for paid access:
 
 - After the first paid subscription or scan-pack purchase, MachZero generates a high-entropy recovery key and shows it to the customer.
 - The readable key is not stored. Only its SHA-256 hash is stored in Upstash.
