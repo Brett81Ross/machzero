@@ -1,4 +1,29 @@
     const APP_VERSION = "1.4.2";
+    const PLAY_BUILD = Boolean(window.MACHZERO_PLAY_BUILD);
+    const NATIVE_API_ORIGIN = "https://machzero-beta.vercel.app";
+
+    function apiUrl(path) {
+      const native = Boolean(window.Capacitor?.isNativePlatform?.());
+      return native ? new URL(path, NATIVE_API_ORIGIN).toString() : path;
+    }
+
+    async function platformShare(data) {
+      const capacitor = window.Capacitor;
+      if (capacitor?.isNativePlatform?.() && typeof capacitor?.Plugins?.Share?.share === "function") {
+        await capacitor.Plugins.Share.share({
+          title: data?.title || "MachZero™",
+          text: data?.text || "",
+          url: data?.url || "",
+          dialogTitle: data?.dialogTitle || "Share MachZero™",
+        });
+        return true;
+      }
+      if (typeof navigator.share === "function") {
+        await navigator.share(data);
+        return true;
+      }
+      return false;
+    }
     const MAX_PHOTOS = 6;
     const PHOTO_WORKERS = 2;
     const DEFAULT_SETTINGS = { feeRate: 13.25, targetMargin: 35, shippingAllowance: 0 };
