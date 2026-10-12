@@ -44,6 +44,7 @@
     });
 
     function shareUrl() {
+      if (PLAY_BUILD || window.Capacitor?.isNativePlatform?.()) return "https://machzero-beta.vercel.app/";
       return location.href.split(/[?#]/)[0];
     }
 
@@ -112,16 +113,13 @@
         url: shareUrl(),
       };
 
-      if (typeof navigator.share === "function") {
-        try {
-          await navigator.share(shareData);
-          return true;
-        } catch (error) {
-          if (error?.name === "AbortError") return true;
-          openModal("shareModal");
-          renderQr();
-          return false;
-        }
+      try {
+        if (await platformShare(shareData)) return true;
+      } catch (error) {
+        if (error?.name === "AbortError") return true;
+        openModal("shareModal");
+        renderQr();
+        return false;
       }
 
       try {
@@ -155,9 +153,7 @@
       };
       const button = $("shareAppraisalBtn");
       try {
-        if (typeof navigator.share === "function") {
-          await navigator.share(shareData);
-        } else {
+        if (!(await platformShare(shareData))) {
           await navigator.clipboard.writeText(`${text}\n${shareUrl()}`);
           button.textContent = "APPRAISAL COPIED";
           setTimeout(() => button.textContent = "SHARE APPRAISAL", 1300);
