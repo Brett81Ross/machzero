@@ -1,6 +1,6 @@
-# MachZero™ v1.4.0 Atomic Release Notes
+# MachZero™ v1.4.2 Atomic Release Notes
 
-This package is staged locally only. It has not been pushed to GitHub, deployed to Vercel, or connected to live Stripe Price IDs.
+This release is staged on GitHub `main`. It has not been intentionally deployed to Vercel in this release sequence, and paid enforcement must remain off until the deployment QA gate is completed.
 
 ## Final hardening stacked on top of v1.3.1
 
@@ -16,7 +16,12 @@ This package is staged locally only. It has not been pushed to GitHub, deployed 
 10. API responses are marked no-store and Vercel response hardening now includes `X-Frame-Options: DENY`.
 11. Image payload budget was tightened for serverless reliability while preserving an 1800px detail ceiling for labels/SKUs/condition evidence.
 12. Added `npm run predeploy-check` and a dedicated `PRE_DEPLOY_QA.md` release gate.
-13. Version and service-worker cache bumped to **v1.4.0**.
+13. MachZero remains intentionally service-worker-free; startup cleanup unregisters legacy workers and removes old MachZero shell caches.
+14. Version aligned to **v1.4.2** across package metadata, runtime UI, Demo & Help configuration, and the release gate.
+15. Startup work was reduced: core scripts load with `defer`, QR generation is lazy-loaded, and the splash delay is shortened.
+16. Photo preparation uses capped concurrent workers and asynchronous decode/compression to reduce scan-start latency on mobile devices.
+17. Android app sharing calls the native Web Share API directly from the user gesture, with QR/copy fallback.
+18. Marketplace buttons now use recognizable platform-specific brand colors for eBay, Mercari, Facebook Marketplace, OfferUp, Poshmark, and Reverb.
 
 ## Zero-input product behavior retained
 
@@ -47,6 +52,6 @@ This package is staged locally only. It has not been pushed to GitHub, deployed 
 
 ## Release gate
 
-Do not deploy the monetized public release until every case in `PRE_DEPLOY_QA.md` passes in Stripe test mode. In particular, verify subscription renewal, payment failure, cancellation, all scan packs, failed-scan credit release, same-item photo refinements, recovery-key migration, and Android/iPhone PWA behavior.
+Do not deploy the monetized public release until every case in `PRE_DEPLOY_QA.md` passes in Stripe test mode. In particular, verify subscription renewal, payment failure, cancellation, all scan packs, failed-scan credit release, same-item photo refinements, recovery-key migration, and Android/iPhone install and home-screen behavior.
 
 Before live deployment, rotate the previously exposed Reverb credential and use only the new `REVERB_TOKEN` value in the deployment environment.
