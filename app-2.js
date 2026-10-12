@@ -19,7 +19,7 @@
       $("loadingText").textContent = appraisal ? "Reading the new evidence and tightening the price…" : "Identifying the item, reading visible details, and checking the market…";
       setBusy(true);
       try {
-        const response = await fetch("/api/analyze", {
+        const response = await fetch(apiUrl("/api/analyze"), {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -33,7 +33,9 @@
         if (response.status === 402 && payload.code === "SCAN_LIMIT_REACHED") {
           if (payload.usage) renderUsage(payload.usage, true);
           await loadBillingStatus();
-          openBillingModal("You've used the scans included with your current plan. Pick a plan or add a scan pack to keep going.");
+          openBillingModal(PLAY_BUILD
+            ? "You've used the scans included with this Play test build. Existing paid access can be restored with a recovery key."
+            : "You've used the scans included with your current plan. Pick a plan or add a scan pack to keep going.");
           return;
         }
         if (!response.ok || !payload.success) {
