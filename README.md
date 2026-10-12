@@ -1,13 +1,14 @@
 # MachZero™
 
-MachZero™ is a mobile-first, zero-input AI resale evaluator from Cactus🌵Byte Studios™. The staged v1.4.0 Atomic Release keeps the user experience simple — snap photos and get the resale decision — while moving pricing logic, usage accounting, payment safety, and recovery behind the scenes.
+MachZero™ is a mobile-first, zero-input AI resale evaluator from Cactus🌵Byte Studios™. The staged v1.4.2 Demo & Help release keeps the user experience simple — snap photos and get the resale decision — while moving pricing logic, usage accounting, payment safety, and recovery behind the scenes.
 
-## v1.4.0 — Atomic Release
+## v1.4.2 — Demo & Help
 
 ### Zero-input appraisal
 
 - No appraisal form, category picker, condition picker, brand field, or required Analyze button.
 - The first photo automatically starts analysis after local image preparation.
+- Photo preparation uses capped concurrent workers and asynchronous decoding/compression to reduce wait time on phones.
 - MachZero infers defensible category, brand, model, variant, visible identifier/SKU, size, color, included accessories, and condition from visual evidence.
 - If another photo would materially improve identification or pricing confidence, MachZero asks for one specific next photo and refines the same scan for no additional scan credit.
 - Image preparation retains useful label/detail resolution while keeping the total request below a safer serverless payload budget.
@@ -19,7 +20,9 @@ MachZero™ is a mobile-first, zero-input AI resale evaluator from Cactus🌵Byt
 - Native Android/iOS share flow with copy fallback.
 - Branded MachZero QR for sharing the app.
 - One-tap Share Appraisal for the current evaluation.
-- PWA manifest, install handling, service worker, versioned cache, Apple home-screen metadata, and mobile safe-area layout.
+- Marketplace buttons use recognizable eBay, Mercari, Facebook Marketplace, OfferUp, Poshmark, and Reverb brand colors.
+- Demo & Help and native-install helpers load after the core interface so they do not block the first usable screen.
+- PWA manifest, install handling, Apple home-screen metadata, mobile safe-area layout, and explicit cleanup of legacy MachZero service workers/caches. The current app intentionally runs without a service worker.
 
 ### Monetization
 
