@@ -1,4 +1,4 @@
-    const APP_VERSION = "1.4.1";
+    const APP_VERSION = "1.4.2";
     const MAX_PHOTOS = 6;
     const PHOTO_WORKERS = 2;
     const DEFAULT_SETTINGS = { feeRate: 13.25, targetMargin: 35, shippingAllowance: 0 };
