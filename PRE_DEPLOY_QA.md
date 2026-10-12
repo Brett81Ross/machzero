@@ -1,4 +1,4 @@
-# MachZero™ v1.4.0 Pre-Deployment QA
+# MachZero™ v1.4.2 Pre-Deployment QA
 
 This is the final release-gate checklist for the staged atomic build. Do not enable paid enforcement until the Stripe and recovery tests pass in Stripe test mode.
 
@@ -72,8 +72,8 @@ For each test confirm:
 
 ## Android / iPhone / PWA checks
 
-- Android Chrome: camera capture, multi-photo upload, native share, QR, PWA install, installed launch, and service-worker update.
-- iPhone Safari: camera/upload, share, Add to Home Screen behavior, safe-area layout, and app icon/title.
+- Android Chrome: camera capture, multi-photo upload, native share, QR, install/home-screen behavior, installed launch, and confirmation that no MachZero service worker remains registered.
+- iPhone Safari: camera/upload, share, Add to Home Screen behavior, safe-area layout, app icon/title, and confirmation that no legacy MachZero service worker remains registered.
 - Clear cached data on a test install and verify the expected Free reset; on a paid test install, use the recovery key to restore access.
 
 ## Final go-live sequence
@@ -83,5 +83,5 @@ For each test confirm:
 3. Set a production `MACHZERO_SIGNING_SECRET` and `MACHZERO_ADMIN_TOKEN`.
 4. Set the rotated production `REVERB_TOKEN` only if Reverb Draft is staying enabled.
 5. Set `MACHZERO_BILLING_ENFORCED=true`.
-6. Make the single GitHub push / Vercel deployment.
+6. Deploy the already-staged GitHub `main` release to Vercel once; do not create extra production pushes for QA-only edits.
 7. Immediately run one real Free scan and one low-cost live Stripe transaction, then verify entitlement and webhook state before promoting the release.
