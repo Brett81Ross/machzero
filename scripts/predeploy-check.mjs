@@ -19,6 +19,7 @@ const appJs = ["app-1.js", "app-2.js", "app-3.js", "app-4.js", "app-5.js"].map(r
 const frontend = `${html}\n${appJs}`;
 const manifest = JSON.parse(read("manifest.json"));
 const styles = read("styles.css");
+const demoConfig = read("demo-config.js");
 const vercel = JSON.parse(read("vercel.json"));
 const env = read(".env.example");
 const reverb = read("api/reverb-draft.js");
@@ -44,6 +45,7 @@ const source = files.map(([, value]) => value).join("\n") + frontend;
 check(pkg.version === "1.4.2", "package version is 1.4.2");
 check(frontend.includes('const APP_VERSION = "1.4.2"'), "frontend APP_VERSION is 1.4.2");
 check(frontend.includes("v1.4.2 · Demo & Help"), "visible version label is 1.4.2");
+check(demoConfig.includes("v1.4.2 · Demo & Help") && !demoConfig.includes("v1.4.1 · Performance Release"), "Demo & Help loader preserves the v1.4.2 release label");
 check(!fs.existsSync(path.join(root, "sw.js")) && appJs.includes("serviceWorker.getRegistrations") && appJs.includes("registration.unregister()"), "MachZero is service-worker free and unregisters legacy workers");
 check(manifest.name === "MachZero™" && manifest.short_name === "MachZero", "manifest uses MachZero branding");
 check(html.includes("MachZero™ · <strong>Cactus🌵Byte Studios™</strong> · All Rights Reserved"), "required footer branding is present");
