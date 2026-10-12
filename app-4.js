@@ -9,11 +9,18 @@
     }
 
     async function startCheckout(code, button) {
+      if (PLAY_BUILD) {
+        const notice = $("billingNotice");
+        notice.textContent = "New purchases are disabled in the Google Play test build. Existing paid access can be restored with a recovery key.";
+        notice.classList.remove("notice-error");
+        notice.style.display = "block";
+        return;
+      }
       const original = button.textContent;
       button.disabled = true;
       button.textContent = "OPENING STRIPE…";
       try {
-        const response = await fetch("/api/create-checkout", {
+        const response = await fetch(apiUrl("/api/create-checkout"), {
           method: "POST",
           headers: { "Content-Type": "application/json", "X-MachZero-Install-Id": installId },
           body: JSON.stringify({ code, installId }),
@@ -29,6 +36,7 @@
     }
 
     async function confirmReturnedCheckout() {
+      if (PLAY_BUILD) return;
       const params = new URLSearchParams(location.search);
       const state = params.get("checkout");
       const sessionId = params.get("session_id");
@@ -42,7 +50,7 @@
       if (state !== "success" || !sessionId) return;
 
       try {
-        const response = await fetch("/api/confirm-checkout", {
+        const response = await fetch(apiUrl("/api/confirm-checkout"), {
           method: "POST",
           headers: { "Content-Type": "application/json", "X-MachZero-Install-Id": installId },
           body: JSON.stringify({ sessionId, installId }),
@@ -97,7 +105,7 @@
       button.disabled = true;
       button.textContent = "CREATING KEY…";
       try {
-        const response = await fetch("/api/create-recovery-key", {
+        const response = await fetch(apiUrl("/api/create-recovery-key"), {
           method: "POST",
           headers: { "Content-Type": "application/json", "X-MachZero-Install-Id": installId },
           body: JSON.stringify({ installId }),
@@ -134,7 +142,7 @@
       button.disabled = true;
       button.textContent = "RESTORING…";
       try {
-        const response = await fetch("/api/restore-access", {
+        const response = await fetch(apiUrl("/api/restore-access"), {
           method: "POST",
           headers: { "Content-Type": "application/json", "X-MachZero-Install-Id": installId },
           body: JSON.stringify({ installId, recoveryKey }),
@@ -173,8 +181,7 @@
       const text = `MachZero™ recovery key: ${visibleRecoveryKey}
 Keep this private. It can move paid MachZero access to another device.`;
       try {
-        if (navigator.share) await navigator.share({ title: "MachZero™ Recovery Key", text });
-        else await navigator.clipboard.writeText(text);
+        if (!(await platformShare({ title: "MachZero™ Recovery Key", text }))) await navigator.clipboard.writeText(text);
       } catch (error) {
         if (error?.name !== "AbortError") showError("Sharing was blocked. Copy the recovery key instead.");
       }
@@ -184,11 +191,18 @@ Keep this private. It can move paid MachZero access to another device.`;
     $("usagePill").addEventListener("click", () => openBillingModal());
 
     async function openCustomerPortal() {
+      if (PLAY_BUILD) {
+        const notice = $("billingNotice");
+        notice.textContent = "Subscription management is not linked from the Google Play test build.";
+        notice.classList.remove("notice-error");
+        notice.style.display = "block";
+        return;
+      }
       const button = $("manageBillingBtn");
       button.disabled = true;
       button.textContent = "OPENING STRIPE…";
       try {
-        const response = await fetch("/api/create-portal", {
+        const response = await fetch(apiUrl("/api/create-portal"), {
           method: "POST",
           headers: { "Content-Type": "application/json", "X-MachZero-Install-Id": installId },
           body: JSON.stringify({ installId }),
