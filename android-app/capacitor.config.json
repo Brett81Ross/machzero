@@ -1,0 +1,16 @@
+{
+  "appId": "com.cactusbyte.machzero",
+  "appName": "MachZero",
+  "webDir": "www",
+  "loggingBehavior": "debug",
+  "android": {
+    "backgroundColor": "#070b19",
+    "allowMixedContent": false,
+    "webContentsDebuggingEnabled": false
+  },
+  "plugins": {
+    "CapacitorHttp": {
+      "enabled": true
+    }
+  }
+}
