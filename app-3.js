@@ -11,7 +11,7 @@
       reverbBtn.disabled = true;
       reverbBtn.textContent = "CREATING DRAFT…";
       try {
-        const response = await fetch("/api/reverb-draft", {
+        const response = await fetch(apiUrl("/api/reverb-draft"), {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -50,14 +50,15 @@
         : `${user.planName || "Free"} · ${remaining} scan${remaining === 1 ? "" : "s"} left`;
       $("usagePill").classList.toggle("limit", remaining <= 0 || paymentIssue);
       $("planBtn").textContent = user.plan && user.plan !== "free" ? "PLAN" : "UPGRADE";
-      $("manageBillingBtn").hidden = !user.stripeSubscriptionId;
+      $("planBtn").hidden = PLAY_BUILD;
+      $("manageBillingBtn").hidden = PLAY_BUILD || !user.stripeSubscriptionId;
       if (!configured && !billingState?.enforcementRequested) $("usageText").textContent = "Free · billing setup pending";
       if (!configured && billingState?.enforcementRequested) $("usageText").textContent = "Billing temporarily unavailable";
     }
 
     async function loadBillingStatus() {
       try {
-        const response = await fetch("/api/billing-status", {
+        const response = await fetch(apiUrl("/api/billing-status"), {
           method: "GET",
           headers: { "X-MachZero-Install-Id": installId, Accept: "application/json" },
           cache: "no-store",
@@ -82,6 +83,22 @@
       const credits = $("creditCards");
       plans.innerHTML = "";
       credits.innerHTML = "";
+
+      const creditTitle = document.querySelector(".credit-title");
+      if (PLAY_BUILD) {
+        if (creditTitle) creditTitle.hidden = true;
+        $("manageBillingBtn").hidden = true;
+        const bonus = Number(user.bonusCredits || 0);
+        const included = Math.max(0, Number(user.includedRemaining ?? user.remaining ?? 0));
+        $("billingSummary").textContent = `${user.planName || "Free"}: ${included} included scan${included === 1 ? "" : "s"} left${bonus ? ` + ${bonus} extra credit${bonus === 1 ? "" : "s"}` : ""}. Google Play test build does not offer new purchases. Existing paid access can be restored with a recovery key.`;
+        const hasPaidAccess = Boolean((user.plan && user.plan !== "free" && ["active", "trialing", "past_due"].includes(String(user.status || ""))) || bonus > 0);
+        $("createRecoveryKeyBtn").hidden = !hasPaidAccess;
+        $("createRecoveryKeyBtn").textContent = user.hasRecoveryKey ? "ROTATE RECOVERY KEY" : "CREATE RECOVERY KEY";
+        const fine = $("billingFine");
+        if (fine) fine.textContent = "New digital purchases are disabled in this Google Play test build. Existing paid MachZero access can be restored with a recovery key. Requested follow-up photos for the same item never use another scan.";
+        return;
+      }
+      if (creditTitle) creditTitle.hidden = false;
 
       catalog.plans.forEach((plan) => {
         const card = document.createElement("div");
