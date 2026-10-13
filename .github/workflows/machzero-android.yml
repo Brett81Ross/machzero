@@ -55,9 +55,9 @@ jobs:
         working-directory: android-app
         run: npm run android:init
 
-      - name: Build release AAB
+      - name: Build release AAB and debug APK
         working-directory: android-app/android
-        run: ./gradlew bundleRelease
+        run: ./gradlew bundleRelease assembleDebug
 
       - name: Sign AAB when upload-key secrets are configured
         id: signing
@@ -85,10 +85,18 @@ jobs:
             echo "Upload-key secrets are not configured; generated bundle is for build validation only."
           fi
 
-      - name: Upload AAB artifact
+      - name: Stage debug APK
+        shell: bash
+        run: |
+          mkdir -p android-app/play-output
+          cp android-app/android/app/build/outputs/apk/debug/app-debug.apk android-app/play-output/MachZero-v1.4.2-code1-DEVICE-TEST.apk
+
+      - name: Upload Android artifacts
         uses: actions/upload-artifact@v4
         with:
           name: machzero-play-v1.4.2
-          path: android-app/play-output/*.aab
+          path: |
+            android-app/play-output/*.aab
+            android-app/play-output/*.apk
           if-no-files-found: error
           retention-days: 14
