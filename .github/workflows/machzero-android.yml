@@ -2,6 +2,12 @@ name: MachZero Android Play Bundle
 
 on:
   workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - "android-app/**"
+      - ".github/workflows/machzero-android.yml"
 
 permissions:
   contents: read
