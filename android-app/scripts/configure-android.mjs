@@ -39,10 +39,16 @@ let manifest = read(manifestPath)
   .replace(/android:icon="@mipmap\/[^"]+"/, 'android:icon="@drawable/machzero_logo"')
   .replace(/android:roundIcon="@mipmap\/[^"]+"/, 'android:roundIcon="@drawable/machzero_logo"');
 
-if (!manifest.includes("android:usesCleartextTraffic")) {
-  manifest = manifest.replace("<application", '<application android:usesCleartextTraffic="false" android:allowBackup="false"');
-} else {
+if (manifest.includes("android:usesCleartextTraffic")) {
   manifest = manifest.replace(/android:usesCleartextTraffic="[^"]+"/, 'android:usesCleartextTraffic="false"');
+} else {
+  manifest = manifest.replace("<application", '<application android:usesCleartextTraffic="false"');
+}
+
+if (manifest.includes("android:allowBackup")) {
+  manifest = manifest.replace(/android:allowBackup="[^"]+"/, 'android:allowBackup="false"');
+} else {
+  manifest = manifest.replace("<application", '<application android:allowBackup="false"');
 }
 
 if (!manifest.includes('android.hardware.camera')) {
